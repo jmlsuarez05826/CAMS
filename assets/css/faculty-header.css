@@ -1,0 +1,55 @@
+/* Navbar (top bar) */
+.navbar {
+  background-color: #D0112B;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+}
+
+/* Hamburger icon */
+.menu-icon {
+  font-size: 26px;
+  cursor: pointer;
+}
+
+/* Sidebar (hidden by default) */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px; /* hidden off-screen */
+  width: 250px;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  transition: left 0.3s ease;
+  z-index: 1000;
+  padding-top: 60px;
+}
+
+/* Sidebar visible when active */
+.sidebar.active {
+  left: 0;
+}
+
+/* Sidebar links */
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.sidebar ul li a {
+  text-decoration: none;
+  color: #D0112B;
+  font-size: 18px;
+}
+
+.sidebar ul li a:hover {
+  color: black;
+}
