@@ -1,11 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faculty Dashboard</title>
-</head>
 <body>
-    
+    <?php $pageTitle = "Dashboard Home"; ?>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?php echo $pageTitle; ?></title>
+        <link rel="stylesheet" href="../assets/css/admin-header.css">
+    </head>
+
+    <body>
+
+        <?php include '../includes/admin-header.php'; ?> <!-- Used to call the header file -->
+
+
+    </body>
+
+    </html>
+
+
 </body>
+
 </html>
