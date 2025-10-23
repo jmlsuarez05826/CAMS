@@ -15,7 +15,7 @@
         }
 
         body {
-            background-color: aliceblue;
+            background-color: #383B39;
             margin: 0;
 
         }
@@ -38,6 +38,7 @@
         .logo h2 {
             font-size: 20px;
             font-weight: lighter;
+            color: white;
 
         }
 
@@ -47,12 +48,13 @@
             gap: 20px;
             align-items: center;
             padding: 0 30px;
+             color: white;
 
         }
 
         nav li a {
             text-decoration: none;
-            color: black;
+            color: white;
         }
 
         nav button {
@@ -68,20 +70,39 @@
             color: white;
         }
 
-        .land {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .bsu-front {
+            position: relative;
+            text-align: center;
+            color: white;
         }
 
-        .land h1 {
-            padding: 40px;
+        .bsu-front img {
+            width: 100%;
+            height: 55em;
+            opacity: 0.5;
+            object-fit: cover
         }
+
+        .quote {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            
+        }
+
+        .quote h1 {
+            font-size: 3em;
+            font-weight: bold;
+            color: white;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
 
         .title-f {
-            background-color: white;
+            background-color: #b93737ff;
             padding: 50px;
-            margin-top: 5em;
+            margin-top: 3em;
             font-size: 14px;
             font-weight: lighter;
             font-family: monospace;
@@ -120,7 +141,7 @@
             width: 50em;
         }
 
-        .container{
+        .container {
             position: absolute;
             height: 50em;
         }
@@ -142,7 +163,10 @@
             text-decoration: none;
         }
 
-        .building-1,.building-2,.building-3,.building-4 {
+        .building-1,
+        .building-2,
+        .building-3,
+        .building-4 {
             border: solid black 2px;
             height: 18em;
             width: 25em;
@@ -172,7 +196,8 @@
 
 
         <div class="logo">
-            <img src="BSU_LOGO.png" alt="bsu logo" style="height: 40px; max-width: 100%; background-repeat: no-repeat;">
+            <img src="../images/BSU_logo (3).webp" alt="bsu logo"
+                style="height: 40px; max-width: 100%; background-repeat: no-repeat;">
             <h2>CAMS</h2>
         </div>
 
@@ -185,26 +210,31 @@
         </nav>
     </header>
     <div class="land" id="home">
-        <h1>"Find Available Classroomn in Seconds"</h1>
-        <img src="School.jpg" alt="building"
-            style="height: 40em; max-width: 50%; background-repeat: no-repeat; border-radius: 0 0 0px 150px;">
+        <div class="bsu-front">
+            <img src="../images/bsu_front.webp" alt="building"
+                style="height: 55em; width: 100%; background-repeat: no-repeat; opacity: 0.7; ">
+            <div class="quote">
+                <h1>"Find Available Classrooms in Seconds"</h1>
+            </div>
+
+        </div>
     </div>
 
     <div class="title-f">
         <h1>Feature</h1>
         <div class="feature">
             <div>
-               
+
                 <h2> <i class="bi bi-geo-alt" alt="bootsrap"></i>VISUAL MAP & SEARCH</h2>
                 <p>Easily Locates available classroom across campus. </p>
             </div>
             <div>
-               
+
                 <h2> <i class="bi bi-clock-history"></i>REAL-TIME AVAILABILITY & REQUEST</h2>
                 <p>Instantly check which room are free or occupied and send request in one click.</p>
             </div>
             <div>
-           
+
                 <h2><i class="bi bi-phone"></i>MOBILE & NOTIFICATION</h2>
                 <p>Get update and manage classroom anytime anywhere</p>
             </div>
@@ -218,41 +248,41 @@
         </div>
 
         <div class="container">
-        <div id="building" class="box">
-            <a href="#">
-                <div class="building-1">
-                    <img src="building1.jpg" alt="BUILDING 1"
-                        style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                    <p>Building 1</p>
-                </div>
-            </a>
-            <a href="#">
-                <div class="building-2">
-                    <img src="building2.jpg" alt="BUILDING 2"
-                        style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                    <p>Building 2</p>
-                </div>
-            </a>
-            <a href="#">
-                <div class="building-3">
-                    <img src="building3.jpg" alt="BUILDING 3"
-                        style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                    <p>Building 3</p>
-                </div>
-            </a>
-            <a href="#">
-                <div class="building-4">
-                    <img src="building4.jpg" alt="BUILDING 4"
-                        style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                    <p>Building 4</p>
-                </div>
-            </a>
+            <div id="building" class="box">
+                <a href="#">
+                    <div class="building-1">
+                        <img src="building1.jpg" alt="BUILDING 1"
+                            style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
+                        <p>Building 1</p>
+                    </div>
+                </a>
+                <a href="#">
+                    <div class="building-2">
+                        <img src="building2.jpg" alt="BUILDING 2"
+                            style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
+                        <p>Building 2</p>
+                    </div>
+                </a>
+                <a href="#">
+                    <div class="building-3">
+                        <img src="building3.jpg" alt="BUILDING 3"
+                            style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
+                        <p>Building 3</p>
+                    </div>
+                </a>
+                <a href="#">
+                    <div class="building-4">
+                        <img src="building4.jpg" alt="BUILDING 4"
+                            style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
+                        <p>Building 4</p>
+                    </div>
+                </a>
+            </div>
         </div>
-    </div>
 
-    <div id="classroom" class="box hidden">
-        <p>Hello World</p>
-    </div>
+        <div id="classroom" class="box hidden">
+            <p>Hello World</p>
+        </div>
 
     </div>
 
