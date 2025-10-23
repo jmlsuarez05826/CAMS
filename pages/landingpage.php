@@ -20,6 +20,9 @@
 
         }
 
+
+        /*header designs  */
+
         header {
             padding: 2px;
             display: flex;
@@ -70,6 +73,8 @@
             color: white;
         }
 
+
+        /*front page design*/
         .bsu-front {
             position: relative;
             text-align: center;
@@ -98,7 +103,7 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
-
+        /*Features*/
         .title-f {
             background-color: #b93737ff;
             padding: 50px;
@@ -120,6 +125,7 @@
             font-family: Arial, Helvetica, sans-serif;
         }
 
+        /*Classroom Availbility Design*/
         .view {
             margin-top: 10em;
             height: 60em;
@@ -194,7 +200,7 @@
     <header>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
-
+        <!--- NAVIGATION BAR -->
         <div class="logo">
             <img src="../images/BSU_logo (3).webp" alt="bsu logo"
                 style="height: 40px; max-width: 100%; background-repeat: no-repeat;">
@@ -209,6 +215,8 @@
             </ul>
         </nav>
     </header>
+
+    <!-- Home Page -->
     <div class="land" id="home">
         <div class="bsu-front">
             <img src="../images/bsu_front.webp" alt="building"
@@ -219,6 +227,8 @@
 
         </div>
     </div>
+
+   
 
     <div class="title-f">
         <h1>Feature</h1>
@@ -294,9 +304,6 @@
             building.classList.add('hidden');
             classroom.classList.remove('hidden');
         });
-
-
-
 
     </script>
 
