@@ -1,3 +1,29 @@
+<?php
+require_once 'camsdatabase.php';
+require_once 'cams-sp.php';
+
+$db = new Database();
+$conn = $db->getConnection();
+
+$crud = new Crud($conn);
+
+if (isset($_POST["add"])) {
+$firstname = $_POST["fname"];
+$lastname = $_POST["lname"];
+$phonenumber = $_POST["phone"];
+$email = $_POST["email"];
+$password = $_POST["password"];
+
+if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
+    echo 'what a nice';
+} else {
+    echo 'not a nice';
+}
+
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -76,10 +102,13 @@
         }
 
         /* Base styles for all form groups */
-        .form-group-name,
+        .form-group-fname,
+        .form-group-lname,
         .form-group-role,
         .form-group-email,
-        .form-group-phone {
+        .form-group-phone,
+        .form-group-password,
+        .form-group-cpassword {
             display: flex;
             /* makes label + input side by side */
             align-items: center;
@@ -89,7 +118,10 @@
         }
 
         /* Individual widths */
-        .form-group-name {
+        .form-group-fname {
+            width: 400px;
+        }
+        .form-group-lname {
             width: 400px;
         }
 
@@ -105,11 +137,22 @@
             width: 350px;
         }
 
+        .form-group-password{
+            width: 350px;
+        }
+
+        .form-group-cpassword{
+            width: 350px;
+        }
+
         /* Labels (consistent styling) */
-        .form-group-name label,
+        .form-group-fname label,
+        .form-group-lname label,
         .form-group-role label,
         .form-group-email label,
-        .form-group-phone label {
+        .form-group-phone label,
+        .form-group-password label,
+        .form-group-cpassword label {
             width: 100px;
             /* fixed label width for alignment */
             font-weight: bold;
@@ -118,10 +161,13 @@
         }
 
         /* Inputs */
-        .form-group-name input,
+        .form-group-fname input,
+        .form-group-lname input,
         .form-group-role input,
         .form-group-email input,
-        .form-group-phone input {
+        .form-group-phone input
+        .form-group-password input,
+        .form-group-cpassword input {
             flex: 1;
             /* input fills remaining space */
             padding: 5px;
@@ -150,35 +196,40 @@
             <form action="" method="post">
 
                 <form>
-                    <div class="form-group-name">
-                        <label for="instname">Name:</label>
-                        <input type="text" id="instname" name="instname" placeholder="Instructor Name" required>
+                    <div class="form-group-fname">
+                        <label for="fname">First Name:</label>
+                        <input type="text" id="fname" name="fname" placeholder="First Name" required>
                     </div>
-
-                    <div class="form-group-role">
-                        <label for="role">Role:</label>
-                        <input type="text" id="role" name="role" placeholder="Role" required>
+                    <div class="form-group-lname">
+                        <label for="lname">Last Name:</label>
+                        <input type="text" id="lname" name="lname" placeholder="Last Name" required>
+    </div>
+                    <div class="form-group-phone">
+                        <label for="phone">Phone Number:</label>
+                        <input type="number" id="phone" name="phone" placeholder="Phone Number" required>
                     </div>
 
                     <div class="form-group-email">
                         <label for="email">Email:</label>
-                        <input type="email" id="email" name="email" placeholder="Gmail" required>
+                        <input type="email" id="email" name="email" placeholder="Email" required>
                     </div>
 
-                    <div class="form-group-phone">
-                        <label for="phone">Phone:</label>
-                        <input type="number" id="phone" name="phone" placeholder="Phone Number" required>
+                    <div class="form-group-password">
+                        <label for="password">Password:</label>
+                        <input type="text" id="password" name="password" placeholder="Password" required>
+                    </div>
+
+                    <div class="form-group-cpassword">
+                        <label for="cpassword">Confirm Password:</label>
+                        <input type="text" id="cpassword" name="cpassword" placeholder="Confirm Password" required>
                     </div>
 
                     <div class="button-container">
-                        <button>Add</button>
+                        <button type="add" name="add">Add</button>
                     </div>
 
                 </form>
             </form>
-
-
-        </div>
 
     </main>
 
