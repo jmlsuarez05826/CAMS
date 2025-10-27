@@ -3,7 +3,7 @@ class Database {
     private $host = 'localhost';
     private $db_name = 'cams';
     private $username = 'root';
-    private $password = '12345';
+    private $password = '1234';
     private $conn;
 
     public function __construct() {
@@ -22,6 +22,7 @@ class Database {
             die("Connection failed: " . $e->getMessage());
         }
     }
+
 
     public function getConnection() {
         return $this->conn;
