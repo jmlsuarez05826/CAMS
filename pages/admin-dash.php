@@ -6,11 +6,11 @@
     <title><?php $pageTitle = "Dashboard Home"; echo $pageTitle; ?></title>
 
     <!-- Link CSS for the header -->
-    <link rel="stylesheet" href="../assets/css/admin-header.css">
+    <link rel="stylesheet" href="../assets/css/admin-sidebar.css">
 </head>
 <body>
 
-    <?php include '../includes/admin-header.php'; ?> <!-- This brings in your navbar & sidebar -->
+    <?php include '../includes/admin-sidebar.php'; ?> <!-- This brings in your navbar & sidebar -->
 
 </body>
 </html>
