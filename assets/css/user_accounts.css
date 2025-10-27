@@ -1,43 +1,4 @@
-<?php
-require_once 'camsdatabase.php';
-require_once 'cams-sp.php';
-
-$db = new Database();
-$conn = $db->getConnection();
-
-$crud = new Crud($conn);
-
-if (isset($_POST["add"])) {
-$firstname = $_POST["fname"];
-$lastname = $_POST["lname"];
-$phonenumber = $_POST["phone"];
-$email = $_POST["email"];
-$password = $_POST["password"];
-
-if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
-    echo 'what a nice';
-} else {
-    echo 'not a nice';
-}
-
-}
-?>
-
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php $pageTitle = "Dashboard Home";
-            echo $pageTitle; ?></title>
-
-    <!-- Link CSS for the header -->
-    <link rel="stylesheet" href="../assets/css/admin-sidebar.css">
-
-    <style>
-        .login-page {
+   .form-modal {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -46,7 +7,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
         }
 
         /* White login box */
-        .login-container {
+        .form-container {
             background-color: white;
             padding: 40px 30px;
             border-radius: 10px;
@@ -57,7 +18,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
         }
 
         /* Headings */
-        .login-container h2 {
+        .form-container h2 {
             margin-top: 0px;
             margin-bottom: 30px;
             font-size: 47px;
@@ -68,12 +29,12 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
         }
 
         /* Form fields */
-        .login-container form {
+        .form-container form {
             display: flex;
             flex-direction: column;
         }
 
-        .login-container input {
+        .form-container input {
             padding: 10px;
             margin-bottom: 10px;
             margin-top: 5px;
@@ -84,7 +45,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
         }
 
         /* Login button */
-        .login-container button {
+        .form-container button {
             padding: 10px;
             background-color: #00700D;
             color: white;
@@ -97,7 +58,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
             width: 100px;
         }
 
-        .login-container button:hover {
+        .form-container button:hover {
             background-color: #a10f23;
         }
 
@@ -121,6 +82,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
         .form-group-fname {
             width: 400px;
         }
+
         .form-group-lname {
             width: 400px;
         }
@@ -137,11 +99,11 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
             width: 350px;
         }
 
-        .form-group-password{
+        .form-group-password {
             width: 350px;
         }
 
-        .form-group-cpassword{
+        .form-group-cpassword {
             width: 350px;
         }
 
@@ -165,8 +127,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
         .form-group-lname input,
         .form-group-role input,
         .form-group-email input,
-        .form-group-phone input
-        .form-group-password input,
+        .form-group-phone input .form-group-password input,
         .form-group-cpassword input {
             flex: 1;
             /* input fills remaining space */
@@ -180,60 +141,3 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
             /* moves button to the right */
             margin-top: 10px;
         }
-    </style>
-</head>
-
-<body>
-
-    <?php include '../includes/admin-sidebar.php'; ?> <!-- This brings in your navbar & sidebar -->
-
-
-    <!-- User Creation Container -->
-    <main class="login-page">
-        <div class="login-container">
-            <h2>Faculty</h2>
-
-            <form action="" method="post">
-
-                <form>
-                    <div class="form-group-fname">
-                        <label for="fname">First Name:</label>
-                        <input type="text" id="fname" name="fname" placeholder="First Name" required>
-                    </div>
-                    <div class="form-group-lname">
-                        <label for="lname">Last Name:</label>
-                        <input type="text" id="lname" name="lname" placeholder="Last Name" required>
-    </div>
-                    <div class="form-group-phone">
-                        <label for="phone">Phone Number:</label>
-                        <input type="number" id="phone" name="phone" placeholder="Phone Number" required>
-                    </div>
-
-                    <div class="form-group-email">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" name="email" placeholder="Email" required>
-                    </div>
-
-                    <div class="form-group-password">
-                        <label for="password">Password:</label>
-                        <input type="text" id="password" name="password" placeholder="Password" required>
-                    </div>
-
-                    <div class="form-group-cpassword">
-                        <label for="cpassword">Confirm Password:</label>
-                        <input type="text" id="cpassword" name="cpassword" placeholder="Confirm Password" required>
-                    </div>
-
-                    <div class="button-container">
-                        <button type="add" name="add">Add</button>
-                    </div>
-
-                </form>
-            </form>
-
-    </main>
-
-
-</body>
-
-</html>
