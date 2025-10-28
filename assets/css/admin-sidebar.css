@@ -1,0 +1,97 @@
+/* Navbar layout */
+body{
+    margin: 0;
+    background-color: #D9D9D9;
+    width: 97%;
+    max-width: 100%;
+    overflow-y: hidden;
+}
+
+/* Sidebar (hidden by default) */
+.sidebar {
+    position: fixed;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #A81E1E;
+
+    transition: left 0.3s ease;
+}
+.header-content {
+    display: flex;
+    align-items: center;   /* vertically center the logo and title */
+    padding: 15px 20px;    /* space inside sidebar */
+}
+
+.sidebar-logo {
+    width: 40px;            /* adjust size */
+    height: 40px;           /* keep aspect ratio */
+    margin-right: 10px;     /* space between logo and title */
+    margin-bottom: 25px;    /* Space between the logo and the lists */
+}
+
+.sidebar-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 25px;    /* Space between the titel and the lists */
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    color: #D0112B;
+}
+
+.sidebar ul li{
+    margin-bottom: 25px;
+}
+
+.sidebar ul li a {
+    display: block;
+    color: BLACK;
+    padding: 15px 20px;
+    font-size: 19px;
+    text-decoration: none;  
+}
+
+.sidebar ul li a:hover {
+     background-color: #8B1717;
+    
+}
+
+.sidebar-icon {
+  width: 18px;      /* adjust size */
+  height: 18px;     /* maintain square ratio */
+  align-items: center; 
+  margin-right: 10px;
+
+}
+
+.sidebar-divider {
+    border: 0;
+    height: 1.5px;
+    background-color: rgba(0, 0, 0, 0.3); /* adjust color for sidebar */
+    width: 80%;
+    margin: 15px auto; /* space above and below */
+}
+
+
+.sidebar-footer {
+    margin-top: 85px;           /* pushes footer to bottom if sidebar uses flex */
+    margin-left: 50px;
+    position: relative;
+    padding: 10px 15px;
+}
+
+#logout-btn {
+    color:darkgray;          /* enforce white text */
+    font-weight: bold;
+    font-size: 19px;
+    text-decoration: none !important; /* remove underline */
+}
+.custom-gap i {
+    margin-right: 7px; /* adjust pixel value to whatever spacing you want */
+}
+
+

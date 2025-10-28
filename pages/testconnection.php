@@ -10,4 +10,5 @@ if ($conn) { //for testing connection only
 } else {
     echo "Database connection failed.";
 }
+
 ?>
