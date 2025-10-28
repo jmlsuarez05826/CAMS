@@ -26,7 +26,8 @@ class Crud
             ]);
             return true;
         } catch (PDOException $e) {
-            throw $e;
+            echo "Database Error: " . $e->getMessage();
+
         }
     }
 
@@ -55,4 +56,4 @@ class Crud
     }
 }
 
-?>
+

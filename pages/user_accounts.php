@@ -46,6 +46,7 @@
         }
     }
 
+
     // Fetch users for table
     $users = $crud->getAllUsers();
     ?>
@@ -62,7 +63,7 @@
 
 </head>
 
-< <body>
+<body>
     <main>
 
         <div class="d-flex justify-content-end mb-3 add-user-btn">
@@ -168,7 +169,7 @@
                                 <label for="phone" class="form-label">Phone Number</label>
                                 <div class="input-group">
                                     <input type="text" id="phone" name="phone" class="form-control"
-                                        placeholder="09xxxxxxxxx or 639xxxxxxxxx" pattern="^(09\\d{9}|639\\d{9})$"
+                                        placeholder="09xxxxxxxxx or 639xxxxxxxxx" pattern="^(09\d{9}|639\d{9})$"
                                         required>
 
                                     <button class="btn btn-outline-secondary" type="button" id="getCodeBtn" disabled>
@@ -194,13 +195,16 @@
                                 <label>Confirm Password</label>
                                 <input type="text" name="cpassword" class="form-control" required>
                             </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" name="add" class="btn btn-primary">Add</button>
+
+                            </div>
                         </form>
                     </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" name="add" form="addFacultyForm" class="btn btn-primary">Add</button>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -235,11 +239,10 @@
                 Swal.fire({
                     title: 'Enter Verification Code',
                     html: `
-            <input type="text" id="verificationCode" class="swal2-input" placeholder="Verification Code" style="margin-bottom:20px">
-            <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;">
-                <button id="resendBtn" class="swal2-styled" style="flex:1;">Resend</button>
-                <button id="verifyBtn" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button>
-            </div>
+           <input type="text" id="verificationCode" class="swal2-input" placeholder="Verification Code" style="margin-bottom:20px">
+            <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;"> 
+            <button id="resendBtn" class="swal2-styled" style="flex:1;">Resend</button> 
+            <button id="verifyBtn" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button> </div>
         `,
                     showCloseButton: true,
                     showConfirmButton: false,
@@ -253,7 +256,16 @@
 
                         popup.querySelector('#verifyBtn').addEventListener('click', () => {
                             const code = popup.querySelector('#verificationCode').value;
-                            Swal.fire(`You entered: ${code}`, '', 'success');
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: `You entered: ${code}`,
+                            }).then(() => {
+                                // Show the Bootstrap modal again
+                                const modal = new bootstrap.Modal(modalEl);
+                                modal.show();
+                            });
                         });
                     }
                 });
@@ -310,72 +322,12 @@
                 }
             });
 
-// When “Get Code” button is clicked
-getCodeBtn.addEventListener("click", function () {
-  const phone = phoneField.value;
-  const fname = document.querySelector('input[name="fname"]').value;
-  const lname = document.querySelector('input[name="lname"]').value;
-
-  // Step 1: Send OTP
-  fetch('sms-otp.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ action: 'send', phone, fname, lname })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "success") {
-      // ✅ If in test mode, show simulated OTP directly
-      const otpMessage = data.otp 
-        ? `Simulated OTP (for testing): <b>${data.otp}</b>` 
-        : "Check your phone for the verification code.";
-
-      Swal.fire({
-        icon: "success",
-        title: "OTP Sent!",
-        html: `${otpMessage}<br><br>
-               <input type="text" id="verificationCode" class="swal2-input" placeholder="Enter OTP">`,
-        confirmButtonText: "Verify",
-        showCancelButton: true,
-        preConfirm: () => {
-          const otp = Swal.getPopup().querySelector('#verificationCode').value;
-          if (!otp) {
-            Swal.showValidationMessage('Please enter your OTP');
-          }
-          return otp;
-        }
-      }).then(result => {
-        if (result.isConfirmed) {
-          // Step 2: Verify OTP
-          fetch('sms-otp.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ action: 'verify', phone, otp: result.value })
-          })
-          .then(res => res.json())
-          .then(verifyData => {
-            if (verifyData.status === "success") {
-              Swal.fire("Verified!", "Phone number verified successfully.", "success");
-            } else {
-              Swal.fire("Error", verifyData.message, "error");
-            }
-          });
-        }
-      });
-    } else {
-      Swal.fire("Error", data.message, "error");
-    }
-  })
-  .catch(err => console.error(err));
-});
 
 
         </script>
 
     </main>
-
-
 </body>
 
-    
+
 </html>
