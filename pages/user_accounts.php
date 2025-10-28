@@ -5,316 +5,184 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php $pageTitle = "Dashboard Home";
-    echo $pageTitle; ?></title>
+            echo $pageTitle; ?></title>
 
     <!-- Link CSS for the header -->
-    <link rel="stylesheet" href="../assets/css/admin-sidebar.css">
-    <link rel="stylesheet" href="../assets/css/user_accounts.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/admin-header.css">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap JS Bundle (includes Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <?php
-    require_once '../pages/camsdatabase.php';
-    require_once '../pages/cams-sp.php';
-    require_once '../includes/admin-sidebar.php';
-    require_once '../pages/sms-otp.php';
-
-    $crud = new Crud();
-
-
-
-    // Handle form submission first
-    if (isset($_POST["add"])) {
-        $firstname = $_POST["fname"];
-        $lastname = $_POST["lname"];
-        $phonenumber = $_POST["phone"];
-        $email = $_POST["email"];
-        $password = $_POST["password"];
-
-        try {
-            if ($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
-                header("Location: " . $_SERVER['PHP_SELF'] . "?added=1");
-                exit();
-            }
-        } catch (PDOException $e) {
-            $errorMessage = $e->getMessage();
+    <style>
+        .login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 80px);
+            /* full viewport minus header */
         }
-    }
 
-    // Fetch users for table
-    $users = $crud->getAllUsers();
-    ?>
+        /* White login box */
+        .login-container {
+            background-color: white;
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 700px;
+            /* adjust as needed */
+            text-align: center;
+        }
 
-    <header>
-        <h2>Welcome Admin!</h2>
-        <div class="search-container">
-            <input type="text" placeholder="Search" class="search-field">
-            <i class="bi bi-search search-icon"></i>
-            <i class="bi bi-bell-fill notification-icon"></i>
-        </div>
-    </header>
+        /* Headings */
+        .login-container h2 {
+            margin-top: 0px;
+            margin-bottom: 30px;
+            font-size: 47px;
+            font-family: 'Ibarra Real Nova', serif;
+            color: black;
+            text-align: left;
+            margin-left: 30px;
+        }
+
+        /* Form fields */
+        .login-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-container input {
+            padding: 10px;
+            margin-bottom: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #E0E0E0;
+        }
+
+        /* Login button */
+        .login-container button {
+            padding: 10px;
+            background-color: #00700D;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            align-items: right;
+            width: 100px;
+        }
+
+        .login-container button:hover {
+            background-color: #a10f23;
+        }
+
+        /* Base styles for all form groups */
+        .form-group-name,
+        .form-group-role,
+        .form-group-email,
+        .form-group-phone {
+            display: flex;
+            /* makes label + input side by side */
+            align-items: center;
+            /* vertically center them */
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        /* Individual widths */
+        .form-group-name {
+            width: 400px;
+        }
+
+        .form-group-role {
+            width: 300px;
+        }
+
+        .form-group-email {
+            width: 450px;
+        }
+
+        .form-group-phone {
+            width: 350px;
+        }
+
+        /* Labels (consistent styling) */
+        .form-group-name label,
+        .form-group-role label,
+        .form-group-email label,
+        .form-group-phone label {
+            width: 100px;
+            /* fixed label width for alignment */
+            font-weight: bold;
+            margin-right: 0px;
+            /* space between label and input */
+        }
+
+        /* Inputs */
+        .form-group-name input,
+        .form-group-role input,
+        .form-group-email input,
+        .form-group-phone input {
+            flex: 1;
+            /* input fills remaining space */
+            padding: 5px;
+        }
 
 
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            /* moves button to the right */
+            margin-top: 10px;
+        }
+    </style>
 </head>
 
-< <body>
-    <main>
+<body>
 
-        <div class="d-flex justify-content-end mb-3 add-user-btn">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                Add User
-            </button>
+    <?php include '../includes/admin-header.php'; ?> <!-- This brings in your navbar & sidebar -->
+
+
+    <!-- User Creation Container -->
+    <main class="login-page">
+        <div class="login-container">
+            <h2>Faculty</h2>
+
+            <form action="" method="post">
+
+                <form>
+                    <div class="form-group-name">
+                        <label for="instname">Name:</label>
+                        <input type="text" id="instname" name="instname" placeholder="Instructor Name" required>
+                    </div>
+
+                    <div class="form-group-role">
+                        <label for="role">Role:</label>
+                        <input type="text" id="role" name="role" placeholder="Role" required>
+                    </div>
+
+                    <div class="form-group-email">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" placeholder="Gmail" required>
+                    </div>
+
+                    <div class="form-group-phone">
+                        <label for="phone">Phone:</label>
+                        <input type="number" id="phone" name="phone" placeholder="Phone Number" required>
+                    </div>
+
+                    <div class="button-container">
+                        <button>Add</button>
+                    </div>
+
+                </form>
+            </form>
+
+
         </div>
-
-        <?php
-        $rowsPerPage = 10; // number of users per page
-        $currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-        $offset = ($currentPage - 1) * $rowsPerPage;
-
-        // Fetch only the users for this page
-        $users = $crud->getUsersPaginated($rowsPerPage, $offset);
-
-        // Get total user count for calculating total pages
-        $totalUsers = $crud->getUsersCount();
-        $totalPages = ceil($totalUsers / $rowsPerPage);
-        ?>
-
-
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>First</th>
-                    <th>Last</th>
-                    <th>Phone Number</th>
-                    <th>Email Address</th>
-                    <th>Role</th>
-                </tr>
-            </thead>
-            <tbody>
-
-                <?php
-                $counter = 1;
-                foreach ($users as $row) {
-                    echo "<tr>";
-                    echo "<th scope='row'>{$row['UserID']}</th>";
-                    echo "<td>{$row['FirstName']}</td>";
-                    echo "<td>{$row['LastName']}</td>";
-                    echo "<td>{$row['PhoneNumber']}</td>";
-                    echo "<td>{$row['Email']}</td>";
-                    echo "<td>{$row['Role']}</td>";
-                    echo "</tr>";
-                    $counter++;
-                }
-                ?>
-
-            </tbody>
-        </table>
-
-        <nav aria-label="Page navigation example">
-            <ul class="pagination">
-                <!-- Previous -->
-                <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?page=<?= $currentPage - 1 ?>" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-
-                <!-- Page numbers -->
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
-                        <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
-                    </li>
-                <?php endfor; ?>
-
-                <!-- Next -->
-                <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?page=<?= $currentPage + 1 ?>" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-
-        <!-- Add User Modal -->
-        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addFacultyModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addFacultyModalLabel">Add User</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <form method="post" id="addFacultyForm">
-                            <div class="mb-3">
-                                <label>First Name</label>
-                                <input type="text" name="fname" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Last Name</label>
-                                <input type="text" name="lname" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <div class="input-group">
-                                    <input type="text" id="phone" name="phone" class="form-control"
-                                        placeholder="09xxxxxxxxx or 639xxxxxxxxx" pattern="^(09\\d{9}|639\\d{9})$"
-                                        required>
-
-                                    <button class="btn btn-outline-secondary" type="button" id="getCodeBtn" disabled>
-                                        Get Code
-                                    </button>
-                                </div>
-                                <small id="phoneError" class="text-danger d-none">
-                                    Phone must start with 09 (11 digits) or 639 (12 digits).
-                                </small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Email</label>
-                                <input type="email" name="email" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Password</label>
-                                <input type="text" name="password" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Confirm Password</label>
-                                <input type="text" name="cpassword" class="form-control" required>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" name="add" form="addFacultyForm" class="btn btn-primary">Add</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <?php if (!empty($errorMessage) || (isset($_GET['added']) && $_GET['added'] == 1)): ?>
-            <script>
-                <?php if (!empty($errorMessage)): ?>
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: '<?php echo $errorMessage; ?>'
-                    });
-                <?php endif; ?>
-
-                <?php if (isset($_GET['added']) && $_GET['added'] == 1): ?>
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'User added successfully!'
-                    });
-                <?php endif; ?>
-            </script>
-        <?php endif; ?>
-
-        <script>
-            document.getElementById('getCodeBtn').addEventListener('click', function () {
-                // Optionally hide the modal first
-                const modalEl = document.getElementById('addUserModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
-
-                Swal.fire({
-                    title: 'Enter Verification Code',
-                    html: `
-            <input type="text" id="verificationCode" class="swal2-input" placeholder="Verification Code" style="margin-bottom:20px">
-            <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;">
-                <button id="resendBtn" class="swal2-styled" style="flex:1;">Resend</button>
-                <button id="verifyBtn" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button>
-            </div>
-        `,
-                    showCloseButton: true,
-                    showConfirmButton: false,
-                    didOpen: () => {
-                        const popup = Swal.getPopup();
-                        popup.querySelector('#verificationCode').focus();
-
-                        popup.querySelector('#resendBtn').addEventListener('click', () => {
-                            Swal.fire('Code resent!', '', 'success');
-                        });
-
-                        popup.querySelector('#verifyBtn').addEventListener('click', () => {
-                            const code = popup.querySelector('#verificationCode').value;
-                            Swal.fire(You entered: ${code}, '', 'success');
-                        });
-                    }
-                });
-            });
-
-            //For otp verification
-            document.getElementById('getCodeBtn').addEventListener('click', function () {
-                const phone = document.getElementById('phone').value;
-                const fname = document.querySelector('input[name="fname"]').value;
-                const lname = document.querySelector('input[name="lname"]').value;
-
-                fetch('sms-otp.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: phone=${phone}&fname=${fname}&lname=${lname}
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data);
-
-                        if (data.status === "success") {
-                            Swal.fire("OTP Sent!", "Check your phone for the verification code", "success");
-                        } else {
-                            Swal.fire("Error", data.message, "error");
-                        }
-                    })
-                    .catch(err => console.error(err));
-            });
-
-
-            const phoneField = document.getElementById("phone");
-            const getCodeBtn = document.getElementById("getCodeBtn");
-            const phoneError = document.getElementById("phoneError");
-
-            // Regex: Starts with 09 (11 digits) OR 639 (12 digits)
-            const regex = /^(09\d{9}|639\d{9})$/;
-
-            phoneField.addEventListener("input", function () {
-                this.value = this.value.replace(/[^0-9]/g, ""); // Only digits allowed
-                const isValid = regex.test(this.value);
-
-                if (isValid) {
-                    this.classList.remove("is-invalid");
-                    phoneError.classList.add("d-none");
-                    getCodeBtn.disabled = false; // Enable button
-                    getCodeBtn.style.backgroundColor = "grey";
-                } else {
-                    if (this.value.length > 0) {
-                        this.classList.add("is-invalid");
-                        phoneError.classList.remove("d-none");
-                    }
-                    getCodeBtn.disabled = true; // Disable button
-                }
-            });
-
-
-
-        </script>
 
     </main>
-    </body>
 
+
+</body>
 
 </html>
