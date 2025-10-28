@@ -310,12 +310,72 @@
                 }
             });
 
+// When “Get Code” button is clicked
+getCodeBtn.addEventListener("click", function () {
+  const phone = phoneField.value;
+  const fname = document.querySelector('input[name="fname"]').value;
+  const lname = document.querySelector('input[name="lname"]').value;
+
+  // Step 1: Send OTP
+  fetch('sms-otp.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'send', phone, fname, lname })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      // ✅ If in test mode, show simulated OTP directly
+      const otpMessage = data.otp 
+        ? `Simulated OTP (for testing): <b>${data.otp}</b>` 
+        : "Check your phone for the verification code.";
+
+      Swal.fire({
+        icon: "success",
+        title: "OTP Sent!",
+        html: `${otpMessage}<br><br>
+               <input type="text" id="verificationCode" class="swal2-input" placeholder="Enter OTP">`,
+        confirmButtonText: "Verify",
+        showCancelButton: true,
+        preConfirm: () => {
+          const otp = Swal.getPopup().querySelector('#verificationCode').value;
+          if (!otp) {
+            Swal.showValidationMessage('Please enter your OTP');
+          }
+          return otp;
+        }
+      }).then(result => {
+        if (result.isConfirmed) {
+          // Step 2: Verify OTP
+          fetch('sms-otp.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action: 'verify', phone, otp: result.value })
+          })
+          .then(res => res.json())
+          .then(verifyData => {
+            if (verifyData.status === "success") {
+              Swal.fire("Verified!", "Phone number verified successfully.", "success");
+            } else {
+              Swal.fire("Error", verifyData.message, "error");
+            }
+          });
+        }
+      });
+    } else {
+      Swal.fire("Error", data.message, "error");
+    }
+  })
+  .catch(err => console.error(err));
+});
 
 
         </script>
 
     </main>
-    </body>
+
+
+</body>
 
     
 </html>
