@@ -273,14 +273,14 @@
 
             //For otp verification
             document.getElementById('getCodeBtn').addEventListener('click', function () {
-                const phone = document.getElementById('phone').value;
-                const fname = document.querySelector('input[name="fname"]').value;
-                const lname = document.querySelector('input[name="lname"]').value;
+                const phone = document.getElementById('phone').value.trim();
+                const fname = document.querySelector('input[name="fname"]').value.trim();
+                const lname = document.querySelector('input[name="lname"]').value.trim();
 
                 fetch('sms-otp.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `phone=${phone}&fname=${fname}&lname=${lname}`
+                    body: `action=send&phone=${phone}&fname=${fname}&lname=${lname}`
                 })
                     .then(res => res.json())
                     .then(data => {
@@ -294,6 +294,7 @@
                     })
                     .catch(err => console.error(err));
             });
+
 
 
             const phoneField = document.getElementById("phone");
