@@ -33,6 +33,20 @@
                 </li>
 
                 <li>
+                    <a href="#" style=" display: flex ; gap: 15px;">
+                        <i class="bi bi-card-checklist"></i>
+                        Classroom Requests
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#" style=" display: flex ; gap: 15px;">
+                        <i class="bi bi-easel2"></i>
+                        Equipment Requests
+                    </a>
+                </li>
+
+                <li>
                     <a href="../pages/settings.php" style=" display: flex ; gap: 15px;">
                         <i class="bi bi-gear-wide"></i>
                         Manage Equipments
@@ -50,10 +64,9 @@
             </ul>
 
             <div class="sidebar-footer">
-                <a href="logout.php" id="logout-btn" class="btn btn-danger w-100 d-flex align-items-center custom-gap">
+                <a href="logout.php" id="logout-btn" class="d-flex align-items-center custom-gap sidebar-logout">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
-
             </div>
 
 

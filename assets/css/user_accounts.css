@@ -1,143 +1,67 @@
-   .form-modal {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 80px);
-            /* full viewport minus header */
-        }
+body{
+height: 100vh;
+background: linear-gradient(to bottom, white 12%, #D9D9D9 12%);
+}
+header{
+    display: flex;
+    align-items: center;
+     justify-content: space-between; /* push h2 to left, header-right to right */
+    margin-top: 10px;  
+   }
 
-        /* White login box */
-        .form-container {
-            background-color: white;
-            padding: 40px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            width: 700px;
-            /* adjust as needed */
-            text-align: center;
-        }
+header h2 {
+    color: black;
+    margin-left: 300px;
+    font-size: 32px;
+    gap: 300px
+}
 
-        /* Headings */
-        .form-container h2 {
-            margin-top: 0px;
-            margin-bottom: 30px;
-            font-size: 47px;
-            font-family: 'Ibarra Real Nova', serif;
-            color: black;
-            text-align: left;
-            margin-left: 30px;
-        }
+.header-right {
+    display: flex;
+    align-items: center;  /* vertically center search + button */
+    gap: 25px       /* space between search and button */
+}
 
-        /* Form fields */
-        .form-container form {
-            display: flex;
-            flex-direction: column;
-        }
+.search-container {
+    position: relative; /* needed for absolute positioning of the icon */
+    display: inline-block;
+}
 
-        .form-container input {
-            padding: 10px;
-            margin-bottom: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            background-color: #E0E0E0;
-        }
+.search-field {
+    padding: 8px 40px 8px 35px; /* add right padding for icon space */
+    font-size: 16px;
+    border-radius: 25px;
+    border:none;
+    background-color: #D9D9D9;
+    outline:none;
+}
 
-        /* Login button */
-        .form-container button {
-            padding: 10px;
-            background-color: #00700D;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            align-items: right;
-            width: 100px;
-        }
+.search-icon {
+    position: absolute;
+    left: 10px;          /* inside input */
+    top: 50%;
+    transform: translateY(-50%);
+    color: #333;
+    font-size: 16px;
+}
 
-        .form-container button:hover {
-            background-color: #a10f23;
-        }
+.notification-icon {
+    position: absolute;
+    right: 10px;  /* inside the input, adjust distance from right */
+    top: 50%;
+    transform: translateY(-50%); /* vertically center */
+    cursor: pointer;
+    color: #333;
+    font-size: 18px;
+    padding-left: 10px;       /* space for the line */
+    border-left: 1px solid black;
+}
 
-        /* Base styles for all form groups */
-        .form-group-fname,
-        .form-group-lname,
-        .form-group-role,
-        .form-group-email,
-        .form-group-phone,
-        .form-group-password,
-        .form-group-cpassword {
-            display: flex;
-            /* makes label + input side by side */
-            align-items: center;
-            /* vertically center them */
-            margin-bottom: 10px;
-            padding: 5px;
-        }
+main{
+    margin-top: 7px;
+    margin-left: 300px;
+}
 
-        /* Individual widths */
-        .form-group-fname {
-            width: 400px;
-        }
-
-        .form-group-lname {
-            width: 400px;
-        }
-
-        .form-group-role {
-            width: 300px;
-        }
-
-        .form-group-email {
-            width: 450px;
-        }
-
-        .form-group-phone {
-            width: 350px;
-        }
-
-        .form-group-password {
-            width: 350px;
-        }
-
-        .form-group-cpassword {
-            width: 350px;
-        }
-
-        /* Labels (consistent styling) */
-        .form-group-fname label,
-        .form-group-lname label,
-        .form-group-role label,
-        .form-group-email label,
-        .form-group-phone label,
-        .form-group-password label,
-        .form-group-cpassword label {
-            width: 100px;
-            /* fixed label width for alignment */
-            font-weight: bold;
-            margin-right: 0px;
-            /* space between label and input */
-        }
-
-        /* Inputs */
-        .form-group-fname input,
-        .form-group-lname input,
-        .form-group-role input,
-        .form-group-email input,
-        .form-group-phone input .form-group-password input,
-        .form-group-cpassword input {
-            flex: 1;
-            /* input fills remaining space */
-            padding: 5px;
-        }
-
-
-        .button-container {
-            display: flex;
-            justify-content: flex-end;
-            /* moves button to the right */
-            margin-top: 10px;
-        }
+.add-user-btn{
+    margin-top: 45px;
+}

@@ -78,7 +78,7 @@ body{
 
 
 .sidebar-footer {
-    margin-top: 280px;           /* pushes footer to bottom if sidebar uses flex */
+    margin-top: 85px;           /* pushes footer to bottom if sidebar uses flex */
     margin-left: 50px;
     position: relative;
     padding: 10px 15px;
