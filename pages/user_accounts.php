@@ -1,29 +1,3 @@
-<?php
-require_once 'camsdatabase.php';
-require_once 'cams-sp.php';
-
-$db = new Database();
-$conn = $db->getConnection();
-
-$crud = new Crud($conn);
-
-if (isset($_POST["add"])) {
-$firstname = $_POST["fname"];
-$lastname = $_POST["lname"];
-$phonenumber = $_POST["phone"];
-$email = $_POST["email"];
-$password = $_POST["password"];
-
-if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
-    echo 'what a nice';
-} else {
-    echo 'not a nice';
-}
-
-}
-?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -31,7 +5,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php $pageTitle = "Dashboard Home";
-            echo $pageTitle; ?></title>
+    echo $pageTitle; ?></title>
 
     <!-- Link CSS for the header -->
     <link rel="stylesheet" href="../assets/css/admin-sidebar.css">
@@ -48,8 +22,11 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
     require_once '../pages/camsdatabase.php';
     require_once '../pages/cams-sp.php';
     require_once '../includes/admin-sidebar.php';
+    require_once '../pages/sms-otp.php';
 
     $crud = new Crud();
+
+
 
     // Handle form submission first
     if (isset($_POST["add"])) {
@@ -85,8 +62,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
 
 </head>
 
-<
-    <body>
+< <body>
     <main>
 
         <div class="d-flex justify-content-end mb-3 add-user-btn">
@@ -97,7 +73,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
 
         <?php
         $rowsPerPage = 10; // number of users per page
-        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         $offset = ($currentPage - 1) * $rowsPerPage;
 
         // Fetch only the users for this page
@@ -167,7 +143,8 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
 
 
         <!-- Add User Modal -->
-        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addFacultyModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addFacultyModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -190,9 +167,17 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Phone Number</label>
                                 <div class="input-group">
-                                    <input type="number" id="phone" name="phone" class="form-control" placeholder="Phone Number" required>
-                                    <button class="btn btn-outline-secondary" type="button" id="getCodeBtn">Get Code</button>
+                                    <input type="text" id="phone" name="phone" class="form-control"
+                                        placeholder="09xxxxxxxxx or 639xxxxxxxxx" pattern="^(09\\d{9}|639\\d{9})$"
+                                        required>
+
+                                    <button class="btn btn-outline-secondary" type="button" id="getCodeBtn" disabled>
+                                        Get Code
+                                    </button>
                                 </div>
+                                <small id="phoneError" class="text-danger d-none">
+                                    Phone must start with 09 (11 digits) or 639 (12 digits).
+                                </small>
                             </div>
 
                             <div class="mb-3">
@@ -220,9 +205,9 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
             </div>
         </div>
 
-        <?php if (!empty($errorMessage) || (isset($_GET['added']) && $_GET['added'] == 1)) : ?>
+        <?php if (!empty($errorMessage) || (isset($_GET['added']) && $_GET['added'] == 1)): ?>
             <script>
-                <?php if (!empty($errorMessage)) : ?>
+                <?php if (!empty($errorMessage)): ?>
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
@@ -230,7 +215,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
                     });
                 <?php endif; ?>
 
-                <?php if (isset($_GET['added']) && $_GET['added'] == 1) : ?>
+                <?php if (isset($_GET['added']) && $_GET['added'] == 1): ?>
                     Swal.fire({
                         icon: 'success',
                         title: 'Success!',
@@ -241,7 +226,7 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
         <?php endif; ?>
 
         <script>
-            document.getElementById('getCodeBtn').addEventListener('click', function() {
+            document.getElementById('getCodeBtn').addEventListener('click', function () {
                 // Optionally hide the modal first
                 const modalEl = document.getElementById('addUserModal');
                 const modal = bootstrap.Modal.getInstance(modalEl);
@@ -268,11 +253,64 @@ if($crud->addFaculty($firstname, $lastname, $phonenumber, $email, $password)) {
 
                         popup.querySelector('#verifyBtn').addEventListener('click', () => {
                             const code = popup.querySelector('#verificationCode').value;
-                            Swal.fire(`You entered: ${code}`, '', 'success');
+                            Swal.fire(You entered: ${code}, '', 'success');
                         });
                     }
                 });
             });
+
+            //For otp verification
+            document.getElementById('getCodeBtn').addEventListener('click', function () {
+                const phone = document.getElementById('phone').value;
+                const fname = document.querySelector('input[name="fname"]').value;
+                const lname = document.querySelector('input[name="lname"]').value;
+
+                fetch('sms-otp.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: phone=${phone}&fname=${fname}&lname=${lname}
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+
+                        if (data.status === "success") {
+                            Swal.fire("OTP Sent!", "Check your phone for the verification code", "success");
+                        } else {
+                            Swal.fire("Error", data.message, "error");
+                        }
+                    })
+                    .catch(err => console.error(err));
+            });
+
+
+            const phoneField = document.getElementById("phone");
+            const getCodeBtn = document.getElementById("getCodeBtn");
+            const phoneError = document.getElementById("phoneError");
+
+            // Regex: Starts with 09 (11 digits) OR 639 (12 digits)
+            const regex = /^(09\d{9}|639\d{9})$/;
+
+            phoneField.addEventListener("input", function () {
+                this.value = this.value.replace(/[^0-9]/g, ""); // Only digits allowed
+                const isValid = regex.test(this.value);
+
+                if (isValid) {
+                    this.classList.remove("is-invalid");
+                    phoneError.classList.add("d-none");
+                    getCodeBtn.disabled = false; // Enable button
+                    getCodeBtn.style.backgroundColor = "grey";
+                } else {
+                    if (this.value.length > 0) {
+                        this.classList.add("is-invalid");
+                        phoneError.classList.remove("d-none");
+                    }
+                    getCodeBtn.disabled = true; // Disable button
+                }
+            });
+
+
+
         </script>
 
     </main>
