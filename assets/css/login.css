@@ -5,6 +5,7 @@ body {
     font-family: 'Ibarra Real Nova', serif;
     background: url('../../images/BSU_BG_\(2\).webp') no-repeat center center fixed;
     background-size: cover;
+    overflow: hidden;
 }
 header {
     background-color:#D0112B; /* navbar bg color */
