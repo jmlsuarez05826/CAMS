@@ -25,9 +25,7 @@
     require_once '../pages/sms-otp.php';
 
     $crud = new Crud();
-
-
-
+    
     // Handle form submission first
     if (isset($_POST["add"])) {
         $firstname = $_POST["fname"];
@@ -89,7 +87,7 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>User ID</th>
                     <th>First</th>
                     <th>Last</th>
                     <th>Phone Number</th>
@@ -198,7 +196,13 @@
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+<<<<<<< HEAD
                                 <button type="submit" name="add" class="btn btn-primary">Add</button>
+=======
+                                <button type="submit" name="add" class="btn btn-primary" id="addBtn"
+                                    disabled>Add</button>
+
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
 
                             </div>
                         </form>
@@ -230,31 +234,123 @@
         <?php endif; ?>
 
         <script>
-            document.getElementById('getCodeBtn').addEventListener('click', function () {
-                // Optionally hide the modal first
-                const modalEl = document.getElementById('addUserModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
+            const phoneInput = document.getElementById('phone');
+            const getCodeBtn = document.getElementById('getCodeBtn');
+            const phoneError = document.getElementById('phoneError');
+            const addFacultyForm = document.getElementById('addFacultyForm');
+            const addUserModalEl = document.getElementById('addUserModal');
+            const addUserModal = new bootstrap.Modal(addUserModalEl);
 
+            let pendingUserData = { verified: false };
+
+            // Enable/disable Get Code button
+            phoneInput.addEventListener('input', () => {
+                const phoneVal = phoneInput.value.trim();
+                const regex = /^(09\d{9}|639\d{9})$/;
+                if (regex.test(phoneVal)) {
+                    getCodeBtn.disabled = false;
+                    phoneError.classList.add('d-none');
+                } else {
+                    getCodeBtn.disabled = true;
+                    phoneError.classList.remove('d-none');
+                }
+            });
+
+            // Send OTP
+            getCodeBtn.addEventListener('click', () => {
+                pendingUserData = {
+                    fname: document.querySelector('input[name="fname"]').value.trim(),
+                    lname: document.querySelector('input[name="lname"]').value.trim(),
+                    phone: phoneInput.value.trim(),
+                    email: document.querySelector('input[name="email"]').value.trim(),
+                    password: document.querySelector('input[name="password"]').value.trim(),
+                    verified: false
+                };
+
+                // Hide Add User modal
+                addUserModal.hide();
+
+                fetch('../pages/sms-otp.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=send&phone=${pendingUserData.phone}&fname=${pendingUserData.fname}&lname=${pendingUserData.lname}`
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            showVerificationModal(pendingUserData.phone, data.otp);
+                        } else {
+                            Swal.fire(" Error", data.message, "error");
+                            // Show Add User modal again on error
+                            addUserModal.show();
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        addUserModal.show();
+                    });
+            });
+
+            // Show OTP modal
+            function showVerificationModal(phone, otpValue) {
                 Swal.fire({
-                    title: 'Enter Verification Code',
+                    title: 'Verification Code',
                     html: `
+<<<<<<< HEAD
            <input type="text" id="verificationCode" class="swal2-input" placeholder="Verification Code" style="margin-bottom:20px">
             <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;"> 
             <button id="resendBtn" class="swal2-styled" style="flex:1;">Resend</button> 
             <button id="verifyBtn" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button> </div>
+=======
+            <p id="showOtp" style="font-size:14px; color:#555;">OTP: ${otpValue}</p>
+            <input type="text" id="verificationCode" class="swal2-input" placeholder="Enter 6-digit code" maxlength="6" style="margin-bottom:20px; text-align:center; letter-spacing:5px">
+            <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;">
+                <button id="resendBtn" class="swal2-styled" style="flex:1;">Resend</button>
+                <button id="verifyBtn" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button>
+            </div>
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
         `,
                     showCloseButton: true,
                     showConfirmButton: false,
                     didOpen: () => {
                         const popup = Swal.getPopup();
-                        popup.querySelector('#verificationCode').focus();
-
-                        popup.querySelector('#resendBtn').addEventListener('click', () => {
-                            Swal.fire('Code resent!', '', 'success');
+                        const inputField = popup.querySelector('#verificationCode');
+                        inputField.focus();
+                        inputField.addEventListener('input', () => {
+                            inputField.value = inputField.value.replace(/\D/g, '').slice(0, 6);
                         });
 
+                        // Resend OTP
+                        popup.querySelector('#resendBtn').addEventListener('click', () => {
+                            fetch('../pages/sms-otp.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `action=send&phone=${phone}&fname=${pendingUserData.fname}&lname=${pendingUserData.lname}`
+                            })
+                                .then(res => res.json())
+                                .then(resp => {
+                                    if (resp.status === "success") {
+                                        otpValue = resp.otp || '';
+                                        popup.querySelector('#showOtp').textContent = `OTP: ${otpValue}`;
+                                        let msg = popup.querySelector('#resendMessage');
+                                        if (!msg) {
+                                            msg = document.createElement('p');
+                                            msg.id = 'resendMessage';
+                                            msg.style.color = 'green';
+                                            msg.style.fontSize = '13px';
+                                            msg.style.marginTop = '5px';
+                                            popup.querySelector('#resendBtn').parentElement.appendChild(msg);
+                                        }
+                                        msg.textContent = 'OTP Resent!';
+                                    } else {
+                                        Swal.fire(' Error resending OTP', '', 'error');
+                                    }
+                                });
+                        });
+
+                        // Verify OTP
                         popup.querySelector('#verifyBtn').addEventListener('click', () => {
+<<<<<<< HEAD
                             const code = popup.querySelector('#verificationCode').value;
 
                             Swal.fire({
@@ -266,68 +362,60 @@
                                 const modal = new bootstrap.Modal(modalEl);
                                 modal.show();
                             });
+=======
+                            const code = inputField.value.trim();
+                            if (code.length !== 6) {
+                                Swal.fire(" Invalid Code", "OTP must be 6 digits", "error");
+                                return;
+                            }
+
+                            fetch('../pages/sms-otp.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `action=verify&phone=${phone}&otp=${code}`
+                            })
+                                .then(res => res.json())
+                                .then(result => {
+                                    if (result.status === "verified") {
+                                        Swal.fire(" Verified!", "Phone number confirmed!", "success");
+                                        pendingUserData.verified = true;
+
+                                        const addBtn = document.getElementById("addBtn");
+                                        addBtn.disabled = false;
+                                        addBtn.style.backgroundColor = "#0d6efd";
+                                        addBtn.style.cursor = "pointer";
+
+                                        // Show Add User modal again after verification
+                                        addUserModal.show();
+                                    } else {
+                                        Swal.fire(" Incorrect Code", result.message, "error");
+                                    }
+                                });
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
                         });
                     }
                 });
-            });
+            }
 
-            //For otp verification
-            document.getElementById('getCodeBtn').addEventListener('click', function () {
-                const phone = document.getElementById('phone').value;
-                const fname = document.querySelector('input[name="fname"]').value;
-                const lname = document.querySelector('input[name="lname"]').value;
-
-                fetch('sms-otp.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `phone=${phone}&fname=${fname}&lname=${lname}`
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data);
-
-                        if (data.status === "success") {
-                            Swal.fire("OTP Sent!", "Check your phone for the verification code", "success");
-                        } else {
-                            Swal.fire("Error", data.message, "error");
-                        }
-                    })
-                    .catch(err => console.error(err));
-            });
-
-
-            const phoneField = document.getElementById("phone");
-            const getCodeBtn = document.getElementById("getCodeBtn");
-            const phoneError = document.getElementById("phoneError");
-
-            // Regex: Starts with 09 (11 digits) OR 639 (12 digits)
-            const regex = /^(09\d{9}|639\d{9})$/;
-
-            phoneField.addEventListener("input", function () {
-                this.value = this.value.replace(/[^0-9]/g, ""); // Only digits allowed
-                const isValid = regex.test(this.value);
-
-                if (isValid) {
-                    this.classList.remove("is-invalid");
-                    phoneError.classList.add("d-none");
-                    getCodeBtn.disabled = false; // Enable button
-                    getCodeBtn.style.backgroundColor = "blue";
-                    getCodeBtn.style.color = "white";
-                } else {
-                    if (this.value.length > 0) {
-                        this.classList.add("is-invalid");
-                        phoneError.classList.remove("d-none");
-                    }
-                    getCodeBtn.disabled = true; // Disable button
+            // Prevent submission if phone not verified
+            addFacultyForm.addEventListener('submit', (e) => {
+                if (!pendingUserData.verified) {
+                    e.preventDefault();
+                    Swal.fire(" Verification Required", "Please verify your phone number first.", "warning");
                 }
             });
-
-
-
         </script>
+
+<<<<<<< HEAD
+    </main>
+</body>
+
+
+=======
 
     </main>
 </body>
 
 
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
 </html>

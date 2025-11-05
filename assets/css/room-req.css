@@ -1,0 +1,229 @@
+body{
+    overflow-x: hidden;
+}
+
+.topbar {
+    
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: white; /* header background */
+    padding: 15px 30px;      /* spacing inside header */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* subtle shadow */
+    margin-left: 250px;
+     width: calc(100% - 250px) ;
+}
+.topbar h2 {
+    
+    color: black;
+    font-size: 32px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;  /* vertically center search + button */
+    gap: 25px       /* space between search and button */
+}
+
+/* Search container as a flex box */
+.search-container {
+    
+    display: flex;              /* flex layout */
+    align-items: center;        /* vertical centering */
+    background-color: #D9D9D9;
+    border-radius: 25px;
+    gap: 10px;                  /* spacing between children */
+    width: 250px;               /* optional fixed width */
+    position: relative;
+    padding: 5px 18px 5px 10px;
+}
+
+/* Left search icon */
+.search-icon {
+    font-size: 16px;
+    color: #333;
+}
+
+/* Input takes remaining space */
+.search-field {
+    border: none;
+    background: transparent;
+    outline: none;
+    flex: 1;                    /* fills available space */
+    font-size: 16px;
+    padding: 5px 0;             /* vertical padding */
+}
+
+/* Notification wrapper (icon + separator) */
+.notification-wrapper {
+    display: flex;
+    align-items: center;
+    border-left: 1px solid black; /* vertical separator */
+    padding-left: 10px;
+    padding-right: 15px;
+}
+
+/* Notification icon */
+ .notification-icon {
+    font-size: 18px;
+    color: #333;
+    cursor: pointer;
+   
+}
+
+
+ #time {
+    font-size: 20px;
+    font-weight: bold;
+    color:#8B1717;
+    gap: 25px; /* push it to the right */
+    padding-right: 50px; 
+}
+
+
+.table-container {
+    margin-top: 50px;
+    overflow-x: auto;
+    margin-left: 300px;
+    border-radius: 15px;
+}
+
+.requests-table {
+    border-collapse: collapse;   /* merge borders */
+    width: 100%;
+}
+
+.requests-table th{             
+    padding-top: 20px;
+    padding-bottom: 25px;
+    text-align: center;
+    border-left: none;   /* remove left vertical border */
+    border-right: none;  /* remove right vertical border */
+    border-bottom: 1px solid #ddd; /* keep horizontal line */
+    font-weight: bold;
+    font-size: 16px;
+}
+.requests-table td{
+    text-align: center;
+    border-left: none;   /* remove left vertical border */
+    border-right: none;  /* remove right vertical border */
+    border-bottom: 1px solid #ddd; /* keep horizontal line */
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.requests-table th:nth-child(1) {
+    min-width: 150px;  /* adjust as needed */
+}
+
+.requests-table thead tr {
+    border-bottom: 2px solid #8B1717; 
+}
+
+
+/* Optional row hover effect */
+.requests-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.requests-table {
+    background-color: white;
+}
+
+.requests-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+        /* Checkbox column smaller width */
+.requests-table th:first-child,
+.requests-table td:first-child {
+    width: 40px;
+    text-align: center;
+}
+
+.action-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: calc(100% - 250px);
+    margin-left: 250px;
+    background: white;
+    border-top: 2px solid #ddd;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: center;   /* center everything horizontally */
+    align-items: center;
+    font-weight: 500;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+    z-index: 999;
+
+
+     opacity: 0;               /* start invisible */
+    transform: translateY(100%); /* start below the screen */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* animate both */
+}
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* space between count and buttons */
+}
+
+
+#selectedCount {
+    flex-shrink: 0;
+}
+.action-footer.show {
+    opacity: 1;               /* fully visible */
+    transform: translateY(0); /* move into view */
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;           /* spacing between buttons */
+    margin-left: 50px;
+    margin-right: auto;   /* this centers the button group */
+}
+
+.action-buttons button {
+    background-color: transparent; /* remove the fill */
+    border: 2px solid #8B1717;    /* green border, change as needed */
+    color: #8B1717;               /* text color matches border */
+    padding: 6px 14px;            /* adjust size */
+    border-radius: 5px;           /* rounded corners */
+    cursor: pointer;              /* pointer on hover */
+    transition: all 0.2s ease;    /* smooth hover transition */
+}
+
+/* Optional: hover effect */
+.action-buttons button:hover {
+    background-color: #8B1717;    /* fill on hover */
+    color: white;                 /* text becomes white */
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25em 0.6em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.25rem;
+  color: #fff;
+}
+
+.badge.bg-success {
+  background-color: #198754;
+}
+
+.badge.bg-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+        
+        

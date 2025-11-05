@@ -1,6 +1,9 @@
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="../assets/css/admin-sidebar.css">
 
 </head>
 
@@ -26,35 +29,35 @@
                 </li>
 
                 <li>
-                    <a href="#">
+                    <a href="../pages/class-management.php">
                         <img src="../images/presentation.webp" alt="Dashboard" class="sidebar-icon">
                         Manage Classrooms
                     </a>
                 </li>
 
                 <li>
-                    <a href="#" style=" display: flex ; gap: 15px;">
+                    <a href="../pages/room-req.php" style=" display: flex ; gap: 15px;">
                         <i class="bi bi-card-checklist"></i>
                         Classroom Requests
                     </a>
                 </li>
 
                 <li>
-                    <a href="#" style=" display: flex ; gap: 15px;">
+                    <a href="../pages/equipment-req.php" style=" display: flex ; gap: 15px;">
                         <i class="bi bi-easel2"></i>
                         Equipment Requests
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/settings.php" style=" display: flex ; gap: 15px;">
+                    <a href="../pages/equipment-management.php" style=" display: flex ; gap: 15px;">
                         <i class="bi bi-gear-wide"></i>
                         Manage Equipments
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/settings.php" style=" display: flex ; gap: 15px;">
+                    <a href="../pages/user_accounts.php" style=" display: flex ; gap: 15px;">
                         <i class="bi bi-people-fill"></i>
                         User Accounts
                     </a>
