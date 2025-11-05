@@ -71,7 +71,7 @@ class PhoneVerification
 
     $url = 'https://sms.iprogtech.com/api/v1/sms_messages';
     $apiToken = 'ee14530521332383899b85b0098b3e92da7b116f';
-    $message = sprintf("Hi %s %s, your verification code is %s.", $fname, $lname, $otp);
+    $message = sprintf("Hi %s %s, your OTP code is %s.", $fname, $lname, $otp);
  
     $data = [
         'api_token' => $apiToken,
