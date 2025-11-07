@@ -79,10 +79,14 @@ $rooms = $crud->getRooms();
     </div>
 
 
-    <?php foreach ($buildings as $building): ?>
-    <div class="building-title">
-        <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
-    </div>
+    <?php foreach ($buildings as $index => $building): ?>
+ <div class="building-title">
+            <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
+            <?php if ($index === 0): ?>
+                <!-- This button only appears on the first building because of the condition -->
+                <button class="addBuilding-btn">+ Add Building</button>
+            <?php endif; ?>
+        </div>
 
     <div class="building-block">
 
@@ -101,9 +105,12 @@ $rooms = $crud->getRooms();
             <div class="floor-indicator"></div>
         </div>
 
+
+
         <!-- Room Containers for each floor -->
         <?php foreach ($floors as $floor): ?>
             <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
+                    
                 <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none;">
 
                     <!-- Add Room button -->
@@ -130,7 +137,7 @@ $rooms = $crud->getRooms();
 
 
         <script>
-// SWAL for the Add Room button
+
 document.querySelectorAll(".add-room-btn").forEach(button => {
   button.addEventListener("click", () => {
     const floorID = button.getAttribute("data-floor");
@@ -188,6 +195,58 @@ document.querySelectorAll(".add-room-btn").forEach(button => {
     });
   });
 });
+
+//script for an interative add floor button
+    document.querySelectorAll('.building-block').forEach(building => { //Use loops to display buildings
+
+        const floors = building.querySelectorAll('.floor');
+        const indicator = building.querySelector('.floor-indicator');
+
+        floors.forEach((floor, index) => {
+            floor.addEventListener('click', () => {
+
+                floors.forEach(f => f.classList.remove('active'));
+                floor.classList.add('active');
+
+                const position = floor.offsetLeft;
+                const width = floor.offsetWidth;
+
+                indicator.style.left = position + "px";
+                indicator.style.width = width + "px";
+            });
+        });
+    });
+
+    //SWAL for the add building button
+document.querySelectorAll('.addBuilding-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: 'Add Building',
+                html: `
+                <input type="text" id="buildingName" class="swal2-input" placeholder="Building Name">
+                <input type="file" id="buildingImage" class="swal2-input" accept="image/*" style="flex:1;">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Save',
+                cancelButtonText: 'Close',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const name = Swal.getPopup().querySelector('#buildingName').value;
+                    if (!name) {
+                        Swal.showValidationMessage('Please enter a building name');
+                    }
+                    return name;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const buildingName = result.value;
+                    console.log('Building Name:', buildingName);
+                    // Here you can send buildingName via AJAX to your PHP backend
+                }
+            });
+        });
+    });
+
 
 
             // Script for the time
@@ -263,7 +322,7 @@ document.querySelectorAll(".add-floor").forEach(button => {
 
 
 
-            document.querySelectorAll('.building-block').forEach(buildingBlock => {
+        document.querySelectorAll('.building-block').forEach(buildingBlock => {
     const floors = buildingBlock.querySelectorAll('.floor');
     const roomContainers = buildingBlock.querySelectorAll('.room-container');
 
@@ -288,6 +347,8 @@ document.querySelectorAll(".add-floor").forEach(button => {
         floors[0].classList.add('active');
     }
 });
+
+
 
         </script>
 

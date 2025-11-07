@@ -16,6 +16,8 @@ body{
 
     transition: left 0.3s ease;
 }
+
+
 .header-content {
     display: flex;
     align-items: center;   /* vertically center the logo and title */
@@ -52,6 +54,11 @@ body{
     padding: 15px 20px;
     font-size: 19px;
     text-decoration: none;  
+}
+.sidebar ul li a.active {
+  background-color: green;
+  color: white;
+  border-radius: 5px;
 }
 
 .sidebar ul li a:hover {

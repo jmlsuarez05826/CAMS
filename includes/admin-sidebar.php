@@ -20,9 +20,9 @@
             </div>
 
             <!-- Sidebar links -->
-            <ul>
+            <ul >
                 <li>
-                    <a href="../pages/admin-dash.php">
+                    <a href="../pages/admin-dash.php" >
                         <img src="../images/dashboard.webp" alt="Dashboard" class="sidebar-icon">
                         Dashboard
                     </a>
@@ -79,7 +79,7 @@
 
     </header>
     <script>
-        document.getElementById('logout-btn').addEventListener('click', function(e) {
+        document.getElementById('logout-btn').addEventListener('click', function (e) {
             e.preventDefault(); // prevent immediate navigation
             Swal.fire({
                 title: 'Are you sure?',
@@ -95,6 +95,16 @@
                 }
             });
         });
+
+        const links = document.querySelectorAll('.sidebar ul li a');
+
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                links.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+
     </script>
 
 </body>

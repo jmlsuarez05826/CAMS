@@ -1,4 +1,5 @@
 <?php
+
     require_once '../pages/camsdatabase.php';
     require_once '../pages/cams-sp.php';
     require_once '../includes/admin-sidebar.php';
@@ -27,6 +28,7 @@
 
     // Fetch users for table
     $users = $crud->getAllUsers();
+
     ?>
 
 <!DOCTYPE html>
@@ -39,7 +41,6 @@
     echo $pageTitle; ?></title>
 
     <!-- Link CSS for the header -->
-    <link rel="stylesheet" href="../assets/css/admin-sidebar.css">
     <link rel="stylesheet" href="../assets/css/user_accounts.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
