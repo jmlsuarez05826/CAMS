@@ -1,3 +1,9 @@
+<?php
+$currentPage = basename($_SERVER['PHP_SELF']);
+?>
+
+<html>
+
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
@@ -22,35 +28,40 @@
             <!-- Sidebar links -->
             <ul>
                 <li>
-                    <a href="../pages/admin-dash.php">
+                    <a href="../pages/admin-dash.php"
+                        class="<?= $currentPage === 'admin-dash.php' ? 'active' : '' ?>">
                         <img src="../images/dashboard.webp" alt="Dashboard" class="sidebar-icon">
                         Dashboard
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/class-management.php">
+                    <a href="../pages/class-management.php"
+                        class="<?= $currentPage === 'class-management.php' ? 'active' : '' ?>">
                         <img src="../images/presentation.webp" alt="Dashboard" class="sidebar-icon">
                         Manage Classrooms
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/room-req.php" style=" display: flex ; gap: 15px;">
+                    <a href="../pages/room-req.php" style=" display: flex ; gap: 15px;"
+                        class="<?= $currentPage === 'room-req.php' ? 'active' : '' ?>">
                         <i class="bi bi-card-checklist"></i>
                         Classroom Requests
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/equipment-req.php" style=" display: flex ; gap: 15px;">
+                    <a href="../pages/equipment-req.php" style=" display: flex ; gap: 15px;"
+                        class="<?= $currentPage === 'equipment-req.php' ? 'active' : '' ?>">
                         <i class="bi bi-easel2"></i>
                         Equipment Requests
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/equipment-management.php" style=" display: flex ; gap: 15px;">
+                    <a href="../pages/equipment-management.php" style=" display: flex ; gap: 15px;"
+                        class="<?= $currentPage === 'equipment-management.php' ? 'active' : '' ?>">
                         <i class="bi bi-gear-wide"></i>
                         Manage Equipments
                     </a>
@@ -58,8 +69,8 @@
 
                 <li>
 
-                    <a href="user_accounts.php" style=" display: flex ; gap: 15px;">
-
+                    <a href="user_accounts.php" style=" display: flex ; gap: 15px;"
+                        class="<?= $currentPage === 'user_accounts.php' ? 'active' : '' ?>">
                         <i class="bi bi-people-fill"></i>
                         User Accounts
                     </a>
@@ -95,8 +106,9 @@
                 }
             });
         });
-    </script>
 
+        document.getElementById()
+    </script>
 </body>
 
 </html>

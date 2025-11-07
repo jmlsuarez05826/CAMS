@@ -58,6 +58,10 @@ body{
      background-color: #8B1717;
     
 }
+.sidebar ul li a.active {
+    background-color: #8B1717;
+    color: #fff;
+}
 
 .sidebar-icon {
   width: 18px;      /* adjust size */

@@ -1,119 +1,101 @@
-body{
-height: 100vh;
-background: #D9D9D9;
-overflow-x: hidden;
+body {
+  height: 100vh;
+  background: #d9d9d9;
+  overflow-x: hidden;
 }
 .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: white; /* header background */
-    padding: 15px 30px;      /* spacing inside header */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* subtle shadow */
-    margin-left: 250px;
-     width: calc(100% - 250px) ;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white; /* header background */
+  padding: 15px 30px; /* spacing inside header */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* subtle shadow */
+  margin-left: 250px;
+  width: calc(100% - 250px);
 }
 .topbar h2 {
-    color: black;
-    font-size: 32px;
+  color: black;
+  font-size: 32px;
 }
 
 .topbar-right {
-    display: flex;
-    align-items: center;  /* vertically center search + button */
-    gap: 25px       /* space between search and button */
+  display: flex;
+  align-items: center; /* vertically center search + button */
+  gap: 25px; /* space between search and button */
 }
 
 /* Search container as a flex box */
 .search-container {
-    display: flex;              /* flex layout */
-    align-items: center;        /* vertical centering */
-    background-color: #D9D9D9;
-    border-radius: 25px;
-    gap: 10px;                  /* spacing between children */
-    width: 250px;               /* optional fixed width */
-    position: relative;
-    padding: 5px 18px 5px 10px;
+  display: flex; /* flex layout */
+  align-items: center; /* vertical centering */
+  background-color: #d9d9d9;
+  border-radius: 25px;
+  gap: 10px; /* spacing between children */
+  width: 250px; /* optional fixed width */
+  position: relative;
+  padding: 5px 18px 5px 10px;
 }
 
 /* Left search icon */
 .search-icon {
-    font-size: 16px;
-    color: #333;
+  font-size: 16px;
+  color: #333;
 }
 
 /* Input takes remaining space */
 .search-field {
-    border: none;
-    background: transparent;
-    outline: none;
-    flex: 1;                    /* fills available space */
-    font-size: 16px;
-    padding: 5px 0;             /* vertical padding */
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1; /* fills available space */
+  font-size: 16px;
+  padding: 5px 0; /* vertical padding */
 }
 
 /* Notification wrapper (icon + separator) */
 .notification-wrapper {
-    display: flex;
-    align-items: center;
-    border-left: 1px solid black; /* vertical separator */
-    padding-left: 10px;
-    padding-right: 15px;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid black; /* vertical separator */
+  padding-left: 10px;
+  padding-right: 15px;
 }
 
 /* Notification icon */
 .notification-icon {
-    font-size: 18px;
-    color: #333;
-    cursor: pointer;
-   
+  font-size: 18px;
+  color: #333;
+  cursor: pointer;
 }
 
-
- #time {
-    font-size: 20px;
-    font-weight: bold;
-    color:#8B1717;
-    gap: 25px; /* push it to the right */
-    padding-right: 50px; 
+#time {
+  font-size: 20px;
+  font-weight: bold;
+  color: #8b1717;
+  gap: 25px; /* push it to the right */
+  padding-right: 50px;
 }
-
 
 .building-title {
-    margin-left: 280px;
-    padding: 10px 20px;       /* adjust spacing from sides */
-    font-size: 24px;
-    font-weight: bold;
-    color: black;
-    background-color: #D9D9D9; /* matches the gray background */
-    
-}
-
-.floor-container {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    position: relative;
-    gap: 20px;                  /* space between floor blocks */
-    padding: 20px;
-    margin: 7px 0px 0px 270px;          /* space from building title and sides */
-    background-color: white;     /* white rectangular container */
-    border-radius: 10px;         /* rounded corners */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* subtle shadow */
+  margin-left: 280px;
+  padding: 10px 20px; /* adjust spacing from sides */
+  font-size: 24px;
+  font-weight: bold;
+  color: black;
+  background-color: #d9d9d9; /* matches the gray background */
 }
 
-.floor {
-    padding: 15px 25px;
-    font-weight: bold;
+.building-title .addBuilding-btn {
     cursor: pointer;
-}
-
-.add-floor {
     padding: 15px 25px;
     border: 2px dotted #333;  /* dotted border */
-    background-color: transparent;
+    background-color: white;
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
@@ -123,106 +105,175 @@ overflow-x: hidden;
     box-shadow: 0 4px #999;  
     transition: all 0.1s ease;
 }
-
-.add-floor:active {
+.addBuilding-btn:active {
     transform: translateY(4px); /* move down like being pressed */
     box-shadow: 0 2px #666;     /* shadow shrinks */
 }
+
+.floor-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 20px; /* space between floor blocks */
+  padding: 20px;
+  margin: 7px 0px 0px 270px; /* space from building title and sides */
+  background-color: white; /* white rectangular container */
+  border-radius: 10px 10px 0px 0px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* subtle shadow */
+}
+
+.floor {
+  padding: 15px 25px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.add-floor {
+  padding: 15px 25px;
+  border: 2px dotted #333; /* dotted border */
+  background-color: transparent;
+  font-weight: bold;
+  cursor: pointer;
+  color: #333;
+  margin-left: auto;
+  border-radius: 10px;
+
+  box-shadow: 0 4px #999;
+  transition: all 0.1s ease;
+}
+
+.add-floor:active {
+  transform: translateY(4px); /* move down like being pressed */
+  box-shadow: 0 2px #666; /* shadow shrinks */
+}
 .room-card.add-room-btn:active {
-    transform: translateY(4px); /* move down like being pressed */
-    box-shadow: 0 2px #666;     /* shadow shrinks */
+  transform: translateY(4px); /* move down like being pressed */
+  box-shadow: 0 2px #666; /* shadow shrinks */
 }
 
 .floor:hover {
-    color: #8B1717;
+  color: #8b1717;
 }
 
 .floor.active {
-    color: #8B1717;            /* text color */
-    font-weight: bold;
+  color: #8b1717; /* text color */
+  font-weight: bold;
 }
 
 .floor-indicator {
-    position: absolute;
-    bottom: 0;
-    height: 4px; /* thickness of the bar */
-    width: 0;    /* initial width, updated with JS */
-    background-color: #8B1717; /* color of active floor */
-    transition: all 0.3s ease;
+  position: absolute;
+  bottom: 0;
+  height: 4px; /* thickness of the bar */
+  width: 0; /* initial width, updated with JS */
+  background-color: #8b1717; /* color of active floor */
+  transition: all 0.3s ease;
 }
 
-.room-container {
-    display: flex;
-    gap: 15px;                  /* space between cards */
-    padding: 0px;
-    margin: 20px 0px 0px 270px; /* leave space for sidebar */
-}
 
 /* Common style for all room cards */
 .room-card {
-    background-color: white;
-    border-radius: 10px;
-    padding: 15px;
-    min-width: 120px;
-    text-align: center;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+  background-color: white;
+  border-radius: 10px;
+  padding: 15px;
+  min-width: 120px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .room-card hr {
-    width: 80%;
-    margin: 8px 0;
-    border: 0;
-    border-top: 1px solid #ccc;
+  width: 80%;
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px solid #ccc;
 }
 
 .room-label {
-    font-size: 12px;
-    color: #8B1717;
+  font-size: 12px;
+  color: #8b1717;
 }
 
 .room-number {
-    font-size: 20px;
-    margin-top: 5px;
-    color: #8B1717;
-    font-style: bold;
+  font-size: 20px;
+  margin-top: 5px;
+  color: #8b1717;
+  font-style: bold;
 }
 
 .room-status {
-    font-size: 12px;
-    color: green;  /* or red if occupied */
-    margin-top: 5px;
+  font-size: 12px;
+  color: green; /* or red if occupied */
+  margin-top: 5px;
 }
 
 /* Add Room card special styling */
 .room-card.add-room-btn {
-    border: 2px dotted #333;
-    color: #333;
-    background-color: transparent; /* optional, to match dotted style */
-}
-
-/* Add Room press effect */
-.room-card.add-room:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px #666;
+height: 70px;
+  border: 2px dotted #333;
+  color: #333;
+  background-color: transparent; 
 }
 
 /* Icon inside add room */
 .room-card.add-room i {
-    font-size: 24px;
-    margin-bottom: 8px;
+  font-size: 24px;
+  margin-bottom: 8px;
 }
 
 .building-title + .floor-container {
-    margin-top: 0px; /* reduce space for next building group */
+  margin-top: 0px; /* reduce space for next building group */
+}
+.room-container {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: left;  /* center rooms nicely */
+  align-items: center;
+  padding: 2em;
+  overflow: hidden;
+  margin: 0 0 2em 270px; /* leave space for sidebar */
+  border-radius: 0 0 10px 10px;
+
+  /* background */
+  background-image: url("../../images/bsu_front.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 300px; 
 }
 
 
 
+/* Optional soft overlay for better readability */
+.room-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.4) for dark */
+  z-index: 1;
+}
 
+/* Rooms should appear above the overlay */
+.room-card {
+  background-color: white;
+  border-radius: 10px;
+  min-width: 120px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 2;
+  padding: 1em;
+  margin: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.room-card:hover {
+  transform: scale(1.01);
+}
