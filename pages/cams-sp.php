@@ -54,6 +54,52 @@ class Crud
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['total'];
     }
+
+    public function getRoomsCount()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) as total FROM rooms");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
+    public function getBuildings()
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM buildings");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getFloors()
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM floors");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getRooms()
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM rooms");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    public function addRoom($floorID, $roomnumber)
+    {
+  
+            $stmt = $this->conn->prepare("CALL addRoom(?, ?)");
+            $stmt->execute([$floorID, $roomnumber]);
+            return true;
+    }
+
+    public function addFloor($buildingID, $floornumber)
+    {
+  
+            $stmt = $this->conn->prepare("CALL addFloor(?, ?)");
+            $stmt->execute([$buildingID, $floornumber]);
+            return true;
+    }
+    
 }
 
 

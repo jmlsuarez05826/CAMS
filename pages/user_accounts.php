@@ -196,9 +196,13 @@
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+<<<<<<< HEAD
+                                <button type="submit" name="add" class="btn btn-primary">Add</button>
+=======
                                 <button type="submit" name="add" class="btn btn-primary" id="addBtn"
                                     disabled>Add</button>
 
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
 
                             </div>
                         </form>
@@ -292,12 +296,19 @@
                 Swal.fire({
                     title: 'Verification Code',
                     html: `
+<<<<<<< HEAD
+           <input type="text" id="verificationCode" class="swal2-input" placeholder="Verification Code" style="margin-bottom:20px">
+            <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;"> 
+            <button id="resendBtn" class="swal2-styled" style="flex:1;">Resend</button> 
+            <button id="verifyBtn" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button> </div>
+=======
             <p id="showOtp" style="font-size:14px; color:#555;">OTP: ${otpValue}</p>
             <input type="text" id="verificationCode" class="swal2-input" placeholder="Enter 6-digit code" maxlength="6" style="margin-bottom:20px; text-align:center; letter-spacing:5px">
             <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;">
                 <button id="resendBtn" class="swal2-styled" style="flex:1;">Resend</button>
                 <button id="verifyBtn" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button>
             </div>
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
         `,
                     showCloseButton: true,
                     showConfirmButton: false,
@@ -339,6 +350,19 @@
 
                         // Verify OTP
                         popup.querySelector('#verifyBtn').addEventListener('click', () => {
+<<<<<<< HEAD
+                            const code = popup.querySelector('#verificationCode').value;
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: `You entered: ${code}`,
+                            }).then(() => {
+                                // Show the Bootstrap modal again
+                                const modal = new bootstrap.Modal(modalEl);
+                                modal.show();
+                            });
+=======
                             const code = inputField.value.trim();
                             if (code.length !== 6) {
                                 Swal.fire(" Invalid Code", "OTP must be 6 digits", "error");
@@ -367,6 +391,7 @@
                                         Swal.fire(" Incorrect Code", result.message, "error");
                                     }
                                 });
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
                         });
                     }
                 });
@@ -381,9 +406,16 @@
             });
         </script>
 
+<<<<<<< HEAD
+    </main>
+</body>
+
+
+=======
 
     </main>
 </body>
 
 
+>>>>>>> 82961e3fe934bb183f9623afbe80b97e65321a61
 </html>

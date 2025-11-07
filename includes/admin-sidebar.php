@@ -57,7 +57,9 @@
                 </li>
 
                 <li>
+
                     <a href="#" style=" display: flex ; gap: 15px;">
+
                         <i class="bi bi-people-fill"></i>
                         User Accounts
                     </a>
