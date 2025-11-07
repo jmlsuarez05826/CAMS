@@ -1,3 +1,19 @@
+<?php 
+require_once '../pages/camsdatabase.php';
+require_once '../pages/cams-sp.php';
+require_once '../includes/admin-sidebar.php';
+
+$crud = new Crud();
+
+$totalUsers = $crud->getUsersCount();
+$totalRooms = $crud->getRoomsCount();
+
+
+?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -36,9 +52,9 @@
     <div class="chart-row">
 
         <div class="chart-container">
-            <div class="chart-title">Total Room Requests</div>
+            <div class="chart-title">Total Users</div>
             <div class="chart-info">
-                <span class="chart-number">123</span>
+                <span class="chart-number"><?= $totalUsers ?></span>
                 <i class="bi bi-building chart-icon"></i>
             </div>
         </div>
@@ -46,7 +62,7 @@
         <div class="chart-container">
             <div class="chart-title">Total Rooms</div>
             <div class="chart-info">
-                <span class="chart-number">123</span>
+                <span class="chart-number"><?= $totalRooms ?></span>
                 <i class="bi bi-door-open chart-icon"></i>
             </div>
         </div>
@@ -60,7 +76,7 @@
         </div>
 
         <div class="chart-container">
-            <div class="chart-title">Total Accounts</div>
+            <div class="chart-title">Total Room Requests</div>
             <div class="chart-info">
                 <span class="chart-number">78</span>
                 <i class="bi bi-person-fill chart-icon"></i>
