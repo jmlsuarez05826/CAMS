@@ -35,7 +35,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'addFloor') {
 
 require_once '../includes/admin-sidebar.php';
 
-$buildings = $crud->getBuildings();
+$buildings = $crud->getBuildings(); 
 $floors = $crud->getFloors();
 $rooms = $crud->getRooms();
 

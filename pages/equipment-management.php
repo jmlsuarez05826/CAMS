@@ -1,3 +1,68 @@
+<?php
+    require_once '../pages/camsdatabase.php';
+    require_once '../pages/cams-sp.php';
+    
+
+    $crud = new Crud();
+
+    if(isset($_POST['action']) && $_POST['action'] === 'addEquipment') {
+        $equipmentname = $_POST['equipmentname'];
+        $quantity = $_POST['quantity'];
+
+        try {
+            if ($crud->addEquipment($equipmentname, $quantity)) {
+                echo "success";
+            }
+        } catch (PDOException $e) {
+            echo "error: " . $e->getMessage();
+        }
+        exit;
+    }
+
+    if(isset($_POST['action']) && $_POST['action'] === 'editEquipment') {
+        $equipmentID = $_POST['equipmentID'];
+        $equipmentname = $_POST['equipmentname'];
+        $quantity = $_POST['quantity'];
+    
+        try {
+            if ($crud->editEquipment($equipmentID, $equipmentname, $quantity)) {
+                echo "success";
+            }
+        } catch (PDOException $e) {
+            echo "error: " . $e->getMessage();
+        }
+        exit;
+    }
+    
+    if(isset($_POST['action']) && $_POST['action'] === 'deleteEquipment') {
+        $equipmentID = $_POST['equipmentID'];
+     
+
+        try {
+            if ($crud->deleteEquipment($equipmentID)) {
+                echo "success";
+            }
+        } catch (PDOException $e) {
+            echo "error: " . $e->getMessage();
+        }
+        exit;
+    }
+
+    require_once '../includes/admin-sidebar.php';
+    
+ 
+
+    
+    
+    $equipments = $crud->getEquipments();
+    ?>
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,10 +75,7 @@
     <link rel="stylesheet" href="../assets/css/room-req.css">
     <link rel="stylesheet" href="../assets/css/equipment-management.css">
 
-    <?php
-    require_once '../includes/admin-sidebar.php';
-    ?>
-
+   
 </head>
 
 <body>
@@ -46,44 +108,30 @@
                 <tr>
                     <th>Equipment Name</th>
                     <th>Quantity</th>
-                    <th>In Use</th>
-                    <th class="dropdown-header">
-                        Status
-                        <span class="dropdown-icon">▼</span>
-                        <ul class="dropdown-menu">
-                            <li onclick="filterStatus('Available')">Available</li>
-                            <li onclick="filterStatus('Unavailable')">Unavailable</li>
-                            <li onclick="filterStatus('Under Maintenance')">Under Maintenance</li>
-                        </ul>
-                    </th>
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>HDMI</td>
-                    <td>10</td>
-                    <td>3</td>
-                    <td>Available</td>
-                    <td>
-                        <button class="badge bg-edit">Edit</button>
-                        <button class="badge bg-delete">Delete</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Viewboard</td>
-                    <td>12</td>
-                    <td>5</td>
-                    <td>Under Maintenance</td>
-                    <td>
-                        <button class="badge bg-edit">Edit</button>
-                        <button class="badge bg-delete">Delete</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
 
+
+            <tbody>
+    <?php foreach ($equipments as $equipment): ?>
+        <tr>
+            <td><?= htmlspecialchars($equipment['EquipmentName']) ?></td>
+            <td><?= htmlspecialchars($equipment['Quantity']) ?></td>
+
+
+            <td>
+    <button class="badge bg-edit edit-equipment-btn"
+        data-id="<?= $equipment['EquipmentID'] ?>"
+        data-name="<?= htmlspecialchars($equipment['EquipmentName']) ?>"
+        data-qty="<?= $equipment['Quantity'] ?>">
+        Edit
+    </button>
+    <button class="badge bg-delete">Delete</button>
+</td>
+        </tr>
+    <?php endforeach; ?>
+</tbody>
 
 
 
@@ -104,31 +152,17 @@
         updateTime();
 
 
-        const dropdownHeader = document.querySelector('.dropdown-header');
-
-        dropdownHeader.addEventListener('click', () => {
-            dropdownHeader.classList.toggle('active');
-        });
-
-        // Optional: function to filter or set status
-        function filterStatus(status) {
-            const rows = document.querySelectorAll('.requests-table tbody tr');
-            rows.forEach(row => {
-                row.cells[3].textContent = status; // update the 4th column (Status)
-            });
-            dropdownHeader.classList.remove('active');
-        }
 
         //Script for the add equipment modal
         document.getElementById('addEquipmentBtn').addEventListener('click', function() {
             Swal.fire({
                 title: 'Add New Equipment',
-                html: `<input type="text" id="equipmentName" class="swal2-input" placeholder="Equipment Name">
+                html: `<input type="text" id="equipmentname" class="swal2-input" placeholder="Equipment Name">
              <input type="number" id="equipmentQty" class="swal2-input" placeholder="Quantity">`,
                 confirmButtonText: 'Add',
                 focusConfirm: false,
                 preConfirm: () => {
-                    const name = Swal.getPopup().querySelector('#equipmentName').value;
+                    const name = Swal.getPopup().querySelector('#equipmentname').value;
                     const qty = Swal.getPopup().querySelector('#equipmentQty').value;
                     if (!name || !qty) {
                         Swal.showValidationMessage(`Please enter both fields`);
@@ -139,27 +173,122 @@
                     }
                 }
             }).then((result) => {
-                if (result.isConfirmed) {
-                    console.log('Equipment Name:', result.value.name);
-                    console.log('Quantity:', result.value.qty);
+    if (result.isConfirmed) {
+        const name = result.value.name;
+        const qty = result.value.qty;
 
-                    // Here you can add the logic to actually insert it into the table
-                    const table = document.querySelector('.requests-table tbody');
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                <td>${result.value.name}</td>
-                <td>${result.value.qty}</td>
-                <td>0</td>
-                <td>Available</td>
-                <td>
-                    <button class="badge bg-edit">Edit</button>
-                    <button class="badge bg-delete">Delete</button>
-                </td>
-            `;
-                    table.appendChild(row);
-                }
-            });
+        fetch('', { // sends data to same PHP file
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                action: 'addEquipment',
+                equipmentname: name,
+                quantity: qty
+            })
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data.trim() === 'success') {
+                Swal.fire('Added!', 'Equipment successfully added.', 'success')
+                .then(() => location.reload()); // refresh table
+            } else {
+                Swal.fire('Error', data, 'error');
+            }
+        })
+        .catch(err => Swal.fire('Error', err.message, 'error'));
+    }
+});
         });
+
+
+        document.querySelectorAll('.edit-equipment-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        const id = button.getAttribute('data-id');
+        const name = button.getAttribute('data-name');
+        const qty = button.getAttribute('data-qty');
+
+        Swal.fire({
+            title: 'Edit Equipment',
+            html: `
+                <input type="text" id="equipmentname" class="swal2-input" placeholder="Equipment Name" value="${name}">
+                <input type="number" id="equipmentQty" class="swal2-input" placeholder="Quantity" value="${qty}">
+            `,
+            confirmButtonText: 'Save',
+            focusConfirm: false,
+            preConfirm: () => {
+                const newName = Swal.getPopup().querySelector('#equipmentname').value.trim();
+                const newQty = Swal.getPopup().querySelector('#equipmentQty').value.trim();
+                if (!newName || !newQty) {
+                    Swal.showValidationMessage('Please enter both fields');
+                    return false;
+                }
+                return { id, newName, newQty };
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                const data = result.value;
+
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'editEquipment',
+                        equipmentID: data.id,
+                        equipmentname: data.newName,
+                        quantity: data.newQty
+                    })
+                })
+                .then(res => res.text())
+                .then(response => {
+                    if (response.trim() === 'success') {
+                        Swal.fire('Updated!', 'Equipment successfully updated.', 'success')
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', response, 'error');
+                    }
+                })
+                .catch(err => Swal.fire('Error', err.message, 'error'));
+            }
+        });
+    });
+});
+
+document.querySelectorAll('.bg-delete').forEach(button => {
+    button.addEventListener('click', () => {
+        const row = button.closest('tr');
+        const equipmentID = row.querySelector('.edit-equipment-btn').dataset.id;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'deleteEquipment',
+                        equipmentID: equipmentID
+                    })
+                })
+                .then(res => res.text())
+                .then(data => {
+                    if (data.trim() === 'success') {
+                        Swal.fire('Deleted!', 'Equipment has been deleted.', 'success')
+                            .then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data, 'error');
+                    }
+                })
+                .catch(err => Swal.fire('Error', err.message, 'error'));
+            }
+        });
+    });
+});
+
     </script>
 
 </body>

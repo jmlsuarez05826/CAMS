@@ -64,7 +64,7 @@ class Crud
 
     public function getBuildings()
     {
-        $stmt = $this->conn->prepare("SELECT * FROM buildings");
+        $stmt = $this->conn->prepare("SELECT * from buildings");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -82,7 +82,7 @@ class Crud
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+    
 
     public function addRoom($floorID, $roomnumber)
     {
@@ -99,7 +99,57 @@ class Crud
             $stmt->execute([$buildingID, $floornumber]);
             return true;
     }
-    
+    public function addEquipment($equipmentname, $quantity)
+    {
+  
+            $stmt = $this->conn->prepare("CALL addEquipment(?, ?)");
+            $stmt->execute([$equipmentname, $quantity]);
+            return true;
+    }
+
+    public function getEquipments()
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM equipments");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function editEquipment($equipmentID, $equipmentname, $quantity)
+    {
+  
+            $stmt = $this->conn->prepare("CALL editEquipment(?, ?, ?)");
+            $stmt->execute([$equipmentID, $equipmentname, $quantity]);
+            return true;
+    }
+
+    public function deleteEquipment($equipmentID)
+    {
+  
+            $stmt = $this->conn->prepare("CALL deleteEquipment(?)");
+            $stmt->execute([$equipmentID]);
+            return true;
+    }
+
+    public function addAdmin($firstname, $lastname, $phonenumber, $email, $password, $admintype)
+    {
+        try {
+
+            $stmt = $this->conn->prepare("CALL addAdmin(?, ?, ?, ?, ?, ?)");
+
+            $stmt->execute([
+                $firstname,
+                $lastname,
+                $phonenumber,
+                $email,
+                $password,
+                $admintype
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            echo "Database Error: " . $e->getMessage();
+
+        }
+    }
 }
 
 
