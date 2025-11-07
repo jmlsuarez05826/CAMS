@@ -24,7 +24,24 @@
         }
     }
 
+// Handle form submission first
+if (isset($_POST["addAdmin"])) {
+    $firstname = $_POST["fname"];
+    $lastname = $_POST["lname"];
+    $phonenumber = $_POST["phone"];
+    $email = $_POST["email"];
+    $password = $_POST["password"];
+    $admintype = $_POST["admintype"];
 
+    try {
+        if ($crud->addAdmin($firstname, $lastname, $phonenumber, $email, $password, $admintype)) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?added=1");
+            exit();
+        }
+    } catch (PDOException $e) {
+        $errorMessage = $e->getMessage();
+    }
+}
     // Fetch users for table
     $users = $crud->getAllUsers();
     ?>
@@ -65,11 +82,15 @@
 <body>
     <main>
 
-        <div class="d-flex justify-content-end mb-3 add-user-btn">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                Add User
-            </button>
-        </div>
+    <div class="d-flex justify-content-end mb-3 add-user-btn">
+    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        Add User
+    </button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+        Add Admin
+    </button>
+</div>
+
 
         <?php
         $rowsPerPage = 10; // number of users per page
@@ -209,6 +230,76 @@
                 </div>
             </div>
         </div>
+
+        <!-- Add Admin Modal -->
+<div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Admin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form method="post" id="addAdminForm">
+                    <div class="mb-3">
+                        <label>First Name</label>
+                        <input type="text" name="fname" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Last Name</label>
+                        <input type="text" name="lname" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phoneAdmin" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <input type="text" id="phoneAdmin" name="phone" class="form-control"
+                                   placeholder="09xxxxxxxxx or 639xxxxxxxxx" pattern="^(09\d{9}|639\d{9})$" required>
+                            <button class="btn btn-outline-secondary" type="button" id="getCodeBtnAdmin" disabled>
+                                Get Code
+                            </button>
+                        </div>
+                        <small id="phoneErrorAdmin" class="text-danger d-none">
+                            Phone must start with 09 (11 digits) or 639 (12 digits).
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Password</label>
+                        <input type="text" name="password" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Confirm Password</label>
+                        <input type="text" name="cpassword" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Admin Type</label>
+                        <select name="admintype" class="form-select" required>
+                            <option value="" selected disabled>Select Type</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Superadmin">Superadmin</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" name="addAdmin" class="btn btn-success" id="addAdminBtn" disabled>Add Admin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
         <?php if (!empty($errorMessage) || (isset($_GET['added']) && $_GET['added'] == 1)): ?>
             <script>
@@ -380,6 +471,139 @@
                     Swal.fire(" Verification Required", "Please verify your phone number first.", "warning");
                 }
             });
+
+            const phoneInputAdmin = document.getElementById('phoneAdmin');
+const getCodeBtnAdmin = document.getElementById('getCodeBtnAdmin');
+const phoneErrorAdmin = document.getElementById('phoneErrorAdmin');
+const addAdminForm = document.getElementById('addAdminForm');
+const addAdminModalEl = document.getElementById('addAdminModal');
+const addAdminModal = new bootstrap.Modal(addAdminModalEl);
+
+let pendingAdminData = { verified: false };
+
+// Enable/disable Get Code button
+phoneInputAdmin.addEventListener('input', () => {
+    const phoneVal = phoneInputAdmin.value.trim();
+    const regex = /^(09\d{9}|639\d{9})$/;
+    if (regex.test(phoneVal)) {
+        getCodeBtnAdmin.disabled = false;
+        phoneErrorAdmin.classList.add('d-none');
+    } else {
+        getCodeBtnAdmin.disabled = true;
+        phoneErrorAdmin.classList.remove('d-none');
+    }
+});
+
+// Send OTP
+getCodeBtnAdmin.addEventListener('click', () => {
+    pendingAdminData = {
+        fname: document.querySelector('#addAdminForm input[name="fname"]').value.trim(),
+        lname: document.querySelector('#addAdminForm input[name="lname"]').value.trim(),
+        phone: phoneInputAdmin.value.trim(),
+        email: document.querySelector('#addAdminForm input[name="email"]').value.trim(),
+        password: document.querySelector('#addAdminForm input[name="password"]').value.trim(),
+        verified: false
+    };
+
+    addAdminModal.hide();
+
+    fetch('../pages/sms-otp.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=send&phone=${pendingAdminData.phone}&fname=${pendingAdminData.fname}&lname=${pendingAdminData.lname}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showAdminVerificationModal(pendingAdminData.phone, data.otp);
+        } else {
+            Swal.fire("Error", data.message, "error");
+            addAdminModal.show();
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        addAdminModal.show();
+    });
+});
+
+// OTP verification function (similar to Add User)
+function showAdminVerificationModal(phone, otpValue) {
+    Swal.fire({
+        title: 'Verification Code',
+        html: `
+            <p id="showOtp" style="font-size:14px; color:#555;">OTP: ${otpValue}</p>
+            <input type="text" id="verificationCodeAdmin" class="swal2-input" placeholder="Enter 6-digit code" maxlength="6" style="margin-bottom:20px; text-align:center; letter-spacing:5px">
+            <div style="display:flex; gap:5px; justify-content:flex-end; margin-top:5px;">
+                <button id="resendBtnAdmin" class="swal2-styled" style="flex:1;">Resend</button>
+                <button id="verifyBtnAdmin" class="swal2-confirm swal2-styled" style="flex:1;">Verify</button>
+            </div>
+        `,
+        showCloseButton: true,
+        showConfirmButton: false,
+        didOpen: () => {
+            const popup = Swal.getPopup();
+            const inputField = popup.querySelector('#verificationCodeAdmin');
+            inputField.focus();
+            inputField.addEventListener('input', () => {
+                inputField.value = inputField.value.replace(/\D/g, '').slice(0, 6);
+            });
+
+            // Resend OTP
+            popup.querySelector('#resendBtnAdmin').addEventListener('click', () => {
+                fetch('../pages/sms-otp.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=send&phone=${phone}&fname=${pendingAdminData.fname}&lname=${pendingAdminData.lname}`
+                })
+                .then(res => res.json())
+                .then(resp => {
+                    if (resp.status === "success") {
+                        otpValue = resp.otp || '';
+                        popup.querySelector('#showOtp').textContent = `OTP: ${otpValue}`;
+                    } else Swal.fire('Error resending OTP', '', 'error');
+                });
+            });
+
+            // Verify OTP
+            popup.querySelector('#verifyBtnAdmin').addEventListener('click', () => {
+                const code = inputField.value.trim();
+                if (code.length !== 6) {
+                    Swal.fire("Invalid Code", "OTP must be 6 digits", "error");
+                    return;
+                }
+                fetch('../pages/sms-otp.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=verify&phone=${phone}&otp=${code}`
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.status === "verified") {
+                        Swal.fire("Verified!", "Phone number confirmed!", "success");
+                        pendingAdminData.verified = true;
+
+                        const addBtn = document.getElementById("addAdminBtn");
+                        addBtn.disabled = false;
+                        addBtn.style.backgroundColor = "#198754";
+                        addBtn.style.cursor = "pointer";
+
+                        addAdminModal.show();
+                    } else Swal.fire("Incorrect Code", result.message, "error");
+                });
+            });
+        }
+    });
+}
+
+// Prevent submission if phone not verified
+addAdminForm.addEventListener('submit', (e) => {
+    if (!pendingAdminData.verified) {
+        e.preventDefault();
+        Swal.fire("Verification Required", "Please verify your phone number first.", "warning");
+    }
+});
+
         </script>
 
 
