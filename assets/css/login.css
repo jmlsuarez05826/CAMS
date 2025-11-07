@@ -17,6 +17,19 @@ body::before {
     background-size: cover;
     filter: blur(5px); 
     z-index: -1; 
+    overflow: hidden;
+}
+
+header {
+
+    background-color:#D0112B; 
+    padding: 15px 20px;
+}
+
+.navbar{
+    color: black; 
+    font-size: 10px;
+
 }
 
 

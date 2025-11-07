@@ -1,0 +1,83 @@
+/* Top 4 containers */
+.chart-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-left: 300px;
+    margin-top: 20px;
+    margin-right: 20px;
+    width: calc(100% - 300px - 20px); /* full width minus sidebar and gap */
+}
+
+.chart-container {
+    flex: 1;
+    min-width: 200px;
+    height: 100px; /* adjust height of top containers */
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.chart-title { font-size: 25px; font-weight: 600; margin-bottom: 10px; color: #444; } 
+.chart-info { display: flex; justify-content: space-between; align-items: center; } 
+.chart-number { font-size: 32px; font-weight: bold; } 
+.chart-icon { font-size: 28px; margin-right: 20px; }
+
+/* Bar row (2 containers) */
+.bar-row {
+    display: flex;
+    gap: 20px;
+    margin-left: 300px;  /* align with sidebar */
+    margin-right: 20px;
+    margin-top: 20px;
+}
+
+.bar-container {
+    flex: 0 0 45%;       /* each container takes 45% of row */
+    min-width: 300px;
+    height: 250px;       /* increase height */
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.bar-container canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Single row (1 container) */
+.single-row {
+    display: flex;
+    justify-content: flex-start;   /* align left with bar-row */
+    margin: 20px 0;
+    margin-left: 300px;            /* same as bar-row */
+    margin-right: 20px;
+}
+
+.single-container {
+    width: calc(45% + 45% + 20px);  /* width of 2 bar containers + gap */
+    height: 155px;                  /* same as bar containers */
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.single-container canvas {
+    width: 100%;
+    height: 100%;
+}
