@@ -18,6 +18,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+
 </head>
 
 <body>
@@ -62,7 +65,7 @@
         window.location.href = 'user_accounts.php';
         });
     </script>";
-} else {
+        } else {
             // Wrong password
             echo "
             <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
@@ -77,8 +80,8 @@
             </script>
             ";
         }
-    } 
-?>
+    }
+    ?>
 
 
     <main class="login-page">
@@ -100,19 +103,31 @@
                     <div class="input-box">
                         <input type="password" class="form-control" id="password" name="password" placeholder="Password"
                             required>
+
                         <span class="input-group-text"><i class="bi bi-eye-slash" id="eyeIcon"></i></span>
+
+                    </div>
+                    <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
+
+                    <div class="g-recaptcha" data-sitekey="6LezbQUsAAAAAMbmcqBhWd1PKyAv2Bx0ZfcYLRKC"
+                        data-callback="enableLoginBtn" data-expired-callback="disableLoginBtn"
+                        style="display:flex; justify-content:center; align-items:center;">
                     </div>
 
 
-                    <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
 
-                    <button type="submit" name="login">LOGIN</button>
+
+
+
+                    <button type="submit" name="login" id="loginbtn" disabled="disabled" >LOGIN</button>
+
+
                 </form>
 
             </div>
 
         </div>
-        
+
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -127,10 +142,10 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const forgotLink = document.querySelector('.forgot-password');
 
-                forgotLink.addEventListener('click', function(event) {
+                forgotLink.addEventListener('click', function (event) {
                     event.preventDefault(); // prevent navigation
 
                     // Step 1: Confirmation
@@ -253,7 +268,27 @@
 
         }
 
+
     </script>
+
+<script>
+  function enableLoginBtn() {
+    const btn = document.getElementById("loginbtn");
+    btn.disabled = false;
+    btn.classList.remove("disabled");
+    btn.classList.add("enabled");
+  }
+
+  function disableLoginBtn() {
+    const btn = document.getElementById("loginbtn");
+    btn.disabled = true;
+    btn.classList.remove("enabled");
+    btn.classList.add("disabled");
+  }
+
+
+</script>
+
 
 </body>
 
