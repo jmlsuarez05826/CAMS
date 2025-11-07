@@ -137,6 +137,9 @@ body {
   color: #333;
   margin-left: auto;
 
+  border-radius: 10px;
+
+
   box-shadow: 0 4px #999;
   transition: all 0.1s ease;
 }
