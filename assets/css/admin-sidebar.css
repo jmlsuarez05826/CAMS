@@ -16,8 +16,6 @@ body{
 
     transition: left 0.3s ease;
 }
-
-
 .header-content {
     display: flex;
     align-items: center;   /* vertically center the logo and title */
@@ -55,15 +53,14 @@ body{
     font-size: 19px;
     text-decoration: none;  
 }
-.sidebar ul li a.active {
-  background-color: green;
-  color: white;
-  border-radius: 5px;
-}
 
 .sidebar ul li a:hover {
      background-color: #8B1717;
     
+}
+.sidebar ul li a.active {
+    background-color: #8B1717;
+    color: #fff;
 }
 
 .sidebar-icon {
