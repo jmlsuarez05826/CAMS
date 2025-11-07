@@ -58,7 +58,7 @@
 
                 <li>
 
-                    <a href="#" style=" display: flex ; gap: 15px;">
+                    <a href="user_accounts.php" style=" display: flex ; gap: 15px;">
 
                         <i class="bi bi-people-fill"></i>
                         User Accounts
