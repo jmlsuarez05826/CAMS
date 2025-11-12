@@ -243,7 +243,7 @@ height: 70px;
   border-radius: 0 0 10px 10px;
 
   /* background */
-  background-image: url("../../images/bsu_front.webp");
+  /* background-image: url("../../images/bsu_front.webp"); */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

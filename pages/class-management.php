@@ -33,6 +33,42 @@ if (isset($_POST['action']) && $_POST['action'] === 'addFloor') {
     exit;
 }
 
+if (isset($_POST['action']) && $_POST['action'] === 'addBuilding') {
+    $buildingName = $_POST['buildingName'];
+    $buildingImage = null;
+
+    if (isset($_FILES['buildingImage']) && $_FILES['buildingImage']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+        $fileName = uniqid() . '_' . basename($_FILES['buildingImage']['name']);
+        $targetPath = $uploadDir . $fileName;
+
+        if (move_uploaded_file($_FILES['buildingImage']['tmp_name'], $targetPath)) {
+            $buildingImage = $fileName;
+        }
+    }
+
+    try {
+        if ($crud->addBuilding($buildingName, $buildingImage)) {
+            // Return JSON instead of plain text
+            echo json_encode([
+                'status' => 'success',
+                'buildingName' => $buildingName,
+                'buildingIMG' => $buildingImage // filename only
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to add building']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+
+
+
 require_once '../includes/admin-sidebar.php';
 
 $buildings = $crud->getBuildings(); 
@@ -105,7 +141,11 @@ $rooms = $crud->getRooms();
             <?php foreach ($floors as $floor): ?>
                 <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
 
-                    <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none;">
+                    <?php 
+  $bgImage = !empty($building['BuildingIMG']) ? "../uploads/" . htmlspecialchars($building['BuildingIMG']) : "../../images/bsu_front.webp"; 
+?>
+<div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none; background-image: url('<?= $bgImage ?>');">
+
 
                         <!-- Add Room button -->
                         <div class="room-card add-room-btn" data-floor="<?= $floor['FloorID'] ?>">
@@ -229,34 +269,69 @@ $rooms = $crud->getRooms();
 
 
         //SWAL for the add building button
-        document.querySelectorAll('.addBuilding-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                Swal.fire({
-                    title: 'Add Building',
-                    html: `
+document.querySelectorAll('.addBuilding-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        Swal.fire({
+            title: 'Add Building',
+            html: `
                 <input type="text" id="buildingName" class="swal2-input" placeholder="Building Name">
                 <input type="file" id="buildingImage" class="swal2-input" accept="image/*" style="flex:1;">
-                `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Save',
-                    cancelButtonText: 'Close',
-                    focusConfirm: false,
-                    preConfirm: () => {
-                        const name = Swal.getPopup().querySelector('#buildingName').value;
-                        if (!name) {
-                            Swal.showValidationMessage('Please enter a building name');
-                        }
-                        return name;
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const buildingName = result.value;
-                        console.log('Building Name:', buildingName);
-                        // Here you can send buildingName via AJAX to your PHP backend
-                    }
-                });
-            });
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Save',
+            cancelButtonText: 'Close',
+            focusConfirm: false,
+            preConfirm: () => {
+                const name = Swal.getPopup().querySelector('#buildingName').value;
+                if (!name) {
+                    Swal.showValidationMessage('Please enter a building name');
+                }
+                return name;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const buildingName = result.value;
+                const fileInput = document.getElementById("buildingImage");
+                const file = fileInput.files[0];
+
+                const formData = new FormData();
+                formData.append("action", "addBuilding");
+                formData.append("buildingName", buildingName);
+                if (file) formData.append("buildingImage", file);
+
+                fetch("", {
+    method: "POST",
+    body: formData
+})
+.then(response => response.json()) // parse JSON
+.then(res => {
+    if (res.status === "success") {
+        Swal.fire({
+            icon: "success",
+            title: "Building added successfully!",
+            confirmButtonText: "OK"
+        }).then(() => window.location.reload());
+    } else {
+        Swal.fire({
+            icon: "error",
+            title: "Failed to add building",
+            text: res.message
         });
+    }
+})
+.catch(err => {
+    Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err
+    });
+});
+
+            }
+        });
+    });
+});
+
 
 
 

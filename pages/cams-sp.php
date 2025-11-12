@@ -150,6 +150,14 @@ class Crud
 
         }
     }
+
+    public function addBuilding($buildingName, $buildingImage)
+    {
+  
+            $stmt = $this->conn->prepare("CALL addBuilding(?, ?)");
+            $stmt->execute([$buildingName, $buildingImage]);
+            return true;
+    }
 }
 
 
