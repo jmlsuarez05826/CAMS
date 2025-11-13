@@ -347,11 +347,11 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-  margin-left: 280px;
-  padding: 10px 20px; /* adjust spacing from sides */
-  font-size: 24px;
-  font-weight: bold;
-  color: black;
+    margin-left: 0px;
+    padding: 10px 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: black;
    /* matches the gray background */
 }
 
@@ -363,7 +363,7 @@ header {
   position: relative;
   gap: 20px; /* space between floor blocks */
   padding: 20px;
-  margin: 7px 0px 0px 270px; /* space from building title and sides */
+  margin: 7px 0px 0px 0px; /* space from building title and sides */
   background-color: white; /* white rectangular container */
   border-radius: 10px 10px 0px 0px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* subtle shadow */
@@ -447,7 +447,7 @@ header {
   align-items: center;
   padding: 2em;
   overflow: hidden;
-  margin: 0 0 2em 270px; /* leave space for sidebar */
+  margin: 0 0 2em 0px; /* leave space for sidebar */
   border-radius: 0 0 10px 10px;
 
   /* background */
@@ -488,16 +488,16 @@ header {
 }
 
 .tab-scroll {
-    max-height: 500px;
-    display: inline-block;      /* shrink to fit content */
-    overflow-y: auto;
+    max-height: 500px;            /* limit visible height */
+    margin: 0 80px 50px 80px;
+    overflow-y: auto;             /* enable vertical scroll */
     overflow-x: hidden;
+    padding-right: 10px;          /* space for scrollbar */
     border: 1px solid #d9d9d9;
     border-radius: 10px;
     scrollbar-color: #8B1717 #d9d9d9;
-    scrollbar-width: thin;
+    scrollbar-width: thin;   
 }
-
 
 /* WebKit for Chrome, Edge, Safari */
 .tab-scroll::-webkit-scrollbar {
