@@ -33,6 +33,74 @@ if (isset($_POST['action']) && $_POST['action'] === 'addFloor') {
     exit;
 }
 
+if (isset($_POST['action']) && $_POST['action'] === 'addBuilding') {
+    $buildingName = $_POST['buildingName'];
+    $buildingImage = null;
+
+    if (isset($_FILES['buildingImage']) && $_FILES['buildingImage']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+        $fileName = uniqid() . '_' . basename($_FILES['buildingImage']['name']);
+        $targetPath = $uploadDir . $fileName;
+
+        if (move_uploaded_file($_FILES['buildingImage']['tmp_name'], $targetPath)) {
+            $buildingImage = $fileName;
+        }
+    }
+
+    try {
+        if ($crud->addBuilding($buildingName, $buildingImage)) {
+            // Return JSON instead of plain text
+            echo json_encode([
+                'status' => 'success',
+                'buildingName' => $buildingName,
+                'buildingIMG' => $buildingImage // filename only
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to add building']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'editBuilding') {
+    $buildingID = $_POST['buildingID'];
+    $buildingName = $_POST['buildingName'];
+    $buildingImage = null;
+
+    if (isset($_FILES['buildingImage']) && $_FILES['buildingImage']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+        $fileName = uniqid() . '_' . basename($_FILES['buildingImage']['name']);
+        $targetPath = $uploadDir . $fileName;
+
+        if (move_uploaded_file($_FILES['buildingImage']['tmp_name'], $targetPath)) {
+            $buildingImage = $fileName;
+        }
+    }
+
+    try {
+        if ($crud->editBuilding($buildingID, $buildingName, $buildingImage)) {
+            echo json_encode([
+                'status' => 'success',
+                'buildingName' => $buildingName,
+                'buildingIMG' => $buildingImage
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to update building']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+
+
 require_once '../includes/admin-sidebar.php';
 
 $buildings = $crud->getBuildings();
@@ -51,6 +119,7 @@ $rooms = $crud->getRooms();
 
     <link rel="stylesheet" href="../assets/css/class-management.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
 </head>
 
@@ -76,8 +145,17 @@ $rooms = $crud->getRooms();
     <?php foreach ($buildings as $index => $building): ?>
         <div class="building-title">
             <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
+
+            <!-- Edit button for every building -->
+            <button class="editBuilding-btn"
+                data-id="<?= $building['BuildingID'] ?>"
+                data-name="<?= htmlspecialchars($building['BuildingName']) ?>"
+                data-image="<?= htmlspecialchars($building['BuildingIMG']) ?>">
+                <i class="bi bi-pencil"></i> <!-- Edit Icon -->
+            </button>
+
+            <!-- Only show Add Building button on the first building -->
             <?php if ($index === 0): ?>
-                <!-- This button only appears on the first building because of the condition -->
                 <button class="addBuilding-btn">+ Add Building</button>
             <?php endif; ?>
         </div>
@@ -105,7 +183,11 @@ $rooms = $crud->getRooms();
             <?php foreach ($floors as $floor): ?>
                 <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
 
-                    <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none;">
+                    <?php
+                    $bgImage = !empty($building['BuildingIMG']) ? "../uploads/" . htmlspecialchars($building['BuildingIMG']) : "../../images/bsu_front.webp";
+                    ?>
+                    <div class="room-container clickable-room" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none; background-image: url('<?= $bgImage ?>');">
+
 
                         <!-- Add Room button -->
                         <div class="room-card add-room-btn" data-floor="<?= $floor['FloorID'] ?>">
@@ -131,6 +213,93 @@ $rooms = $crud->getRooms();
 
 
     <script>
+        //Script for the room container modal
+        document.addEventListener("DOMContentLoaded", () => {
+            // Attach click listener to all room containers
+            document.querySelectorAll(".clickable-room").forEach(container => {
+                container.addEventListener("click", () => {
+
+                    // Optional: fetch room info dynamically
+                    const floorId = container.getAttribute("data-floor");
+
+                    // SweetAlert modal
+                    Swal.fire({
+                        title: "Room Schedule",
+                        width: "800px",
+                        html: `
+                    <div style="text-align:left; font-size:14px;">
+                        <div style="font-size:18px; font-weight:bold; margin-bottom:5px;">
+                            Floor ID: ${floorId}
+                            <hr style="margin:0 0 5px 0;">
+                        </div>
+                        <br>
+                        <div style="max-height:250px; overflow-y:auto; border:1px solid #ccc; border-radius:5px; padding:5px;">
+                            <table id="scheduleTable" style="width:100%; border-collapse:collapse; font-size:16px;">
+                                <thead>
+                                    <tr style="background:#eee; font-weight:bold;">
+                                        <th>Subject</th>
+                                        <th>Instructor</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Section</th>
+                                        <th style="width:60px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td contenteditable="true">TI101</td>
+                                        <td contenteditable="true">Mr. A</td>
+                                        <td><input type="time" style="width:100%;"></td>
+                                        <td><input type="time" style="width:100%;"></td>
+                                        <td contenteditable="true">Sec1</td>
+                                        <td>
+                                            <button class="addRowBtn">+</button>
+                                            <button class="deleteRowBtn">X</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `,
+                        confirmButtonText: "Save",
+                        showCancelButton: true,
+                        cancelButtonText: "Cancel",
+
+                        didOpen: () => {
+                            const popup = Swal.getPopup();
+                            const table = popup.querySelector("#scheduleTable tbody");
+
+                            // Handle add/delete row buttons dynamically
+                            table.addEventListener("click", e => {
+                                const target = e.target;
+
+                                if (target.classList.contains("addRowBtn")) {
+                                    const newRow = document.createElement("tr");
+                                    newRow.innerHTML = `
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td><input type="time" style="width:100%;"></td>
+                                        <td><input type="time" style="width:100%;"></td>
+                                <td contenteditable="true"></td>
+                                <td>
+                                    <button class="addRowBtn">+</button>
+                                    <button class="deleteRowBtn">X</button>
+                                </td>
+                            `;
+                                    table.appendChild(newRow);
+                                }
+
+                                if (target.classList.contains("deleteRowBtn")) {
+                                    if (table.rows.length > 1) target.closest("tr").remove();
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        });
+
         //Script for the add room button
         document.querySelectorAll(".add-room-btn").forEach(button => {
             button.addEventListener("click", () => {
@@ -236,7 +405,7 @@ $rooms = $crud->getRooms();
                     html: `
                 <input type="text" id="buildingName" class="swal2-input" placeholder="Building Name">
                 <input type="file" id="buildingImage" class="swal2-input" accept="image/*" style="flex:1;">
-                `,
+            `,
                     showCancelButton: true,
                     confirmButtonText: 'Save',
                     cancelButtonText: 'Close',
@@ -251,12 +420,47 @@ $rooms = $crud->getRooms();
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const buildingName = result.value;
-                        console.log('Building Name:', buildingName);
-                        // Here you can send buildingName via AJAX to your PHP backend
+                        const fileInput = document.getElementById("buildingImage");
+                        const file = fileInput.files[0];
+
+                        const formData = new FormData();
+                        formData.append("action", "addBuilding");
+                        formData.append("buildingName", buildingName);
+                        if (file) formData.append("buildingImage", file);
+
+                        fetch("", {
+                                method: "POST",
+                                body: formData
+                            })
+                            .then(response => response.json()) // parse JSON
+                            .then(res => {
+                                if (res.status === "success") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Building added successfully!",
+                                        confirmButtonText: "OK"
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Failed to add building",
+                                        text: res.message
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: err
+                                });
+                            });
+
                     }
                 });
             });
         });
+
 
 
 
@@ -360,6 +564,73 @@ $rooms = $crud->getRooms();
                 if (firstContainer) firstContainer.style.display = 'flex';
                 floors[0].classList.add('active');
             }
+        });
+
+        document.querySelectorAll('.editBuilding-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const buildingID = button.getAttribute('data-id');
+                const buildingName = button.getAttribute('data-name');
+                const currentImage = button.getAttribute('data-image');
+
+                Swal.fire({
+                    title: 'Edit Building',
+                    html: `
+                <input type="text" id="buildingName" class="swal2-input" placeholder="Building Name" value="${buildingName}">
+                <input type="file" id="buildingImage" class="swal2-input" accept="image/*" style="flex:1;">
+            `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Close',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const name = Swal.getPopup().querySelector('#buildingName').value;
+                        if (!name) {
+                            Swal.showValidationMessage('Please enter a building name');
+                        }
+                        return name;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const name = result.value;
+                        const fileInput = document.getElementById("buildingImage");
+                        const file = fileInput.files[0];
+
+                        const formData = new FormData();
+                        formData.append("action", "editBuilding");
+                        formData.append("buildingID", buildingID);
+                        formData.append("buildingName", name);
+                        if (file) formData.append("buildingImage", file);
+
+                        fetch("", {
+                                method: "POST",
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(res => {
+                                if (res.status === "success") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Building updated successfully!",
+                                        confirmButtonText: "OK"
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Failed to update building",
+                                        text: res.message
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: err
+                                });
+                            });
+                    }
+                });
+            });
         });
     </script>
 
