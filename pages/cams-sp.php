@@ -158,6 +158,16 @@ class Crud
             $stmt->execute([$buildingName, $buildingImage]);
             return true;
     }
+
+
+public function editBuilding($buildingID, $buildingName, $buildingImage = null) 
+{
+    $stmt = $this->conn->prepare("CALL editBuilding(?, ?, ?)");
+    $stmt->execute([$buildingID, $buildingName, $buildingImage]); // use the parameter, don't assign
+    return true;
+}
+
+
 }
 
 

@@ -66,6 +66,38 @@ if (isset($_POST['action']) && $_POST['action'] === 'addBuilding') {
     exit;
 }
 
+if (isset($_POST['action']) && $_POST['action'] === 'editBuilding') {
+    $buildingID = $_POST['buildingID'];
+    $buildingName = $_POST['buildingName'];
+    $buildingImage = null;
+
+    if (isset($_FILES['buildingImage']) && $_FILES['buildingImage']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+        $fileName = uniqid() . '_' . basename($_FILES['buildingImage']['name']);
+        $targetPath = $uploadDir . $fileName;
+
+        if (move_uploaded_file($_FILES['buildingImage']['tmp_name'], $targetPath)) {
+            $buildingImage = $fileName;
+        }
+    }
+
+    try {
+        if ($crud->editBuilding($buildingID, $buildingName, $buildingImage)) {
+            echo json_encode([
+                'status' => 'success',
+                'buildingName' => $buildingName,
+                'buildingIMG' => $buildingImage
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to update building']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
 
 
 
@@ -110,13 +142,23 @@ $rooms = $crud->getRooms();
 
 
     <?php foreach ($buildings as $index => $building): ?>
-        <div class="building-title">
-            <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
-            <?php if ($index === 0): ?>
-                <!-- This button only appears on the first building because of the condition -->
-                <button class="addBuilding-btn">+ Add Building</button>
-            <?php endif; ?>
-        </div>
+       <div class="building-title">
+    <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
+
+    <!-- Edit button for every building -->
+    <button class="editBuilding-btn" 
+        data-id="<?= $building['BuildingID'] ?>" 
+        data-name="<?= htmlspecialchars($building['BuildingName']) ?>" 
+        data-image="<?= htmlspecialchars($building['BuildingIMG']) ?>">
+        Edit
+    </button>
+
+    <!-- Add Building button only for the first building -->
+    <?php if ($index === 0): ?>
+        <button class="addBuilding-btn">+ Add Building</button>
+    <?php endif; ?>
+</div>
+
 
         <div class="building-block">
 
@@ -436,6 +478,74 @@ document.querySelectorAll('.addBuilding-btn').forEach(button => {
                 floors[0].classList.add('active');
             }
         });
+
+        document.querySelectorAll('.editBuilding-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        const buildingID = button.getAttribute('data-id');
+        const buildingName = button.getAttribute('data-name');
+        const currentImage = button.getAttribute('data-image');
+
+        Swal.fire({
+            title: 'Edit Building',
+            html: `
+                <input type="text" id="buildingName" class="swal2-input" placeholder="Building Name" value="${buildingName}">
+                <input type="file" id="buildingImage" class="swal2-input" accept="image/*" style="flex:1;">
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Save',
+            cancelButtonText: 'Close',
+            focusConfirm: false,
+            preConfirm: () => {
+                const name = Swal.getPopup().querySelector('#buildingName').value;
+                if (!name) {
+                    Swal.showValidationMessage('Please enter a building name');
+                }
+                return name;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const name = result.value;
+                const fileInput = document.getElementById("buildingImage");
+                const file = fileInput.files[0];
+
+                const formData = new FormData();
+                formData.append("action", "editBuilding");
+                formData.append("buildingID", buildingID);
+                formData.append("buildingName", name);
+                if (file) formData.append("buildingImage", file);
+
+                fetch("", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.status === "success") {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Building updated successfully!",
+                            confirmButtonText: "OK"
+                        }).then(() => window.location.reload());
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Failed to update building",
+                            text: res.message
+                        });
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: err
+                    });
+                });
+            }
+        });
+    });
+});
+
     </script>
 
 </body>
