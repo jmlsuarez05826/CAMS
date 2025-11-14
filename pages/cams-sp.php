@@ -167,6 +167,18 @@ public function editBuilding($buildingID, $buildingName, $buildingImage = null)
     return true;
 }
 
+public function getSchedulesByRoom($roomID) {
+    $stmt = $this->conn->prepare("SELECT * FROM Schedules WHERE RoomID = ?");
+    $stmt->execute([$roomID]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)
+ {
+    $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section]);
+    return true;
+}
 
 }
 

@@ -99,11 +99,40 @@ if (isset($_POST['action']) && $_POST['action'] === 'editBuilding') {
     exit;
 }
 
+if (isset($_POST['action']) && $_POST['action'] === 'addSchedule') {
+    $roomID = $_POST['roomID'];
+    $subject = $_POST['subject'];
+    $instructor = $_POST['instructor'];
+    $timeFrom = $_POST['timeFrom'];
+    $timeTo = $_POST['timeTo'];
+    $section = $_POST['section'];
+
+    try {
+        if ($crud->addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)) {
+            echo "success";
+        }
+    } catch (PDOException $e) {
+        echo "error: " . $e->getMessage();
+    }
+    exit;
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
+    $roomID = $_POST['roomID'];
+    try {
+        $schedules = $crud->getSchedulesByRoom($roomID);
+        echo json_encode($schedules);
+    } catch (PDOException $e) {
+        echo json_encode(['error' => $e->getMessage()]);
+    }
+    exit;
+}
+
 
 
 require_once '../includes/admin-sidebar.php';
 
-$buildings = $crud->getBuildings(); 
+$buildings = $crud->getBuildings();
 $floors = $crud->getFloors();
 $rooms = $crud->getRooms();
 
@@ -119,6 +148,7 @@ $rooms = $crud->getRooms();
 
     <link rel="stylesheet" href="../assets/css/class-management.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
 </head>
 
@@ -142,23 +172,22 @@ $rooms = $crud->getRooms();
 
 
     <?php foreach ($buildings as $index => $building): ?>
-       <div class="building-title">
-    <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
+        <div class="building-title">
+            <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
 
-    <!-- Edit button for every building -->
-    <button class="editBuilding-btn" 
-        data-id="<?= $building['BuildingID'] ?>" 
-        data-name="<?= htmlspecialchars($building['BuildingName']) ?>" 
-        data-image="<?= htmlspecialchars($building['BuildingIMG']) ?>">
-        Edit
-    </button>
+            <!-- Edit button for every building -->
+            <button class="editBuilding-btn"
+                data-id="<?= $building['BuildingID'] ?>"
+                data-name="<?= htmlspecialchars($building['BuildingName']) ?>"
+                data-image="<?= htmlspecialchars($building['BuildingIMG']) ?>">
+                <i class="bi bi-pencil"></i> <!-- Edit Icon -->
+            </button>
 
-    <!-- Add Building button only for the first building -->
-    <?php if ($index === 0): ?>
-        <button class="addBuilding-btn">+ Add Building</button>
-    <?php endif; ?>
-</div>
-
+            <!-- Only show Add Building button on the first building -->
+            <?php if ($index === 0): ?>
+                <button class="addBuilding-btn">+ Add Building</button>
+            <?php endif; ?>
+        </div>
 
         <div class="building-block">
 
@@ -183,10 +212,14 @@ $rooms = $crud->getRooms();
             <?php foreach ($floors as $floor): ?>
                 <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
 
-                    <?php 
-  $bgImage = !empty($building['BuildingIMG']) ? "../uploads/" . htmlspecialchars($building['BuildingIMG']) : "../../images/bsu_front.webp"; 
-?>
-<div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none; background-image: url('<?= $bgImage ?>');">
+                    <?php
+                    $bgImage = !empty($building['BuildingIMG']) ? "../uploads/" . htmlspecialchars($building['BuildingIMG']) : "../../images/bsu_front.webp";
+                    ?>
+                    <div class="room-container" 
+     data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" 
+     style="display:none; background-image: url('<?= $bgImage ?>');">
+
+
 
 
                         <!-- Add Room button -->
@@ -196,15 +229,16 @@ $rooms = $crud->getRooms();
                         </div>
 
                         <?php foreach ($rooms as $room): ?>
-                            <?php if ($room['FloorID'] == $floor['FloorID']): ?>
-                                <div class="room-card">
-                                    <div class="room-label">Room no</div>
-                                    <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
-                                    <hr>
-                                    <div class="room-status">Available</div>
-                                </div>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+    <?php if ($room['FloorID'] == $floor['FloorID']): ?>
+        <div class="room-card clickable-room" data-room="<?= $room['RoomID'] ?>">
+            <div class="room-label">Room no</div>
+            <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
+            <hr>
+            <div class="room-status">Available</div>
+        </div>
+    <?php endif; ?>
+<?php endforeach; ?>
+
                     </div>
                 <?php endif; ?>
             <?php endforeach; ?>
@@ -213,6 +247,177 @@ $rooms = $crud->getRooms();
 
 
     <script>
+       document.querySelectorAll(".room-card.clickable-room").forEach(roomCard => {
+    roomCard.addEventListener("click", () => {
+        const roomID = roomCard.getAttribute("data-room");
+
+        Swal.fire({
+            title: "Room Schedule",
+            width: "800px",
+            html: `
+                <div style="text-align:left; font-size:14px;">
+                    <div style="font-size:18px; font-weight:bold; margin-bottom:5px;">
+                        Room ID: ${roomID}
+                        <hr style="margin:0 0 5px 0;">
+                    </div>
+                    <div style="max-height:250px; overflow-y:auto; border:1px solid #ccc; border-radius:5px; padding:5px;">
+                        <table id="scheduleTable" style="width:100%; border-collapse:collapse; font-size:16px;">
+                            <thead>
+                                <tr style="background:#eee; font-weight:bold;">
+                                    <th>Subject</th>
+                                    <th>Instructor</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Section</th>
+                                    <th style="width:60px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Save",
+            cancelButtonText: "Cancel",
+            didOpen: () => {
+    const table = Swal.getPopup().querySelector("#scheduleTable tbody");
+    table.innerHTML = ""; // Clear table
+
+    // Fetch schedules for this room
+    fetch("", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: `action=getSchedules&roomID=${roomID}`
+    })
+    .then(res => res.json())
+    .then(schedules => {
+        if (schedules.length === 0) {
+            // Add one empty row if no schedules exist
+            const emptyRow = document.createElement("tr");
+            emptyRow.innerHTML = `
+                <td contenteditable="true"></td>
+                <td contenteditable="true"></td>
+                <td><input type="time" style="width:100%;"></td>
+                <td><input type="time" style="width:100%;"></td>
+                <td contenteditable="true"></td>
+                <td>
+                    <button class="addRowBtn">+</button>
+                    <button class="deleteRowBtn">X</button>
+                </td>
+            `;
+            table.appendChild(emptyRow);
+        } else {
+            schedules.forEach(s => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td contenteditable="true">${s.Subject}</td>
+                    <td contenteditable="true">${s.Instructor}</td>
+                    <td><input type="time" value="${s.TimeFrom}" style="width:100%"></td>
+                    <td><input type="time" value="${s.TimeTo}" style="width:100%"></td>
+                    <td contenteditable="true">${s.Section}</td>
+                    <td>
+                        <button class="addRowBtn">+</button>
+                        <button class="deleteRowBtn">X</button>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        // Add/Delete row functionality
+        table.addEventListener("click", e => {
+            const target = e.target;
+
+            if (target.classList.contains("addRowBtn")) {
+                const newRow = document.createElement("tr");
+                newRow.innerHTML = `
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td><input type="time" style="width:100%;"></td>
+                    <td><input type="time" style="width:100%;"></td>
+                    <td contenteditable="true"></td>
+                    <td>
+                        <button class="addRowBtn">+</button>
+                        <button class="deleteRowBtn">X</button>
+                    </td>
+                `;
+                table.appendChild(newRow);
+            }
+
+            if (target.classList.contains("deleteRowBtn")) {
+                if (table.rows.length > 1) target.closest("tr").remove();
+            }
+        });
+    });
+},
+
+            preConfirm: () => {
+                const popup = Swal.getPopup();
+                const rows = popup.querySelectorAll("#scheduleTable tbody tr");
+                let hasError = false;
+                const schedules = [];
+
+                rows.forEach(row => {
+                    const subject = row.cells[0].innerText.trim();
+                    const instructor = row.cells[1].innerText.trim();
+                    const timeFrom = row.cells[2].querySelector("input").value;
+                    const timeTo = row.cells[3].querySelector("input").value;
+                    const section = row.cells[4].innerText.trim();
+
+                    if (!subject || !instructor || !timeFrom || !timeTo || !section) {
+                        hasError = true;
+                        return;
+                    }
+
+                    schedules.push({subject, instructor, timeFrom, timeTo, section});
+                });
+
+                if (hasError) {
+                    Swal.showValidationMessage("All fields must be filled out before saving!");
+                    return false;
+                }
+
+                return schedules;
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                const schedules = result.value;
+
+                schedules.forEach(s => {
+                    const formData = new URLSearchParams();
+                    formData.append("action", "addSchedule");
+                    formData.append("roomID", roomID);
+                    formData.append("subject", s.subject);
+                    formData.append("instructor", s.instructor);
+                    formData.append("timeFrom", s.timeFrom);
+                    formData.append("timeTo", s.timeTo);
+                    formData.append("section", s.section);
+
+                    fetch("", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: formData.toString()
+                    })
+                    .then(res => res.text())
+                    .then(res => {
+                        if (res.trim() !== "success") console.error("Failed to add schedule:", res);
+                    })
+                    .catch(err => console.error("Error:", err));
+                });
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Schedules saved successfully!",
+                    confirmButtonText: "OK"
+                }).then(() => window.location.reload());
+            }
+        });
+    });
+});
+
+
+
         //Script for the add room button
         document.querySelectorAll(".add-room-btn").forEach(button => {
             button.addEventListener("click", () => {
@@ -311,68 +516,68 @@ $rooms = $crud->getRooms();
 
 
         //SWAL for the add building button
-document.querySelectorAll('.addBuilding-btn').forEach(button => {
-    button.addEventListener('click', () => {
-        Swal.fire({
-            title: 'Add Building',
-            html: `
+        document.querySelectorAll('.addBuilding-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Add Building',
+                    html: `
                 <input type="text" id="buildingName" class="swal2-input" placeholder="Building Name">
                 <input type="file" id="buildingImage" class="swal2-input" accept="image/*" style="flex:1;">
             `,
-            showCancelButton: true,
-            confirmButtonText: 'Save',
-            cancelButtonText: 'Close',
-            focusConfirm: false,
-            preConfirm: () => {
-                const name = Swal.getPopup().querySelector('#buildingName').value;
-                if (!name) {
-                    Swal.showValidationMessage('Please enter a building name');
-                }
-                return name;
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const buildingName = result.value;
-                const fileInput = document.getElementById("buildingImage");
-                const file = fileInput.files[0];
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Close',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const name = Swal.getPopup().querySelector('#buildingName').value;
+                        if (!name) {
+                            Swal.showValidationMessage('Please enter a building name');
+                        }
+                        return name;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const buildingName = result.value;
+                        const fileInput = document.getElementById("buildingImage");
+                        const file = fileInput.files[0];
 
-                const formData = new FormData();
-                formData.append("action", "addBuilding");
-                formData.append("buildingName", buildingName);
-                if (file) formData.append("buildingImage", file);
+                        const formData = new FormData();
+                        formData.append("action", "addBuilding");
+                        formData.append("buildingName", buildingName);
+                        if (file) formData.append("buildingImage", file);
 
-                fetch("", {
-    method: "POST",
-    body: formData
-})
-.then(response => response.json()) // parse JSON
-.then(res => {
-    if (res.status === "success") {
-        Swal.fire({
-            icon: "success",
-            title: "Building added successfully!",
-            confirmButtonText: "OK"
-        }).then(() => window.location.reload());
-    } else {
-        Swal.fire({
-            icon: "error",
-            title: "Failed to add building",
-            text: res.message
+                        fetch("", {
+                                method: "POST",
+                                body: formData
+                            })
+                            .then(response => response.json()) // parse JSON
+                            .then(res => {
+                                if (res.status === "success") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Building added successfully!",
+                                        confirmButtonText: "OK"
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Failed to add building",
+                                        text: res.message
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: err
+                                });
+                            });
+
+                    }
+                });
+            });
         });
-    }
-})
-.catch(err => {
-    Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: err
-    });
-});
-
-            }
-        });
-    });
-});
 
 
 
@@ -480,72 +685,71 @@ document.querySelectorAll('.addBuilding-btn').forEach(button => {
         });
 
         document.querySelectorAll('.editBuilding-btn').forEach(button => {
-    button.addEventListener('click', () => {
-        const buildingID = button.getAttribute('data-id');
-        const buildingName = button.getAttribute('data-name');
-        const currentImage = button.getAttribute('data-image');
+            button.addEventListener('click', () => {
+                const buildingID = button.getAttribute('data-id');
+                const buildingName = button.getAttribute('data-name');
+                const currentImage = button.getAttribute('data-image');
 
-        Swal.fire({
-            title: 'Edit Building',
-            html: `
+                Swal.fire({
+                    title: 'Edit Building',
+                    html: `
                 <input type="text" id="buildingName" class="swal2-input" placeholder="Building Name" value="${buildingName}">
                 <input type="file" id="buildingImage" class="swal2-input" accept="image/*" style="flex:1;">
             `,
-            showCancelButton: true,
-            confirmButtonText: 'Save',
-            cancelButtonText: 'Close',
-            focusConfirm: false,
-            preConfirm: () => {
-                const name = Swal.getPopup().querySelector('#buildingName').value;
-                if (!name) {
-                    Swal.showValidationMessage('Please enter a building name');
-                }
-                return name;
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const name = result.value;
-                const fileInput = document.getElementById("buildingImage");
-                const file = fileInput.files[0];
-
-                const formData = new FormData();
-                formData.append("action", "editBuilding");
-                formData.append("buildingID", buildingID);
-                formData.append("buildingName", name);
-                if (file) formData.append("buildingImage", file);
-
-                fetch("", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(res => {
-                    if (res.status === "success") {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Building updated successfully!",
-                            confirmButtonText: "OK"
-                        }).then(() => window.location.reload());
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Failed to update building",
-                            text: res.message
-                        });
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    cancelButtonText: 'Close',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const name = Swal.getPopup().querySelector('#buildingName').value;
+                        if (!name) {
+                            Swal.showValidationMessage('Please enter a building name');
+                        }
+                        return name;
                     }
-                })
-                .catch(err => {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: err
-                    });
-                });
-            }
-        });
-    });
-});
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const name = result.value;
+                        const fileInput = document.getElementById("buildingImage");
+                        const file = fileInput.files[0];
 
+                        const formData = new FormData();
+                        formData.append("action", "editBuilding");
+                        formData.append("buildingID", buildingID);
+                        formData.append("buildingName", name);
+                        if (file) formData.append("buildingImage", file);
+
+                        fetch("", {
+                                method: "POST",
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(res => {
+                                if (res.status === "success") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Building updated successfully!",
+                                        confirmButtonText: "OK"
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Failed to update building",
+                                        text: res.message
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: err
+                                });
+                            });
+                    }
+                });
+            });
+        });
     </script>
 
 </body>

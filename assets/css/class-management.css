@@ -81,7 +81,7 @@ body {
 
 .building-title {
     display: flex;
-    justify-content: space-between;
+    
     align-items: center;
   margin-left: 280px;
   padding: 10px 20px; /* adjust spacing from sides */
@@ -101,6 +101,7 @@ body {
     cursor: pointer;
     color: #333;
     margin-left: auto;
+    
 
     box-shadow: 0 4px #999;  
     transition: all 0.1s ease;
@@ -136,9 +137,7 @@ body {
   cursor: pointer;
   color: #333;
   margin-left: auto;
-
   border-radius: 10px;
-
 
   box-shadow: 0 4px #999;
   transition: all 0.1s ease;
@@ -243,7 +242,7 @@ height: 70px;
   border-radius: 0 0 10px 10px;
 
   /* background */
-  /* background-image: url("../../images/bsu_front.webp"); */
+  background-image: url("../../images/bsu_front.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -278,4 +277,24 @@ height: 70px;
 
 .room-card:hover {
   transform: scale(1.01);
+}
+
+
+.editBuilding-btn,
+.addBuilding-btn {
+    margin-left: 10px;
+    padding: 5px;
+    border: 1px solid #8B1717;
+    background-color: white;
+    color: #8B1717;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.editBuilding-btn:hover{
+    background-color: #8B1717;
+    color: white;
+}
+
+.addBuilding-btn {
+    font-weight: bold;
 }

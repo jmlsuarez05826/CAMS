@@ -1,16 +1,19 @@
 <?php
-class Database {
+class Database
+{
     private $host = 'localhost';
     private $db_name = 'cams';
     private $username = 'root';
     private $password = '12345';
     private $conn;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->connect();
     }
 
-    private function connect() {
+    private function connect()
+    {
         try {
             $this->conn = new PDO(
                 "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4",
@@ -24,9 +27,8 @@ class Database {
     }
 
 
-    public function getConnection() {
+    public function getConnection()
+    {
         return $this->conn;
     }
 }
-
-?>
