@@ -22,6 +22,7 @@ $rooms = $crud->getRooms();
 
     <!-- Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <link rel="stylesheet" href="../assets/css/faculty-reservation.css">
 
@@ -140,72 +141,74 @@ $rooms = $crud->getRooms();
                                         <th>Equipment Name</th>
                                         <th>Quantity</th>
                                         <th>Status</th>
-                                        <th></th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    <tr class="equipment-row"
+                                        data-room="Projector"
+                                        data-capacity="5"
+                                        data-status="Available">
                                         <td>1</td>
                                         <td>Projector</td>
-                                        <td>5</td>
+                                        <td>10</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
                                     </tr>
-                                    <tr>
+
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
+
                                     </tr>
-                                    <tr>
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
+
                                     </tr>
-                                    <tr>
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
+
                                     </tr>
-                                    <tr>
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
                                     </tr>
-                                    <tr>
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
+
                                     </tr>
-                                    <tr>
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
+
                                     </tr>
-                                    <tr>
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
+
                                     </tr>
-                                    <tr>
+                                    <tr class="equipment-row">
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-                                        <td>Reserve</td>
+
                                     </tr>
                                 </tbody>
                             </table>
@@ -305,6 +308,212 @@ $rooms = $crud->getRooms();
     </main>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const rows = document.querySelectorAll('.equipment-row');
+
+            rows.forEach(row => {
+                row.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') return;
+
+                    const cells = row.querySelectorAll('td');
+                    const item = cells[1].innerText;
+                    const quantity = parseInt(cells[2].innerText);
+                    const status = cells[3].innerText;
+
+
+                    //Apply backend logic here
+                    let unitListHTML = '';
+                    for (let i = 0; i < quantity; i++) {
+                        const num = i + 1;
+                        const isReserved = num <= 4; // placeholder logic
+                        unitListHTML += `
+                    <div class="unit-card ${isReserved ? 'reserved' : 'available'}" data-unit="${num}">
+                        <span class="dot"></span>
+                        <span class="unit-label">${item} #${num}</span>
+                        <span class="unit-status">
+                            ${isReserved ? 'Reserved until 3PM' : 'Available'}
+                        </span>
+                    </div>
+                `;
+                    }
+
+                    Swal.fire({
+                        width: "650px",
+                        heightAuto: false,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        closeButtonHtml: '&times;',
+                        customClass: {
+                            popup: "equip-modal"
+                        },
+                        html: `
+                    <div class="equip-header">
+                        <h2 class="equip-title">Equipment Information</h2>
+                        <hr class="equip-divider">
+                    </div>
+
+                    <div class="equip-container">
+
+                        <div class="equip-image-box">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png" class="equip-image">
+                        </div>
+
+                        <div class="equip-info">
+
+                            <h2 class="equip-name">${item}</h2>
+                            <div class="equip-summary">
+                                <p><strong>Total Units:</strong> ${quantity}</p>
+                                <p><strong>Available:</strong> 3</p>
+                                <p><strong>Reserved:</strong> 4</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <hr class="equip-divider">
+                    <h3 class="unit-status-title">Unit Status</h3>
+                    <div class="unit-list">
+                        ${unitListHTML}
+                    </div>
+                `,
+                        focusConfirm: false,
+                        preConfirm: () => ({
+                            name: document.getElementById("edit-name")?.value ?? "",
+                            qty: document.getElementById("edit-qty")?.value ?? "",
+                            status: document.getElementById("edit-status")?.value ?? ""
+                        }),
+
+                        didOpen: () => {
+                            // Select all available units and add click listeners
+                            const availableUnits = Swal.getHtmlContainer().querySelectorAll('.unit-card.available');
+
+                            availableUnits.forEach(unit => {
+                                unit.addEventListener('click', () => {
+                                    const unitNumber = unit.getAttribute('data-unit');
+                                    const equipmentName = `${item} #${unitNumber}`;
+
+                                    Swal.fire({
+                                        title: `Reserve ${equipmentName}`,
+                                        html: `
+<div class="reserve-modal">
+    <div class="section-title">Class Information</div>
+    <hr class="equip-divider">
+
+    <div class="row">
+        <label>Class Code</label>
+        <input id="reserve-class" class="swal2-input" placeholder="IT202">
+    </div>
+
+    <div class="row">
+        <label>Subject Name</label>
+        <input id="reserve-subject" class="swal2-input" placeholder="Database Sys">
+    </div>
+
+    <br>
+    <div class="section-title">Reservation Schedule</div>
+    <hr class="equip-divider">
+    <div class="row">
+        <label>Date</label>
+        <input id="reserve-date" type="date" class="swal2-input">
+    </div>
+   <div class="row">
+    <label>Time</label>
+    <div class="time-range">
+        <input id="reserve-from" type="time" class="swal2-input small-input" placeholder="From">
+        <span class="dash"> - </span>
+        <input id="reserve-to" type="time" class="swal2-input small-input" placeholder="To">
+    </div>
+</div>
+
+
+    <div class="row">
+        <label>Equipment</label>
+        <input id="reserve-equipment" class="swal2-input" value="${equipmentName}" readonly>
+    </div>
+
+    <hr class="equip-divider">
+    <div class="row">
+        <label>Purpose (optional)</label>
+        <textarea id="reserve-purpose" class="swal2-textarea" placeholder="Presentation for Lab 3"></textarea>
+    </div>
+</div>
+`,
+
+                                        showCancelButton: true,
+                                        confirmButtonText: 'Reserve',
+                                        cancelButtonText: 'Cancel',
+                                        focusConfirm: false,
+                                        preConfirm: () => ({
+                                            classCode: document.getElementById('reserve-class')?.value ?? "",
+                                            subject: document.getElementById('reserve-subject')?.value ?? "",
+                                            date: document.getElementById('reserve-date')?.value ?? "",
+                                            time: document.getElementById('reserve-time')?.value ?? "",
+                                            equipment: document.getElementById('reserve-equipment')?.value ?? "",
+                                            purpose: document.getElementById('reserve-purpose')?.value ?? ""
+                                        })
+                                    }).then(result => {
+                                        if (result.isConfirmed) {
+                                            console.log("Reserved:", result.value);
+
+                                            // Update UI to show reservation
+                                            unit.querySelector('.unit-status').innerText = `Reserved until TBD`;
+                                            unit.classList.remove('available');
+                                            unit.classList.add('reserved');
+                                        }
+                                    });
+                                });
+                            });
+                        }
+
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            console.log("Updated data:", result.value);
+                        }
+                    });
+
+                });
+            });
+        });
+
+        //Script for the equipment row modal
+        // Attach click listener to all rows
+        document.querySelectorAll(".equipment-row").forEach(row => {
+            row.addEventListener("click", () => {
+                // Get data attributes from the row
+                const room = row.dataset.room;
+                const capacity = row.dataset.capacity;
+                const status = row.dataset.status;
+
+                // Trigger SweetAlert
+                Swal.fire({
+                    title: `${room}`,
+                    html: `
+        <div style="text-align:left; font-size:16px;">
+          <p><b>Capacity:</b> ${capacity}</p>
+          <p><b>Status:</b> ${status}</p>
+          <hr>
+          <button id="editBtn" class="swal2-confirm swal2-styled" style="margin-top:10px;">Edit</button>
+        </div>
+      `,
+                    showConfirmButton: false,
+                    width: "400px",
+                    didOpen: () => {
+                        document.getElementById("editBtn").addEventListener("click", () => {
+                            Swal.fire({
+                                title: `Edit ${room}`,
+                                input: "text",
+                                inputLabel: "Change Status",
+                                inputValue: status,
+                                showCancelButton: true,
+                                confirmButtonText: "Save",
+                            });
+                        });
+                    }
+                });
+            });
+        });
+
+
         // Select all tab buttons
         const tabButtons = document.querySelectorAll('.tab-btn');
 

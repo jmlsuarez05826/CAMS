@@ -517,3 +517,175 @@ header {
 .tab-scroll::-webkit-scrollbar-button {
     display: none; /* remove up/down arrows */
 }
+
+
+.equip-modal {
+    padding: 20px 25px !important;
+}
+
+/* Header title aligned left */
+.equip-header {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.equip-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Divider line */
+.equip-divider {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 15px 0;
+}
+
+/* TOP SECTION: image + info only (side-by-side) */
+.equip-container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Image */
+.equip-image-box {
+    width: 150px;
+}
+.equip-image {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #eee;
+}
+
+/* Right-side info */
+.equip-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: none;
+}
+
+.equip-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.equip-summary p {
+    margin: 2px 0;
+    font-size: 14px;
+}
+
+/* "Unit Status" title */
+.unit-status-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* Unit list MUST be below (vertical layout) */
+.unit-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 8px;
+    padding-right: 5px;
+}
+
+/* Individual unit rows */
+.unit-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.unit-card .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.available .dot { background: #28a745; }
+.reserved .dot { background: #d9534f; }
+
+/* Close (X) button fix */
+.swal2-close {
+    background: none !important;
+    color: #333 !important;
+    border: none !important;
+    font-size: 20px !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+.swal2-close:hover {
+    color: red !important;
+}
+
+
+/* Modal wrapper */
+.reserve-modal {
+    text-align: left;
+}
+
+/* Section titles */
+.reserve-modal .section-title {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+/* Row layout for label + input */
+.reserve-modal .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* Labels */
+.reserve-modal .row label {
+    width: 100px;       /* fixed width for labels */
+    height: 20px;
+    margin-right: 10px;
+    font-weight: 500;
+    font-size: 17px;
+}
+
+.reserve-modal .row input.swal2-input,
+.reserve-modal .row textarea.swal2-textarea {
+    flex: 1;
+    height: 30px;       /* smaller height */
+    font-size: 14px;    /* smaller text */
+    padding: 4px 8px;   /* reduce inner padding */
+    box-sizing: border-box; /* ensures padding is included in height */
+}
+
+/* Wrapper for two time inputs */
+.reserve-modal .time-range {
+    display: flex;
+    align-items: center;
+}
+
+/* Dash in between */
+.reserve-modal .time-range .dash {
+    margin: 0 5px;
+    font-weight: lighter;
+}
+
+/* Smaller inputs */
+.reserve-modal .time-range input.small-input {
+    flex: 1;            /* take equal space */
+    height: 30px;       /* compact height */
+    padding: 4px 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
