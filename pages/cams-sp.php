@@ -102,13 +102,7 @@ class Crud
 
 
 
-    public function addEquipment($equipmentname, $quantity)
-    {
-  
-            $stmt = $this->conn->prepare("CALL addEquipment(?, ?)");
-            $stmt->execute([$equipmentname, $quantity]);
-            return true;
-    }
+    
 
     public function getEquipments()
     {
@@ -209,6 +203,22 @@ public function addBuildingWithFloors($buildingName, $buildingImage, $floorCount
     } catch (PDOException $e) {
         throw $e;
     }
+}
+
+public function addEquipment($equipmentname, $quantity)
+{
+    // Call SP to insert equipment and units
+    $stmt = $this->conn->prepare("CALL addEquipment(?, ?)");
+    $stmt->execute([$equipmentname, $quantity]);
+
+    return true;
+}
+
+
+function getEquipmentUnits($equipmentID) {
+    $stmt = $this->conn->prepare("SELECT * FROM equipment_units WHERE EquipmentID = ?");
+    $stmt->execute([$equipmentID]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 
