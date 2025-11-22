@@ -49,8 +49,7 @@ $data_json_e = json_encode($data_e);
 $stmt = $pdo->prepare("CALL ViewDailyUsers()");
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-while ($stmt->nextRowset()) {
-    ;
+while ($stmt->nextRowset()) {;
 } // clear remaining result sets
 
 $date = [];
@@ -199,7 +198,7 @@ $data_json_d = json_encode($count);
 
 
     <script>
-        window.onload = function () {
+        window.onload = function() {
 
             // Time update
             function updateTime() {
@@ -223,21 +222,83 @@ $data_json_d = json_encode($count);
 
             new Chart(document.getElementById('RoomStatus'), {
                 type: 'pie',
-                data: { labels: roomLabels, datasets: [{ data: roomValues, backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'], borderColor: '#fff', borderWidth: 4 }] },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Room Status', font: { size: 24, weight: 'bold' } }, legend: { position: 'left' } } }
+                data: {
+                    labels: roomLabels,
+                    datasets: [{
+                        data: roomValues,
+                        backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'],
+                        borderColor: '#fff',
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Room Status',
+                            font: {
+                                size: 24,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            position: 'left'
+                        }
+                    }
+                }
             });
 
             new Chart(document.getElementById('EquipmentStatus'), {
                 type: 'pie',
-                data: { labels: equipmentLabels, datasets: [{ data: equipmentValues, backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'], borderColor: '#fff', borderWidth: 4 }] },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Equipment Status', font: { size: 24, weight: 'bold' } }, legend: { position: 'left' } } }
+                data: {
+                    labels: equipmentLabels,
+                    datasets: [{
+                        data: equipmentValues,
+                        backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'],
+                        borderColor: '#fff',
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Equipment Status',
+                            font: {
+                                size: 24,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            position: 'left'
+                        }
+                    }
+                }
             });
 
             const ctx = document.getElementById('roomUsageChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
-                data: { labels: dailyLabels, datasets: [{ label: 'Visits per Day', data: dailyValues, backgroundColor: '#8b1717da', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 }] },
-                options: { scales: { y: { beginAtZero: true, stepSize: 1 } } }
+                data: {
+                    labels: dailyLabels,
+                    datasets: [{
+                        label: 'Visits per Day',
+                        data: dailyValues,
+                        backgroundColor: '#8b1717da',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stepSize: 1
+                        }
+                    }
+                }
             });
 
             const chatContainer = document.getElementById('chat-container');
@@ -252,20 +313,20 @@ $data_json_d = json_encode($count);
             let currentFacultyId = null;
 
             // Open chat
-            toggleBtn.onclick = function () {
+            toggleBtn.onclick = function() {
                 chatContainer.classList.add('active');
                 toggleBtn.style.display = 'none';
                 showFacultyList();
             }
 
             // Close chat
-            closeBtn.onclick = function () {
+            closeBtn.onclick = function() {
                 chatContainer.classList.remove('active');
                 toggleBtn.style.display = 'flex';
             }
 
             // Back button
-            backBtn.onclick = function () {
+            backBtn.onclick = function() {
                 currentFacultyId = null;
                 chatMessages.style.display = 'none';
                 chatInput.style.display = 'none';
@@ -290,7 +351,7 @@ $data_json_d = json_encode($count);
                             const div = document.createElement('div');
                             div.classList.add('faculty-item');
                             div.textContent = fac.FirstName + ' ' + fac.LastName + ' (' + fac.PhoneNumber + ')';
-                            div.onclick = function () {
+                            div.onclick = function() {
                                 openChat(fac.UserID, fac.FirstName + ' ' + fac.LastName);
                             }
                             facultyListDiv.appendChild(div);
@@ -309,53 +370,55 @@ $data_json_d = json_encode($count);
                 loadChat();
             }
 
- // Load chat messages
-function loadChat(forceScroll = false) {
-    if (!currentFacultyId) return;
+            // Load chat messages
+            function loadChat(forceScroll = false) {
+                if (!currentFacultyId) return;
 
-    fetch(`chat_api.php?action=get_messages&faculty_id=${currentFacultyId}`)
-        .then(res => res.json())
-        .then(data => {
-            chatMessages.innerHTML = '';
-            data.forEach(msg => {
-                const div = document.createElement('div');
-                div.classList.add('message');
-                div.classList.add(msg.sender_id == userId ? 'admin' : 'faculty');
-                div.innerHTML = `<span>${msg.message}</span><small>${msg.timestamp}</small>`;
-                chatMessages.appendChild(div);
-            });
+                fetch(`chat_api.php?action=get_messages&faculty_id=${currentFacultyId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        chatMessages.innerHTML = '';
+                        data.forEach(msg => {
+                            const div = document.createElement('div');
+                            div.classList.add('message');
+                            div.classList.add(msg.sender_id == userId ? 'admin' : 'faculty');
+                            div.innerHTML = `<span>${msg.message}</span><small>${msg.timestamp}</small>`;
+                            chatMessages.appendChild(div);
+                        });
 
-            // Scroll behavior
-            if (!chatMessages.dataset.hasScrolled || forceScroll) {
-                // First load or forced scroll
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                chatMessages.dataset.hasScrolled = true;
-            } else {
-                // Only scroll if user is already at bottom
-                const isAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop === chatMessages.clientHeight;
-                if (isAtBottom) chatMessages.scrollTop = chatMessages.scrollHeight;
+                        // Scroll behavior
+                        if (!chatMessages.dataset.hasScrolled || forceScroll) {
+                            // First load or forced scroll
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                            chatMessages.dataset.hasScrolled = true;
+                        } else {
+                            // Only scroll if user is already at bottom
+                            const isAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop === chatMessages.clientHeight;
+                            if (isAtBottom) chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                    });
             }
-        });
-}
 
-// Send chat message
-function sendChat() {
-    const msgInput = document.getElementById('chat-text');
-    const msg = msgInput.value.trim();
-    if (!msg || !currentFacultyId) return;
+            // Send chat message
+            function sendChat() {
+                const msgInput = document.getElementById('chat-text');
+                const msg = msgInput.value.trim();
+                if (!msg || !currentFacultyId) return;
 
-    fetch('chat_api.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'action=send_message&receiver_id=' + currentFacultyId + '&message=' + encodeURIComponent(msg)
-    }).then(res => res.json())
-      .then(resp => {
-          if (resp.success) {
-              msgInput.value = '';
-              loadChat(true); // force scroll to bottom after sending
-          }
-      });
-}
+                fetch('chat_api.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'action=send_message&receiver_id=' + currentFacultyId + '&message=' + encodeURIComponent(msg)
+                    }).then(res => res.json())
+                    .then(resp => {
+                        if (resp.success) {
+                            msgInput.value = '';
+                            loadChat(true); // force scroll to bottom after sending
+                        }
+                    });
+            }
 
 
             // Auto-refresh chat
@@ -364,13 +427,12 @@ function sendChat() {
         };
 
         const chatInput = document.getElementById('chat-text'); // your message input
-        chatInput.addEventListener('keydown', function (e) {
+        chatInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) { // Enter without Shift
                 e.preventDefault(); // prevent newline
                 sendChat(); // call your send function
             }
         });
-
     </script>
 
 </body>

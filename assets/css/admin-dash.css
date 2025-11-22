@@ -414,3 +414,8 @@ header {
 .faculty-item:hover {
     background: #f0f0f0;
 }
+
+.faculty-item.unread {
+    font-weight: bold;
+    color: #000; /* optionally darker */
+}

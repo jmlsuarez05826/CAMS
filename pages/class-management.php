@@ -319,6 +319,22 @@ $rooms = $crud->getRooms();
       Room ID: ${roomID}
       <hr style="margin:0 0 5px 0;">
     </div>
+
+    <!-- Day of the week dropdown -->
+    <div style="margin-bottom:10px;">
+      <label for="daySelect" style="font-weight:bold;">Select Day:</label>
+      <select id="daySelect" style="margin-left:5px; padding:3px;">
+        <option value="">--Choose Day--</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+        <option value="Sunday">Sunday</option>
+      </select>
+    </div>
+
     <div style="max-height:250px; overflow-y:auto; border:1px solid #ccc; border-radius:5px; padding:5px;">
       <table id="scheduleTable" style="width:100%; border-collapse:collapse; font-size:16px;">
         <thead>
@@ -376,6 +392,24 @@ $rooms = $crud->getRooms();
 
                                 }
                             });
+
+
+                        //Current day script
+                        const daySelect = document.getElementById('daySelect');
+
+                        // Get current day as string
+                        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                        const today = new Date();
+                        const currentDay = days[today.getDay()]; // getDay() returns 0 (Sunday) to 6 (Saturday)
+
+                        // Set the dropdown value to current day
+                        daySelect.value = currentDay;
+
+                        // Optional: add event listener to do something when user changes day
+                        daySelect.addEventListener('change', function() {
+                            console.log('Selected day:', this.value);
+                        });
+
 
 
                         // Inside didOpen

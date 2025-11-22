@@ -75,7 +75,7 @@ $users = $crud->getAllUsers();
 
                 <div class="search-field">
                     <i class="bi bi-search search-icon"></i>
-                    <input type="text" placeholder="Search">
+                    <input type="text" id="search-field" placeholder="Search">
                 </div>
 
                 <div class="topbar-right">
@@ -165,6 +165,12 @@ $users = $crud->getAllUsers();
                         ?>
                     </tbody>
                 </table>
+                <!-- Place this div below your table -->
+                <div id="no-results" style="display:none; text-align:center; margin-top:20px;">
+                    <img src="../images/no-results.png" alt="No Results" style="width:70px; height:auto; margin-bottom:10px;">
+                    <p>No users found</p>
+                </div>
+
             </div>
 
             <nav class="custom-pagination">
@@ -333,6 +339,28 @@ $users = $crud->getAllUsers();
         <?php endif; ?>
 
         <script>
+            //script for the search user accounts
+            const searchInput = document.getElementById('search-field');
+            const table = document.querySelector('.users-table tbody');
+            const noResultsDiv = document.getElementById('no-results');
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                let anyVisible = false;
+
+                Array.from(table.rows).forEach(row => {
+                    const rowText = Array.from(row.cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+                    if (rowText.includes(query)) {
+                        row.style.display = '';
+                        anyVisible = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Show or hide "No results" message
+                noResultsDiv.style.display = anyVisible ? 'none' : 'block';
+            });
             // Script for the time in 12-hour format with AM/PM
             function updateTime() {
                 const now = new Date();
