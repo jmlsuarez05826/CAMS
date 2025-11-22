@@ -22,7 +22,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         <nav class="sidebar" id="sidebar">
             <!-- Logo + Title container -->
             <div class="header-content">
-                <img src="../images/BSU_logo (3).webp" alt="Logo" class="sidebar-logo" style="">
+                <img src="../images/BSU_logo (3).webp" alt="Logo" class="sidebar-logo">
                 <span class="sidebar-title">CAMS</span>
             </div>
 
