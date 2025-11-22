@@ -1,7 +1,19 @@
 <?php
+session_start();
+
 require_once '../pages/camsdatabase.php';
 require_once '../pages/cams-sp.php';
 
+if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
+    header("Location: ../pages/login.php");
+    exit();
+}
+
+if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Faculty') {
+    // Not an admin, redirect or show error
+    header("Location: ../pages/login.php");
+    exit();
+}
 
 $crud = new Crud();
 
@@ -23,6 +35,7 @@ $rooms = $crud->getRooms();
     <!-- Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
 
     <link rel="stylesheet" href="../assets/css/faculty-reservation.css">
 
@@ -56,7 +69,7 @@ $rooms = $crud->getRooms();
 
                     <!-- Dropdown menu -->
                     <div class="profile-dropdown">
-                        <p class="logout">Logout</p>
+                        <p class="logout" id="logout-btn">Logout</p>
                     </div>
                 </div>
 
@@ -82,7 +95,7 @@ $rooms = $crud->getRooms();
 
             <div class="table-contents">
                 <div id="classrooms" class="tab-content active">
-                    <div class="tab-scroll">
+                    <div class="table-scroll">
                         <!-- Classroom table here -->
 
                         <?php foreach ($buildings as $index => $building): ?>
@@ -111,7 +124,8 @@ $rooms = $crud->getRooms();
                                 <!-- Room Containers for each floor -->
                                 <?php foreach ($floors as $floor): ?>
                                     <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
-                                        <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none;">
+                                        <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>"
+                                            style="display:none;">
                                             <?php foreach ($rooms as $room): ?>
                                                 <?php if ($room['FloorID'] == $floor['FloorID']): ?>
                                                     <div class="room-card">
@@ -141,74 +155,72 @@ $rooms = $crud->getRooms();
                                         <th>Equipment Name</th>
                                         <th>Quantity</th>
                                         <th>Status</th>
-
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="equipment-row"
-                                        data-room="Projector"
-                                        data-capacity="5"
-                                        data-status="Available">
+                                    <tr>
                                         <td>1</td>
                                         <td>Projector</td>
-                                        <td>10</td>
+                                        <td>5</td>
                                         <td><span class="badge bg-success">Available</span></td>
+                                        <td>Reserve</td>
                                     </tr>
-
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-
+                                        <td>Reserve</td>
                                     </tr>
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-
+                                        <td>Reserve</td>
                                     </tr>
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-
+                                        <td>Reserve</td>
                                     </tr>
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
+                                        <td>Reserve</td>
                                     </tr>
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-
+                                        <td>Reserve</td>
                                     </tr>
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-
+                                        <td>Reserve</td>
                                     </tr>
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-
+                                        <td>Reserve</td>
                                     </tr>
-                                    <tr class="equipment-row">
+                                    <tr>
                                         <td>2</td>
                                         <td>Viewboard</td>
                                         <td>7</td>
                                         <td><span class="badge bg-success">Available</span></td>
-
+                                        <td>Reserve</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -305,448 +317,66 @@ $rooms = $crud->getRooms();
             </div>
         </section>
 
-        <!-- class sched modal -->
-        <div class="custom-modal" id="classroomModal">
-            <div class="custom-modal-dialog">
-                <div class="custom-modal-content">
-                    <div class="custom-modal-header">
-                        <h5 class="custom-modal-title">Classroom Schedule</h5>
-                        <button type="button" class="custom-close" id="closeclassroomModal">&times;</button>
-                    </div>
+        <div id="chat-box" style="height:300px; overflow-y:scroll; border:1px solid #ccc; padding:10px;"></div>
 
-                    <div class="custom-modal-body">
-                        <form method="post" id="classSchedForm">
+        <input type="text" id="message" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
 
-                            <p>Building Name Room No</p>
-                            <div class="Sched-table-wrapper">
-                                <table class="classSchedTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Instructor</th>
-                                            <th>Class Code </th>
-                                            <th>Subject</th>
-                                            <th>Time</th>
-                                            <th>Section</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Dharz</td>
-                                            <td>GED104</td>
-                                            <td>Science</td>
-                                            <td>8:00 am- 10:00 am</td>
-                                            <td>BSIT 1101</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Dharz</td>
-                                            <td>GED104</td>
-                                            <td>Science</td>
-                                            <td>8:00 am- 10:00 am</td>
-                                            <td>BSIT 1101</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Dharz</td>
-                                            <td>GED104</td>
-                                            <td>Science</td>
-                                            <td>8:00 am- 10:00 am</td>
-                                            <td>BSIT 1101</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Dharz</td>
-                                            <td>GED104</td>
-                                            <td>Science</td>
-                                            <td>8:00 am- 10:00 am</td>
-                                            <td>BSIT 1101</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Dharz</td>
-                                            <td>GED104</td>
-                                            <td>Science</td>
-                                            <td>8:00 am- 10:00 am</td>
-                                            <td>BSIT 1101</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Kino</td>
-                                            <td>GED101</td>
-                                            <td>Math</td>
-                                            <td>10:00 am- 12:00 pm</td>
-                                            <td>BSIT 1102</td>
-                                        </tr>
-                                        <tr>
-                                            <td>John Mark</td>
-                                            <td>GED111</td>
-                                            <td>Arts</td>
-                                            <td>1:00 pm- 3:00 pm</td>
-                                            <td>BSIT 1103</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+        <script>
+            function loadMessages() {
+                fetch('fetch_messages.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        let html = '';
+                        data.forEach(msg => {
+                            html += `<p><strong>${msg.sender_id == <?php echo $_SESSION['UserID']; ?> ? 'You' : 'Admin'}:</strong> ${msg.message}</p>`;
+                        });
+                        let chatBox = document.getElementById('chat-box');
+                        chatBox.innerHTML = html;
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    });
+            }
 
-                            <hr class="table-separator">
+            function sendMessage() {
+                let msg = document.getElementById('message').value;
+                if (msg.trim() === '') return;
 
-                            <div class="custom-modal-footer">
-                                <button type="button" class="btn-close-modal" id="closeAddUserFooter">Close</button>
-                                <button type="submit" name="add" id="addBtn">Reserve</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+                fetch('send_message.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'message=' + encodeURIComponent(msg)
+                }).then(() => {
+                    document.getElementById('message').value = '';
+                    loadMessages();
+                });
+            }
 
-        <!-- Reservation Modal -->
-        <div class="custom-modal" id="reserveModal">
-            <div class="custom-modal-dialog">
-                <div class="custom-modal-content">
-                    <div class="custom-modal-header">
-                        <h5 class="custom-modal-title">Reserve Classroom</h5>
-                        <button type="button" class="custom-close" id="closeReserveModal">&times;</button>
-                    </div>
-
-                    <div class="custom-modal-body">
-                        <form id="reserveForm">
-                            <div class="form-group">
-                                <label for="classCode">Class Code</label>
-                                <input type="text" id="classCode" name="classCode" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="subject">Subject</label>
-                                <input type="text" id="subject" name="subject" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="fromTime">From</label>
-                                <input type="time" id="fromTime" name="fromTime" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="toTime">To</label>
-                                <input type="time" id="toTime" name="toTime" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="date">Date</label>
-                                <input type="date" id="date" name="date" required>
-                            </div>
-
-                            <hr class="table-separator">
-
-                            <div class="custom-modal-footer">
-                                <button type="button" class="btn-close-modal" id="closeReserveFooter">Cancel</button>
-                                <button type="submit" id="confirmReserve">Reserve</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+            setInterval(loadMessages, 1000);
+            loadMessages();
+        </script>
 
 
     </main>
 
     <script>
-        // =========================
-        // 1. Get modal element
-        // =========================
-        const classroomModal = document.getElementById("classroomModal");
-
-        // Close buttons inside the modal
-        const closeModalBtn = document.getElementById("closeclassroomModal");
-        const closeFooterBtn = document.getElementById("closeAddUserFooter");
-
-        // =========================
-        // 2. Function to open modal
-        // =========================
-        function openClassroomModal() {
-            classroomModal.classList.add("show"); // makes modal visible
-        }
-
-        // =========================
-        // 3. Function to close modal
-        // =========================
-        function closeClassroomModal() {
-            classroomModal.classList.remove("show"); // hides modal
-        }
-
-        // =========================
-        // 4. Attach click event to all .room-card items
-        //    THIS IS THE TRIGGER
-        // =========================
-        document.querySelectorAll(".room-card").forEach(card => {
-            card.addEventListener("click", () => {
-                openClassroomModal(); // show modal when clicking any room
-            });
-        });
-
-        // =========================
-        // 5. Close modal using the "X" button
-        // =========================
-        closeModalBtn.addEventListener("click", closeClassroomModal);
-
-        // =========================
-        // 6. Close modal using footer Close button
-        // =========================
-        closeFooterBtn.addEventListener("click", closeClassroomModal);
-
-        // =========================
-        // 7. Close modal when clicking outside content
-        // =========================
-        window.addEventListener("click", (e) => {
-            if (e.target === classroomModal) {
-                closeClassroomModal();
-            }
-        });
-
-        const reserveBtn = document.getElementById("addBtn");
-        const reserveModal = document.getElementById("reserveModal");
-        const closeReserveBtn = document.getElementById("closeReserveModal");
-        const closeReserveFooter = document.getElementById("closeReserveFooter");
-
-        // Show second modal on reserve click
-        reserveBtn.addEventListener("click", function(e) {
-            e.preventDefault(); // prevent form submission
-            reserveModal.classList.add("show");
-        });
-
-        // Close second modal
-        closeReserveBtn.addEventListener("click", () => reserveModal.classList.remove("show"));
-        closeReserveFooter.addEventListener("click", () => reserveModal.classList.remove("show"));
-
-        // Optional: click outside modal closes it
-        window.addEventListener("click", (e) => {
-            if (e.target === reserveModal) {
-                reserveModal.classList.remove("show");
-            }
-        });
-
-
-        const reserveForm = document.getElementById("reserveForm");
-
-        reserveForm.addEventListener("submit", function(e) {
-            e.preventDefault(); // prevent actual form submission for demo
-
-            // Close the modal
-            reserveModal.classList.remove("show");
-
-            // Show SweetAlert
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault(); // prevent immediate navigation
             Swal.fire({
-                icon: 'success',
-                title: 'Request Sent!',
-                text: 'Your classroom reservation request has been sent.',
-                timer: 2000, // auto close after 2 seconds
-                showConfirmButton: false
-            });
-
-            // Optional: reset form fields
-            reserveForm.reset();
-        });
-
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const rows = document.querySelectorAll('.equipment-row');
-
-            rows.forEach(row => {
-                row.addEventListener('click', (e) => {
-                    if (e.target.tagName === 'BUTTON') return;
-
-                    const cells = row.querySelectorAll('td');
-                    const item = cells[1].innerText;
-                    const quantity = parseInt(cells[2].innerText);
-                    const status = cells[3].innerText;
-
-
-                    //Apply backend logic here
-                    let unitListHTML = '';
-                    for (let i = 0; i < quantity; i++) {
-                        const num = i + 1;
-                        const isReserved = num <= 4; // placeholder logic
-                        unitListHTML += `
-        <div class="unit-card ${isReserved ? 'reserved' : 'available'}" data-unit="${num}">
-        <span class="dot"></span>
-        <span class="unit-label">${item} #${num}</span>
-        <span class="unit-status">
-            ${isReserved ? 'Reserved until 3PM' : 'Available'}
-        </span>
-        </div>
-        `;
-                    }
-
-                    Swal.fire({
-                        width: "650px",
-                        heightAuto: false,
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        closeButtonHtml: '&times;',
-                        customClass: {
-                            popup: "equip-modal"
-                        },
-                        html: `
-        <div class="equip-header">
-            <h2 class="equip-title">Equipment Information</h2>
-            <hr class="equip-divider">
-        </div>
-
-        <div class="equip-container">
-
-            <div class="equip-image-box">
-                <img src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png" class="equip-image">
-            </div>
-
-            <div class="equip-info">
-
-                <h2 class="equip-name">${item}</h2>
-                <div class="equip-summary">
-                    <p><strong>Total Units:</strong> ${quantity}</p>
-                    <p><strong>Available:</strong> 3</p>
-                    <p><strong>Reserved:</strong> 4</p>
-                </div>
-
-            </div>
-        </div>
-
-        <hr class="equip-divider">
-        <h3 class="unit-status-title">Unit Status</h3>
-        <div class="unit-list">
-            ${unitListHTML}
-        </div>
-        `,
-                        focusConfirm: false,
-                        preConfirm: () => ({
-                            name: document.getElementById("edit-name")?.value ?? "",
-                            qty: document.getElementById("edit-qty")?.value ?? "",
-                            status: document.getElementById("edit-status")?.value ?? ""
-                        }),
-
-                        didOpen: () => {
-                            // Select all available units and add click listeners
-                            const availableUnits = Swal.getHtmlContainer().querySelectorAll('.unit-card.available');
-
-                            availableUnits.forEach(unit => {
-                                unit.addEventListener('click', () => {
-                                    const unitNumber = unit.getAttribute('data-unit');
-                                    const equipmentName = `${item} #${unitNumber}`;
-
-                                    Swal.fire({
-                                        title: `Reserve ${equipmentName}`,
-                                        html: `
-        <div class="reserve-modal">
-            <div class="section-title">Class Information</div>
-            <hr class="equip-divider">
-
-            <div class="row">
-                <label>Class Code</label>
-                <input id="reserve-class" class="swal2-input" placeholder="IT202">
-            </div>
-
-            <div class="row">
-                <label>Subject Name</label>
-                <input id="reserve-subject" class="swal2-input" placeholder="Database Sys">
-            </div>
-
-            <br>
-            <div class="section-title">Reservation Schedule</div>
-            <hr class="equip-divider">
-            <div class="row">
-                <label>Date</label>
-                <input id="reserve-date" type="date" class="swal2-input">
-            </div>
-            <div class="row">
-                <label>Time</label>
-                <div class="time-range">
-                    <input id="reserve-from" type="time" class="swal2-input small-input" placeholder="From">
-                    <span class="dash"> - </span>
-                    <input id="reserve-to" type="time" class="swal2-input small-input" placeholder="To">
-                </div>
-            </div>
-
-
-            <div class="row">
-                <label>Equipment</label>
-                <input id="reserve-equipment" class="swal2-input" value="${equipmentName}" readonly>
-            </div>
-
-            <hr class="equip-divider">
-            <div class="row">
-                <label>Purpose (optional)</label>
-                <textarea id="reserve-purpose" class="swal2-textarea" placeholder="Presentation for Lab 3"></textarea>
-            </div>
-        </div>
-        `,
-
-                                        showCancelButton: true,
-                                        confirmButtonText: 'Reserve',
-                                        cancelButtonText: 'Cancel',
-                                        focusConfirm: false,
-                                        preConfirm: () => ({
-                                            classCode: document.getElementById('reserve-class')?.value ?? "",
-                                            subject: document.getElementById('reserve-subject')?.value ?? "",
-                                            date: document.getElementById('reserve-date')?.value ?? "",
-                                            time: document.getElementById('reserve-time')?.value ?? "",
-                                            equipment: document.getElementById('reserve-equipment')?.value ?? "",
-                                            purpose: document.getElementById('reserve-purpose')?.value ?? ""
-                                        })
-                                    }).then(result => {
-                                        if (result.isConfirmed) {
-                                            console.log("Reserved:", result.value);
-
-                                            // Update UI to show reservation
-                                            unit.querySelector('.unit-status').innerText = `Reserved until TBD`;
-                                            unit.classList.remove('available');
-                                            unit.classList.add('reserved');
-                                        }
-                                    });
-                                });
-                            });
-                        }
-
-                    }).then(result => {
-                        if (result.isConfirmed) {
-                            console.log("Updated data:", result.value);
-                        }
-                    });
-
-                });
+                title: 'Are you sure?',
+                text: "You will be logged out.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '../pages/logout.php';
+                }
             });
         });
-
-        //Script for the equipment row modal
-        // Attach click listener to all rows
-        document.querySelectorAll(".equipment-row").forEach(row => {
-            row.addEventListener("click", () => {
-                // Get data attributes from the row
-                const room = row.dataset.room;
-                const capacity = row.dataset.capacity;
-                const status = row.dataset.status;
-
-                // Trigger SweetAlert
-                Swal.fire({
-                    title: `${room}`,
-                    html: `
-        <div style="text-align:left; font-size:16px;">
-            <p><b>Capacity:</b> ${capacity}</p>
-            <p><b>Status:</b> ${status}</p>
-            <hr>
-            <button id="editBtn" class="swal2-confirm swal2-styled" style="margin-top:10px;">Edit</button>
-        </div>
-        `,
-                    showConfirmButton: false,
-                    width: "400px",
-                    didOpen: () => {
-                        document.getElementById("editBtn").addEventListener("click", () => {
-                            Swal.fire({
-                                title: `Edit ${room}`,
-                                input: "text",
-                                inputLabel: "Change Status",
-                                inputValue: status,
-                                showCancelButton: true,
-                                confirmButtonText: "Save",
-                            });
-                        });
-                    }
-                });
-            });
-        });
-
-
         // Select all tab buttons
         const tabButtons = document.querySelectorAll('.tab-btn');
 
@@ -767,42 +397,37 @@ $rooms = $crud->getRooms();
             });
         });
 
+        //script for the red floor indicator
         document.querySelectorAll('.building-block').forEach(building => {
             const floors = building.querySelectorAll('.floor');
             const indicator = building.querySelector('.floor-indicator');
 
-            // Function to update indicator
-            const updateIndicator = (floor) => {
-                const position = floor.offsetLeft;
-                const width = floor.offsetWidth;
+            //Default active floor 
+            if (floors.length > 0) {
+                const defaultFloor = floors[0];
+                defaultFloor.classList.add('active');
+
+                const position = defaultFloor.offsetLeft;
+                const width = defaultFloor.offsetWidth;
 
                 indicator.style.left = position + "px";
                 indicator.style.width = width + "px";
             }
 
-            // Default active floor
-            if (floors.length > 0) {
-                const defaultFloor = floors[0];
-                defaultFloor.classList.add('active');
-                updateIndicator(defaultFloor);
-            }
-
-            // Handle clicks
+            // Handle user clicks
             floors.forEach((floor) => {
                 floor.addEventListener('click', () => {
                     floors.forEach(f => f.classList.remove('active'));
                     floor.classList.add('active');
-                    updateIndicator(floor);
+
+                    const position = floor.offsetLeft;
+                    const width = floor.offsetWidth;
+
+                    indicator.style.left = position + "px";
+                    indicator.style.width = width + "px";
                 });
             });
-
-            // Update indicator on window resize
-            window.addEventListener('resize', () => {
-                const activeFloor = building.querySelector('.floor.active');
-                if (activeFloor) updateIndicator(activeFloor);
-            });
         });
-
 
         //script for the rooms
         document.querySelectorAll('.building-block').forEach(buildingBlock => {
@@ -831,6 +456,167 @@ $rooms = $crud->getRooms();
             }
         });
     </script>
+
+    <!-- Chat Toggle -->
+    <div id="chat-toggle">💬</div>
+
+    <!-- Chat container -->
+    <div id="chat-container">
+        <div id="chat-header">
+            <span id="back-btn" style="display:none;">⬅</span>
+            <span id="chat-title">Select Faculty</span>
+            <span id="close-btn">✖</span>
+        </div>
+
+        <!-- Faculty list -->
+        <div id="faculty-list"></div>
+
+        <!-- Chat messages -->
+        <div id="chat-messages" style="display:none;"></div>
+
+        <!-- Chat input -->
+        <div id="chat-input" style="display:none;">
+            <input type="text" id="chat-text" placeholder="Type a message...">
+            <button onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
+    <!-- Include the CSS we wrote -->
+    <style>
+        /* Paste the CSS I gave you here */
+    </style>
+
+    <!-- JS -->
+    <script>
+        window.onload = function() {
+            const chatContainer = document.getElementById('chat-container');
+            const toggleBtn = document.getElementById('chat-toggle');
+            const closeBtn = document.getElementById('close-btn');
+            const backBtn = document.getElementById('back-btn');
+            const chatTitle = document.getElementById('chat-title');
+            const facultyListDiv = document.getElementById('faculty-list');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const userId = <?= $_SESSION['UserID']; ?>;
+            let currentFacultyId = null;
+
+            // Open chat
+            toggleBtn.onclick = function() {
+                chatContainer.style.display = 'flex';
+                toggleBtn.style.display = 'none';
+                showFacultyList();
+            };
+
+            // Close chat
+            closeBtn.onclick = function() {
+                chatContainer.style.display = 'none';
+                toggleBtn.style.display = 'flex';
+            };
+
+            // Back button
+            backBtn.onclick = function() {
+                currentFacultyId = null;
+                chatMessages.style.display = 'none';
+                chatInput.style.display = 'none';
+                facultyListDiv.style.display = 'block';
+                chatTitle.textContent = 'Select Faculty';
+                backBtn.style.display = 'none';
+            };
+
+            // Show faculty list
+            function showFacultyList() {
+                facultyListDiv.style.display = 'block';
+                chatMessages.style.display = 'none';
+                chatInput.style.display = 'none';
+                backBtn.style.display = 'none';
+                chatTitle.textContent = 'Select Faculty';
+
+                fetch('faculty_chat.php?action=get_faculty')
+                    .then(res => res.json())
+                    .then(data => {
+                        facultyListDiv.innerHTML = '';
+                        data.forEach(fac => {
+                            const div = document.createElement('div');
+                            div.classList.add('faculty-item');
+                            div.textContent = fac.FirstName + ' ' + fac.LastName + ' (' + fac.PhoneNumber + ')';
+                            div.onclick = function() {
+                                openChat(fac.UserID, fac.FirstName + ' ' + fac.LastName);
+                            };
+                            facultyListDiv.appendChild(div);
+                        });
+                    });
+            }
+
+            // Open chat with selected faculty
+            function openChat(facultyId, facultyName) {
+                currentFacultyId = facultyId;
+                facultyListDiv.style.display = 'none';
+                chatMessages.style.display = 'flex';
+                chatInput.style.display = 'flex';
+                backBtn.style.display = 'inline';
+                chatTitle.textContent = facultyName;
+                loadChat();
+            }
+
+            // Load chat messages
+            function loadChat(forceScroll = false) {
+                if (!currentFacultyId) return;
+
+                fetch('faculty_chat.php?action=fetch_messages&faculty_id=' + currentFacultyId)
+                    .then(res => res.json())
+                    .then(data => {
+                        chatMessages.innerHTML = '';
+                        data.forEach(msg => {
+                            const div = document.createElement('div');
+                            div.classList.add('message');
+                            div.classList.add(msg.sender_id == userId ? 'admin' : 'faculty');
+                            div.innerHTML = `<span>${msg.message}</span><small>${msg.timestamp}</small>`;
+                            chatMessages.appendChild(div);
+                        });
+
+                        // Check if user is near bottom
+                        const scrollPosition = chatMessages.scrollTop + chatMessages.clientHeight;
+                        const scrollThreshold = chatMessages.scrollHeight - 10; // 10px tolerance
+
+                        if (!chatMessages.dataset.hasScrolled || forceScroll || scrollPosition >= scrollThreshold) {
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                            chatMessages.dataset.hasScrolled = true;
+                        }
+                    });
+            }
+
+            // Send chat message
+            window.sendChat = function() {
+                const msgInput = document.getElementById('chat-text');
+                const msg = msgInput.value.trim();
+                if (msg === '' || !currentFacultyId) return;
+
+                fetch('faculty_chat.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'action=send_message&receiver_id=' + currentFacultyId + '&message=' + encodeURIComponent(msg)
+                }).then(() => {
+                    msgInput.value = '';
+                    loadChat(true); // Force scroll after sending
+                });
+            };
+
+
+            // Auto-refresh chat
+            setInterval(loadChat, 1000);
+        };
+
+        const chatInput = document.getElementById('chat-text'); // your message input
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { // Enter without Shift
+                e.preventDefault(); // prevent newline
+                sendChat(); // call your send function
+            }
+        });
+    </script>
+
 
 
 </body>

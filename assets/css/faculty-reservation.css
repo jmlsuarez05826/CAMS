@@ -1,7 +1,7 @@
 /* ======== BASIC RESETS ======== */
 body {
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins";
   overflow-x: hidden;
   overflow-y: hidden;
 
@@ -206,9 +206,10 @@ header {
     max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-color: #8B1717 #d9d9d9; /* thumb | track */
+    scrollbar-color: #8B1717 #d9d9d9;
     scrollbar-width: thin;
 }
+
 .table-scroll::-webkit-scrollbar {
     width: 15px;                   /* scrollbar width */
 }
@@ -690,616 +691,159 @@ header {
     box-sizing: border-box;
 }
 
-/* ======== Modal overlay ======== */
-.custom-modal {
-    display: none;            /* hidden by default */
+/* Chat toggle button 💬 */
+#chat-toggle {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-     pointer-events: none;           /* prevents clicks when hidden */
-    z-index: 1000;
-    transition: opacity 0.3s ease; /* smooth fade */
-}
-
-/* When modal is shown */
-.custom-modal.show {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: #8B1717;
+    color: #fff;
+    border-radius: 50%;
     display: flex;
-    opacity: 1;
-    pointer-events: all;
-}
-
-/* ======== Modal box ======== */
-.custom-modal-dialog {
-    background: white;
-     z-index: 1001;
-    padding: 20px;
-    border-radius: 8px;
-    width: 600px;
-    max-width: 90%;
-    animation: pop 0.3s ease;
-}
-
-@keyframes pop {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* Close button */
-.custom-close {
-    background: none;
-    border: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
     font-size: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 9999;
+    transition: transform 0.3s ease;
+}
+#chat-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* Chat container */
+#chat-container {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 320px;
+    height: 450px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif;
+    z-index: 9998;
+}
+
+/* Chat header */
+#chat-header {
+    background: #8B1717;
+    color: #fff;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+}
+#chat-header span {
     cursor: pointer;
 }
+#back-btn {
+    display: none;
+}
 
-.btn-close-modal {
-    padding: 6px 12px;
+/* Faculty list */
+#faculty-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 5px 10px;
+}
+.faculty-item {
+    padding: 8px;
     cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+.faculty-item:hover {
+    background: #f0f0f0;
 }
 
-.custom-modal-header {
-    position: relative;           /* make button absolute relative to header */
-    padding: 15px 20px;
-    border-bottom: 1px solid #ddd;
-}
-
-.custom-modal-title {
-    margin: 0;
-    font-size: 18px;
-}
-
-.custom-close {
-    position: absolute;           /* float above title */
-    top: 10px;                    /* adjust vertical position */
-    right: 15px;                  /* adjust horizontal position */
-    font-size: 24px;
-    background: none;
-    border: none;
+/* Chat messages container */
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
     cursor: pointer;
-    line-height: 1;
-    color: #8B1717;
-}
-
-
-.custom-modal-body p {
-    margin: 0 0 15px 0; /* remove top margin, small bottom margin */
-    font-weight: 600;
-    font-size: 16px;   /* optional: adjust size */
-}
-
-/* ============================
-   TABLE STYLING
-============================ */
-.classSchedTable {
-    width: 100%;
-    border-collapse: separate;
-    font-size: 14px;
-}
-
-.classSchedTable thead {
-    background: #f1f1f1;
-    
-}
-
-.classSchedTable thead th {
-  position: sticky;
-    background: #f1f1f1;
-    top: 0;
-    z-index: 2;
-}
-.classSchedTable th,
-.classSchedTable td {
-    padding: 10px 12px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-}
-
-/* Bold header text */
-.classSchedTable th {
-    font-weight: 600;
-    
-}
-
-/* Row hover effect */
-.classSchedTable tbody tr:hover {
+    gap: 6px;
     background: #f9f9f9;
 }
 
-.Sched-table-wrapper {
-    max-height: 300px;        /* adjust as needed */
-    max-width: 100%;
-    overflow-y: auto;         /* vertical scrollbar if needed */
-    border-radius: 10px;      /* rounded corners for the container */
-    border: 1px solid #ddd;   /* optional border around table */
-}
-/* ============================
-   SEPARATOR LINE
-============================ */
-.table-separator {
-    border: none;
-    border-top: 1px solid #ddd;
-    margin: 15px 0;
-}
-
-/* ============================
-   FOOTER BUTTONS
-============================ */
-.custom-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.custom-modal-footer button {
-    padding: 8px 14px;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.btn-close-modal {
-    background: #ccc;
-}
-
-#addBtn {
-    background: #2b67f0;
-    color: white;
-}
-
-/* ============================
-   MODAL WIDTH / BODY SPACING
-============================ */
-.custom-modal-dialog {
-    width: 650px;
-    max-width: 95%;
-}
-
-.custom-modal-body {
-    padding: 15px 20px;
-}
-
-/* Reservation fields modal */
-
-/* Form fields styling */
-.form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-}
-
-.form-group label {
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.form-group input {
-    padding: 8px 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-}
-
-/* Reuse existing modal footer buttons */
-#confirmReserve {
-    background: #2b67f0;
-    color: white;
-    border-radius: 5px;
-    padding: 8px 14px;
-    border: none;
-    cursor: pointer;
-}
-
-/* Responsive styling */
-@media(max-width:1200px){
-  .building-title{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-left: 0px;
-    padding: 7px 10px;
-    font-size: 17px;
-    font-weight: bold;
-    color: black;
-   /* matches the gray background */
-  }
-  .floor-container {
-  display: flex;
-  align-items: center;
-  position: relative;
-  gap: 12px;        /* smaller gap between floors */
-  padding: 10px;    /* less padding inside container */
-  margin: 7px 0 0 0;
-  background-color: white;
-  border-radius: 10px 10px 0 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Shrink individual floor blocks */
-.floor {
-  padding: 5px 10px;     /* smaller padding inside each floor block */
-  font-weight: bold;
-  font-size: 0.85rem;    /* smaller text */
-  cursor: pointer;
-}
-
-/* Hover and active styles remain */
-.floor:hover {
-  color: #8b1717;
-}
-
-.floor.active {
-  color: #8b1717;
-  font-weight: bold;
-}
-
-/* Floor indicator stays same */
-.floor-indicator {
-  position: absolute;
-  bottom: 0;
-  height: 4px;
-  width: 0;
-  background-color: #8b1717;
-  transition: all 0.3s ease;
-}
-}
-@media (max-width: 1000px) {
-/*topbar*/
-  .system-title{
-    font-size: 1rem;
-    margin-left: 30px
-  }
-   .notification-icon i {
-    font-size: 1.2rem; /* smaller from 1.4rem */
-  }
-
-  /* Shrink profile icon and text */
-  .profile-icon {
-    font-size: 1.2rem; /* smaller from 1.6rem */
-  }
-
-  .profile-name {
-    font-size: 0.9rem; /* adjust from default */
-  }
-
-  .profile-number {
-    font-size: 0.7rem; /* smaller from 0.85rem */
-  }
-
-  /* Adjust profile container spacing */
-  .profile-info {
-    gap: 5px;
-    margin-right: 20px;
-  }
-
-  /* Target the whole section */
-.main-top {
-    padding: 20px;
-    margin-left: 100px;
-    
-}
-
-/* Target the title inside the section */
-.main-top .main-title {
-    font-size: 1.3rem;
-    color: #8B1717;
-}
-
-/* Target the button container */
-.main-top .main-options {
-    display: flex;
-    margin-bottom: 0px;
-    gap: 10px;
-}
-
-/* Target individual buttons */
-.main-top .main-options .tab-btn {
+/* Message bubbles */
+.message {
+    max-width: 75%;
     padding: 8px 12px;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    border-radius: 5px;
-    border: 2px solid #8B1717;
+    border-radius: 15px;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.3;
 }
-
-.main-top .main-options .tab-btn.active {
-    background-color: #8B1717;
-    color: white;
-}
-.tab-btn:hover {
-    background-color: #8B1717;
+.message.admin {
+    background: #8799ff;
     color: #fff;
+    align-self: flex-end;
+    cursor: pointer;
+    border-bottom-right-radius: 3px;
+}
+.message.faculty {
+    background: #e0e0e0;
+    color: #000;
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+    cursor: pointer;
 }
 
-.tab-content {
-    display: none;
-    width: 100%;
-    overflow-x: auto; /* horizontal scroll if table is too wide */
+/* Timestamp inside message */
+.message small {
+    display: block;
+    font-size: 10px;
+    color: rgba(0, 0, 0, 0.5);
+    margin-top: 3px;
+    text-align: right;
 }
-.tab-content.active{
-  display: block;
-}
-/* Scroll wrapper inside the tab content */
-.tab-content .table-wrapper {
-    width: 700px;
-    overflow-x: auto; /* allow horizontal scrolling for tables */
-}
-.building-title {
+
+/* Chat input */
+#chat-input {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-left: 0px;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    gap: 5px;
+}
+#chat-input input {
+    flex: 1;
     padding: 7px 10px;
-    font-size: 20px;
-    font-weight: bold;
-    color: black;
-   /* matches the gray background */
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
 }
-.room-label {
-  font-size: 12px;
-  color: #8b1717;
+#chat-input button {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: none;
+    background: #8B1717;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
 }
-/* Shrink the container spacing */
-.floor-container {
-  display: flex;
-  align-items: center;
-  position: relative;
-  gap: 18px;        /* smaller gap between floors */
-  padding: 10px;    /* less padding inside container */
-  margin: 7px 0 0 0;
-  background-color: white;
-  border-radius: 10px 10px 0 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+#chat-input button:hover {
+    background: #8B1717 ;
 }
 
-/* Shrink individual floor blocks */
-.floor {
-  flex: 1;             /* all floors take equal horizontal space */
-  text-align: center;  
-  padding: 5px 10px;     /* smaller padding inside each floor block */
-  font-weight: bold;
-  font-size: 0.85rem;    /* smaller text */
-  cursor: pointer;
+/* Scrollbar styling */
+#chat-messages::-webkit-scrollbar,
+#faculty-list::-webkit-scrollbar {
+    width: 6px;
 }
-
-/* Hover and active styles remain */
-.floor:hover {
-  color: #8b1717;
-}
-
-.floor.active {
-  color: #8b1717;
-  font-weight: bold;
-}
-
-/* Floor indicator stays same */
-.floor-indicator {
-  position: absolute;
-  bottom: 0;
-  height: 4px;
-  width: 0;
-  background-color: #8b1717;
-  transition: all 0.3s ease;
-}
-}
-
-@media (max-width: 850px) {
-  /* Topbar */
-  .system-title {
-    font-size: 0.95rem;   /* slightly smaller */
-    margin-left: 20px;    /* reduce left margin */
-  }
-  .search-field{
-    width: 250px;
-  }
-
-  .notification-icon i {
-    font-size: 1rem;      /* smaller */
-  }
-
-  /* Shrink profile icon and text */
-  .profile-icon {
-    font-size: 1rem;      
-  }
-
-  .profile-name {
-    font-size: 0.85rem;   
-  }
-
-  .profile-number {
-    font-size: 0.65rem;   
-  }
-
-  /* Adjust profile container spacing */
-  .profile-info {
-    gap: 4px;
-    margin-right: 15px;
-  }
-
-  /* Main top section */
-  .main-top {
-    padding: 15px;
-    margin-left: 70px;    /* less margin for smaller screens */
-  }
-
-  .main-top .main-title {
-    font-size: 1.2rem;   
-  }
-
-  .main-top .main-options {
-    display: flex;
-    gap: 8px;             /* slightly smaller gap */
-  }
-
-  .main-top .main-options .tab-btn {
-    padding: 6px 10px;    /* smaller buttons */
-    border-radius: 4px;
-    font-size: 0.9rem;
-  }
-
-  .tab-content {
-    display: none;
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  .tab-content.active {
-    display: block;
-  }
-
-  .tab-content .table-wrapper {
-    width: 100%;          /* let table wrapper fill width */
-    overflow-x: auto;
-  }
-
-  .building-title {
-    font-size: 18px;      /* slightly smaller */
-    padding: 5px 8px;
-  }
-
-  .room-label {
-    font-size: 11px;     
-  }
-
-  /* Floor container adjustments */
-  .floor-container {
-    gap: 12px;           /* smaller gap between floors */
-    padding: 8px;        /* less padding inside container */
-  }
-
-  .floor {
-    flex: 1;             
-    text-align: center;  
-    padding: 4px 8px;    
-    font-size: 0.8rem;   /* slightly smaller */
-  }
-
-  .floor-indicator {
-    height: 3px;         /* slightly thinner indicator */
-  }
-  .tab-content {
-    display: none;
-    width: 100%;
-    overflow-x: auto; /* horizontal scroll if table is too wide */
-}
-.tab-content.active{
-  display: block;
-}
-/* Scroll wrapper inside the tab content */
-.tab-content .table-wrapper {
-    width: 700px;
-    overflow-x: auto; /* allow horizontal scrolling for tables */
-}
-}
-@media (max-width: 750px) {
-  /* Topbar */
-  .system-title {
-    font-size: 0.85rem;   /* slightly smaller */
-    margin-left: 20px;    /* reduce left margin */
-  }
-  .search-field{
-    width: 220px;
-  }
-
-  .notification-icon i {
-    font-size: 0.95rem;      /* smaller */
-  }
-
-  /* Shrink profile icon and text */
-  .profile-icon {
-    font-size: 0.95rem;      
-  }
-
-  .profile-name {
-    font-size: 0.75rem;   
-  }
-
-  .profile-number {
-    font-size: 0.65rem;   
-  }
-
-  /* Adjust profile container spacing */
-  .profile-info {
-    gap: 4px;
-    margin-right: 15px;
-  }
-
-  /* Main top section */
-  .main-top {
-    padding: 15px;
-    margin-left: 70px;    /* less margin for smaller screens */
-  }
-
-  .main-top .main-title {
-    font-size: 1.2rem;   
-  }
-
-  .main-top .main-options {
-    display: flex;
-    gap: 8px;             /* slightly smaller gap */
-  }
-
-  .main-top .main-options .tab-btn {
-    padding: 6px 10px;    /* smaller buttons */
-    border-radius: 4px;
-    font-size: 0.9rem;
-  }
-
-  .tab-content {
-    display: none;
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  .tab-content.active {
-    display: block;
-  }
-
-  .tab-content .table-wrapper {
-    width: 100%;          /* let table wrapper fill width */
-    overflow-x: auto;
-  }
-
-  .building-title {
-    font-size: 18px;      /* slightly smaller */
-    padding: 5px 8px;
-  }
-
-  .room-label {
-    font-size: 11px;     
-  }
-
-  /* Floor container adjustments */
-  .floor-container {
-    gap: 12px;           /* smaller gap between floors */
-    padding: 8px;        /* less padding inside container */
-  }
-
-  .floor {
-    flex: 1;             
-    text-align: center;  
-    padding: 4px 8px;    
-    font-size: 0.8rem;   /* slightly smaller */
-  }
-
-  .floor-indicator {
-    height: 3px;         /* slightly thinner indicator */
-  }
-  .tab-content {
-    display: none;
-    width: 100%;
-    overflow-x: auto; /* horizontal scroll if table is too wide */
-}
-.tab-content.active{
-  display: block;
-}
-/* Scroll wrapper inside the tab content */
-.tab-content .table-wrapper {
-    width: 700px;
-    overflow-x: auto; /* allow horizontal scrolling for tables */
-}
+#chat-messages::-webkit-scrollbar-thumb,
+#faculty-list::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 3px;
 }

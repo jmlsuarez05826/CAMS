@@ -10,32 +10,63 @@
     <link rel="stylesheet" href="../assets/css/room-req.css">
 
     <?php
+    session_start();
     require_once '../includes/admin-sidebar.php';
+        require_once '../pages/camsdatabase.php';
+    require_once '../pages/cams-sp.php';
+
+    if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
+    header("Location: ../pages/login.php");
+    exit();
+}
+
+// Optional: Check if user has admin role
+if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
+    // Not an admin, redirect or show error
+    header("Location: ../pages/login.php");
+    exit();
+}
     ?>
 
 </head>
 
 <body>
 
+    <header>
 
+        <div class="topbar">
+            <h2 class="system-title">Welcome Admin!</h2>
 
-    <div class="topbar">
-        <h2>Welcome Admin!</h2>
-
-        <div class="topbar-right">
-            <div class="search-container">
-                <i class="bi bi-search search-icon"></i>
-                <input type="text" placeholder="Search" class="search-field">
-                <div class="notification-wrapper">
-                    <i class="bi bi-bell-fill notification-icon"></i>
+                   <div class="search-field">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" placeholder="Search">
                 </div>
+
+                          <div class="topbar-right">
+                    <div class="notification-icon">
+                        <i class="bi bi-bell-fill notification-icon"></i>
+                    </div>
+
+                       <div class="profile-info">
+                        <i class="bi bi-person-circle profile-icon"></i>
+                        <div class="profile-text">
+                            <p class="profile-name">Mark Cristopher</p>
+                            <p class="profile-number">093480324</p>
+                            <div id="time"></div>
+                        </div>
+                    </div>
+
+                </div>
+      
+
             </div>
-            <div id="time"></div>
         </div>
+    </header>
 
     </div>
 
     <!--Table goes here -->
+    <div class="content">
     <div class="table-container">
         <table class="requests-table">
             <thead>
@@ -71,6 +102,7 @@
             </tbody>
         </table>
     </div>
+    </div>
 
 
     <!-- Footer Action Bar -->
@@ -88,13 +120,19 @@
 
 
     <script>
-        //script for the time
+  // Script for the time in 12-hour format with AM/PM
         function updateTime() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
+            let hours = now.getHours();
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            // Convert 24-hour to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = String(hours).padStart(2, '0');
+
+            document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
         }
 
         // Update every second
@@ -102,7 +140,6 @@
 
         // Initial call
         updateTime();
-
 
 
         //script for a smooth popup of the action bar/footer

@@ -1,185 +1,177 @@
-.main-content {
-    margin-left: 250px; /* same as sidebar width */
+body{
+      background-color: #f5f5f5;
 }
-
+/* ======== HEADER + TOPBAR ======== */
+header {
+   background-color: #f5f5f5;
+  position: sticky;
+  margin-left: 320px ;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 2px solid #d9d9d9;
+}
 
 .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: white; /* header background */
-    padding: 15px 30px;      /* spacing inside header */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* subtle shadow */
-
-}
-.topbar h2 {
-    color: black;
-    font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  height: 75px;
 }
 
 .topbar-right {
-    display: flex;
-    align-items: center;  /* vertically center search + button */
-    gap: 25px       /* space between search and button */
+  display: flex;
+  align-items: center;
+  gap: 20px; /* reduce space between notif and profile */
 }
 
-/* Search container as a flex box */
-.search-container {
-    
-    display: flex;              /* flex layout */
-    align-items: center;        /* vertical centering */
-    background-color: #D9D9D9;
-    border-radius: 25px;
-    gap: 10px;                  /* spacing between children */
-    width: 250px;               /* optional fixed width */
-    position: relative;
-    padding: 5px 18px 5px 10px;
+
+/* ======== TITLE ======== */
+.system-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  font-size: 30px;
+  color: #8B1717;
+  margin-left: 50px;
 }
 
-/* Left search icon */
-.search-icon {
-    font-size: 16px;
-    color: #333;
-}
-
-/* Input takes remaining space */
+/* ======== SEARCH FIELD ======== */
 .search-field {
-    border: none;
-    background: transparent;
-    outline: none;
-    flex: 1;                    /* fills available space */
-    font-size: 16px;
-    padding: 5px 0;             /* vertical padding */
+  display: flex;
+  align-items: center;
+  background-color: #d9d9d9;
+  padding: 6px 10px;
+  border-radius: 10px;
+  width: 280px;
 }
 
-/* Notification wrapper (icon + separator) */
-.notification-wrapper {
-    display: flex;
-    align-items: center;
-    border-left: 1px solid black; /* vertical separator */
-    padding-left: 10px;
-    padding-right: 15px;
+.search-field i {
+  color: #666;
+  margin-right: 8px;
 }
 
-/* Notification icon */
- .notification-icon {
-    font-size: 18px;
-    color: #333;
-    cursor: pointer;
-   
+.search-field input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.95rem;
 }
 
+/* ======== NOTIFICATION ICON ======== */
+.notification-icon i {
+  font-size: 1.4rem;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  
+}
 
- #time {
-    font-size: 20px;
-    font-weight: bold;
-    color:#8B1717;
-    gap: 25px; /* push it to the right */
+.notification-icon i:hover {
+  color: #007bff;
+}
+
+/* ======== PROFILE INFO ======== */
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 50px;
+  position: relative;
+}
+
+.profile-icon {
+  font-size: 1.6rem;
+  color: #333;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.profile-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+.profile-number {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+#time {
+  font-size: 20px;
+  font-weight: bold;
+  color: #000000;
+  gap: 25px;
+  padding-right: 50px;
+}
+
+/*table */
+.content {  
+    height: calc(100vh - 75px);   
     
+    display: flex;
+    justify-content: center;     
+    align-items: top; 
+    margin-top: 6em;          
+    padding: 0 30px;                
+    box-sizing: border-box;
 }
+
 .table-container {
-    margin-top: 50px;
-    overflow-x: auto;
-    margin-left: 50px;
-    margin-right: 50px;
-    border-radius: 15px;
-}
-
-.requests-table {
-    border-collapse: collapse;   /* merge borders */
     width: 100%;
+    max-width: 1300px;              
 }
 
-.requests-table th{             
-    padding-top: 20px;
-    padding-bottom: 25px;
-    text-align: center;
-    border-left: none;   /* remove left vertical border */
-    border-right: none;  /* remove right vertical border */
-    border-bottom: 1px solid #ddd; /* keep horizontal line */
-    font-weight: bold;
+/* Table styling */
+.requests-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+/* Table header */
+.requests-table thead tr {
+    background-color: #a8a8a8;
+    color: #ffffff;
+    font-weight: 600;
     font-size: 16px;
 }
-.requests-table td{
+
+.requests-table th {
+    padding: 18px 12px;
     text-align: center;
-    border-left: none;   /* remove left vertical border */
-    border-right: none;  /* remove right vertical border */
-    border-bottom: 1px solid #ddd; /* keep horizontal line */
-    padding-top: 10px;
-    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
-.requests-table th:nth-child(1) {
-    min-width: 150px;  /* adjust as needed */
+/* Table body cells */
+.requests-table td {
+    padding: 14px 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    font-size: 15px;
 }
 
-.requests-table thead tr {
-    border-bottom: 2px solid #8B1717; 
-}
-
-
-/* Optional row hover effect */
-.requests-table tbody tr:hover {
-    background-color: #f5f5f5;
-}
-
-.requests-table {
-    background-color: white;
-}
-
-.requests-table tbody tr:hover {
-    background-color: #f9f9f9;
-}
-
-        /* Checkbox column smaller width */
+/* Checkbox / first column */
 .requests-table th:first-child,
 .requests-table td:first-child {
     width: 40px;
-    text-align: center;
 }
 
-
-.requests-table {
-    border-collapse: collapse;   /* merge borders */
-    width: 100%;
-    border-radius: 15px;
-}
-
-.requests-table th{             
-    padding-top: 20px;
-    padding-bottom: 25px;
-    text-align: center;
-    border-left: none;   /* remove left vertical border */
-    border-right: none;  /* remove right vertical border */
-    border-bottom: 1px solid #ddd; /* keep horizontal line */
-    font-weight: bold;
-    font-size: 16px;
-}
-.requests-table td{
-    text-align: center;
-    border-left: none;   /* remove left vertical border */
-    border-right: none;  /* remove right vertical border */
-    border-bottom: 1px solid #ddd; /* keep horizontal line */
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-.requests-table th:nth-child(1) {
-    min-width: 150px;  /* adjust as needed */
-}
-
-.requests-table thead tr {
-    border-bottom: 2px solid #8B1717; 
-}
-
-
-/* Optional row hover effect */
+/* Row hover effect */
 .requests-table tbody tr:hover {
     background-color: #f5f5f5;
+    transition: background-color 0.2s ease;
 }
+
 
 .dropdown-header {
     position: relative;
@@ -251,7 +243,7 @@
 }
 
 .add-btn {
-    background-color: #0d6efd; /* blue for primary action */
+    background-color: #0066ff; /* blue for primary action */
     color: white;
     border: none;
     padding: 6px 14px;
@@ -262,156 +254,4 @@
 
 .add-btn:hover {
     background-color: #0b5ed7;
-}
-
-.clickable-row {
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.clickable-row:hover {
-    background: #f7f7f7;
-}
-
-/* Popup size & padding */
-
-
-.equip-modal {
-    padding: 20px 25px !important;
-}
-
-/* Header title aligned left */
-.equip-header {
-    text-align: left;
-    margin-bottom: 10px;
-}
-
-.equip-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-/* Divider line */
-.equip-divider {
-    border: none;
-    border-top: 1px solid #ccc;
-    margin: 15px 0;
-}
-
-/* TOP SECTION: image + info only (side-by-side) */
-.equip-container {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Image */
-.equip-image-box {
-    width: 150px;
-}
-.equip-image {
-    width: 140px;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 8px;
-    background: #eee;
-}
-
-/* Right-side info */
-.equip-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: none;
-}
-
-.equip-name {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 0;
-}
-
-.equip-summary p {
-    margin: 2px 0;
-    font-size: 16px;
-}
-
-/* "Unit Status" title */
-.unit-status-title {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-/* Unit list MUST be below (vertical layout) */
-.unit-list {
-    max-height: 250px;
-    overflow-y: auto;
-    margin-top: 8px;
-    padding-right: 5px;
-}
-
-/* Individual unit rows */
-.unit-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 4px;
-    border-bottom: 1px solid #eee;
-    font-size: 14px;
-}
-
-.unit-card .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 8px;
-}
-
-.available .dot { background: #28a745; }
-.reserved .dot { background: #d9534f; }
-
-/* Close (X) button fix */
-.swal2-close {
-    background: none !important;
-    color: #333 !important;
-    border: none !important;
-    font-size: 20px !important;
-    width: auto !important;
-    height: auto !important;
-    padding: 0 !important;
-    line-height: 1 !important;
-}
-.swal2-close:hover {
-    color: red !important;
-}
-
-.equip-row {
-    display: flex;
-    align-items: center;
-    gap: 10px; /* space between label and input */
-    margin-bottom: 3px;
-}
-
-.equip-input {
-    border: none;          /* remove the default stroke */
-    background: transparent; /* no background color */
-    font-size: 16px;
-    padding: 2px 4px;
-    width: 150px;           /* adjust as needed */
-    outline: none;          /* remove focus outline */
-    border-bottom: 1px solid #ccc; /* optional subtle underline */
-}
-
-.equip-input:focus {
-    border-bottom: 1px solid #007bff; /* highlight when editing */
-}
-.summary-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
-    font-size: 16px;
 }

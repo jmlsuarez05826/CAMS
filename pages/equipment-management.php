@@ -1,3 +1,80 @@
+<?php
+session_start();
+require_once '../pages/camsdatabase.php';
+require_once '../pages/cams-sp.php';
+
+if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
+    header("Location: ../pages/login.php");
+    exit();
+}
+
+if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
+    // Not an admin, redirect or show error
+    header("Location: ../pages/login.php");
+    exit();
+}
+
+
+$crud = new Crud();
+
+if (isset($_POST['action']) && $_POST['action'] === 'addEquipment') {
+    $equipmentname = $_POST['equipmentname'];
+    $quantity = $_POST['quantity'];
+
+    try {
+        if ($crud->addEquipment($equipmentname, $quantity)) {
+            echo "success";
+        }
+    } catch (PDOException $e) {
+        echo "error: " . $e->getMessage();
+    }
+    exit;
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'editEquipment') {
+    $equipmentID = $_POST['equipmentID'];
+    $equipmentname = $_POST['equipmentname'];
+    $quantity = $_POST['quantity'];
+
+    try {
+        if ($crud->editEquipment($equipmentID, $equipmentname, $quantity)) {
+            echo "success";
+        }
+    } catch (PDOException $e) {
+        echo "error: " . $e->getMessage();
+    }
+    exit;
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'deleteEquipment') {
+    $equipmentID = $_POST['equipmentID'];
+
+
+    try {
+        if ($crud->deleteEquipment($equipmentID)) {
+            echo "success";
+        }
+    } catch (PDOException $e) {
+        echo "error: " . $e->getMessage();
+    }
+    exit;
+}
+
+require_once '../includes/admin-sidebar.php';
+
+
+
+
+
+$equipments = $crud->getEquipments();
+?>
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,38 +84,46 @@
     <title>Document</title>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-
-
+    <link rel="stylesheet" href="../assets/css/room-req.css">
     <link rel="stylesheet" href="../assets/css/equipment-management.css">
 
-    <?php
-    include '../includes/admin-sidebar.php';
-    ?>
 
 </head>
 
 <body>
-
-    <div class="main-content">
+    <header>
 
         <div class="topbar">
-            <h2>Welcome Admin!</h2>
+            <h2 class="system-title">Welcome Admin!</h2>
+
+            <div class="search-field">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" placeholder="Search">
+            </div>
 
             <div class="topbar-right">
-                <div class="search-container">
-                    <i class="bi bi-search search-icon"></i>
-                    <input type="text" placeholder="Search" class="search-field">
-                    <div class="notification-wrapper">
-                        <i class="bi bi-bell-fill notification-icon"></i>
+                <div class="notification-icon">
+                    <i class="bi bi-bell-fill notification-icon"></i>
+                </div>
+
+                <div class="profile-info">
+                    <i class="bi bi-person-circle profile-icon"></i>
+                    <div class="profile-text">
+                        <p class="profile-name">Mark Cristopher</p>
+                        <p class="profile-number">093480324</p>
+                        <div id="time"></div>
                     </div>
                 </div>
-                <div id="time"></div>
-            </div>
-        </div>
 
-        <!--Table goes here -->
+            </div>
+
+
+        </div>
+        </div>
+    </header>
+
+    <!--Table goes here -->
+    <div class="content">
         <div class="table-container">
             <!-- Add Equipment Button -->
             <div class="table-header-actions">
@@ -50,264 +135,202 @@
                     <tr>
                         <th>Equipment Name</th>
                         <th>Quantity</th>
-                        <th>In Use</th>
-                        <th class="dropdown-header">
-                            Status
-                            <span class="dropdown-icon">▼</span>
-                            <ul class="dropdown-menu">
-                                <li onclick="filterStatus('Available')">Available</li>
-                                <li onclick="filterStatus('Unavailable')">Unavailable</li>
-                                <li onclick="filterStatus('Under Maintenance')">Under Maintenance</li>
-                            </ul>
-                        </th>
                         <th>Action</th>
                     </tr>
                 </thead>
+
+
                 <tbody>
-                    <tr class="equipment-row">
-                        <td>HDMI</td>
-                        <td>10</td>
-                        <td>3</td>
-                        <td>Available</td>
-                        <td>
-                            <button class="badge bg-edit action-btn">Edit</button>
-                            <button class="badge bg-delete action-btn">Delete</button>
-                        </td>
-                    </tr>
-                    <tr class="equipment-row">
-                        <td>Viewboard</td>
-                        <td>12</td>
-                        <td>5</td>
-                        <td>Under Maintenance</td>
-                        <td>
-                            <button class="badge bg-edit action-btn">Edit</button>
-                            <button class="badge bg-delete action-btn">Delete</button>
-                        </td>
-                    </tr>
+                    <?php foreach ($equipments as $equipment): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($equipment['EquipmentName']) ?></td>
+                            <td><?= htmlspecialchars($equipment['Quantity']) ?></td>
+
+
+                            <td>
+                                <button class="badge bg-edit edit-equipment-btn"
+                                    data-id="<?= $equipment['EquipmentID'] ?>"
+                                    data-name="<?= htmlspecialchars($equipment['EquipmentName']) ?>"
+                                    data-qty="<?= $equipment['Quantity'] ?>">
+                                    Edit
+                                </button>
+                                <button class="badge bg-delete">Delete</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
-            </table>
+
         </div>
-    </div>
 
 
-    <script>
-        //SWAL for the equipment
-        document.addEventListener('DOMContentLoaded', () => {
-            const rows = document.querySelectorAll('.equipment-row');
 
-            rows.forEach(row => {
-                row.addEventListener('click', (e) => {
-                    if (e.target.tagName === 'BUTTON') return;
+        <script>
+            // Script for the time in 12-hour format with AM/PM
+            function updateTime() {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
 
-                    // Get all cells (td elements) in the clicked row
-                    const cells = row.querySelectorAll('td');
+                // Convert 24-hour to 12-hour format
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                hours = String(hours).padStart(2, '0');
 
-                    // Extract equipment data from the table cells(just a placeholder, apply backend logic here)
-                    const item = cells[0].innerText; //equipment name
-                    const quantity = parseInt(cells[1].innerText); // Total Quantity
-                    const status = cells[2].innerText; // Status of Equipment  
+                document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
+            }
 
-                    // -----------------------------
-                    // Build the HTML for the unit list dynamically
-                    // Each unit will display its label, status, and a dot indicator
-                    // -----------------------------
+            // Update every second
+            setInterval(updateTime, 1000);
 
-                    let unitListHTML = '';
-                    for (let i = 0; i < quantity; i++) {
-                        const num = i + 1;
-                        const isReserved = num <= 4; // placeholder logic
-                        unitListHTML +=
-                            '<div class="unit-card ' + (isReserved ? 'reserved' : 'available') + '">' +
-                            '<span class="dot"></span>' +
-                            '<span class="unit-label">' + item + ' #' + num + '</span>' +
-                            '<span class="unit-status">' + (isReserved ? 'Reserved until 3PM' : 'Available') + '</span>' +
-                            '</div>';
+            // Initial call
+            updateTime();
+
+
+
+            //Script for the add equipment modal
+            document.getElementById('addEquipmentBtn').addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Add New Equipment',
+                    html: `<input type="text" id="equipmentname" class="swal2-input" placeholder="Equipment Name">
+             <input type="number" id="equipmentQty" class="swal2-input" placeholder="Quantity">`,
+                    confirmButtonText: 'Add',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const name = Swal.getPopup().querySelector('#equipmentname').value;
+                        const qty = Swal.getPopup().querySelector('#equipmentQty').value;
+                        if (!name || !qty) {
+                            Swal.showValidationMessage('Please enter both fields');
+                        }
+                        return {
+                            name: name,
+                            qty: qty
+                        }
                     }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const name = result.value.name;
+                        const qty = result.value.qty;
+
+                        fetch('', { // sends data to same PHP file
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({
+                                    action: 'addEquipment',
+                                    equipmentname: name,
+                                    quantity: qty
+                                })
+                            })
+                            .then(res => res.text())
+                            .then(data => {
+                                if (data.trim() === 'success') {
+                                    Swal.fire('Added!', 'Equipment successfully added.', 'success')
+                                        .then(() => location.reload()); // refresh table
+                                } else {}
+                            })
+                            .catch(err => Swal.fire('Error', err.message, 'error'));
+                    }
+                });
+            });
+
+
+            document.querySelectorAll('.edit-equipment-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-id');
+                    const name = button.getAttribute('data-name');
+                    const qty = button.getAttribute('data-qty');
 
                     Swal.fire({
-                        width: "650px",
-                        heightAuto: false,
-                        showConfirmButton: true,
-                        showCloseButton: true,
-                        closeButtonHtml: '&times;',
-                        customClass: {
-                            popup: "equip-modal"
-                        },
-
+                        title: 'Edit Equipment',
                         html: `
-
-    <div class="equip-header"> 
-        <h2 class="equip-title">Equipment Information</h2> 
-        <hr class="equip-divider"> 
-    </div> 
-
-    <div class="equip-container"> 
-
-    <!-- Left Image --> 
-
-     <div class="equip-image-box" style="margin-top:10px; cursor:pointer;">
-                <img id="equip-image-preview" src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png" 
-                     class="equip-image" style="width:140px; height:140px; object-fit:cover;">
-                <input id="equip-image-upload" type="file" accept="image/*" style="display:none;">
-            </div>
-
-        <div class="equip-info">
-
-            <!-- Editable name -->
-            <div class="equip-row">
-                <p><strong>Unit Name:</strong></p>
-                <input id="edit-name" class="equip-input" type="text" value="${item}">
-            </div>
-            
-            <div class="equip-row">
-                <p><strong>Total Units:</strong></p>
-                    <input id="edit-qty" class="equip-input" type="number" value="${quantity}">
-            </div>            
-
-                <div class="equip-summary">
-    <div class="summary-row">
-        <label>Available:</label>
-        <span>3</span>
-    </div>
-    <div class="summary-row">
-        <label>Reserved:</label>
-        <span>4</span>
-    </div>
-</div>
-
-        </div>
-    </div>
-
-    <hr class="equip-divider">
-        <h3 class="unit-status-title">Unit Status</h3>                    
-
-    <!-- Scrollable Unit List -->
-    <div class="unit-list">
-        ${unitListHTML}
-    </div>
-
-
-`,
-                        didOpen: () => {
-                            // This runs after the modal is in the DOM
-                            const imagePreview = Swal.getHtmlContainer().querySelector('#equip-image-preview');
-                            const imageUpload = Swal.getHtmlContainer().querySelector('#equip-image-upload');
-
-                            imagePreview.addEventListener('click', () => {
-                                imageUpload.click(); // open file picker
-                            });
-
-                            imageUpload.addEventListener('change', (e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (e) => {
-                                        imagePreview.src = e.target.result; // update preview
-                                    };
-                                    reader.readAsDataURL(file);
-                                }
-                            });
-                        },
-
-                        // should it go here??
-                        showCancelButton: true,
-                        confirmButtonText: "Save Changes",
-                        cancelButtonText: "Cancel",
+                <input type="text" id="equipmentname" class="swal2-input" placeholder="Equipment Name" value="${name}">
+                <input type="number" id="equipmentQty" class="swal2-input" placeholder="Quantity" value="${qty}">
+            `,
+                        confirmButtonText: 'Save',
                         focusConfirm: false,
-
-                        // Function to run when confirm is clicked
                         preConfirm: () => {
-                            return {
-                                name: document.getElementById("edit-name")?.value ?? "",
-                                qty: document.getElementById("edit-qty")?.value ?? "",
-                                status: document.getElementById("edit-status")?.value ?? ""
+                            const newName = Swal.getPopup().querySelector('#equipmentname').value.trim();
+                            const newQty = Swal.getPopup().querySelector('#equipmentQty').value.trim();
+                            if (!newName || !newQty) {
+                                Swal.showValidationMessage('Please enter both fields');
+                                return false;
                             }
+                            return {
+                                id,
+                                newName,
+                                newQty
+                            };
                         }
                     }).then(result => {
                         if (result.isConfirmed) {
-                            // Log the updated data (placeholder for backend save)
-                            console.log("Updated data:", result.value);
+                            const data = result.value;
+
+                            fetch('', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    },
+                                    body: new URLSearchParams({
+                                        action: 'editEquipment',
+                                        equipmentID: data.id,
+                                        equipmentname: data.newName,
+                                        quantity: data.newQty
+                                    })
+                                })
+                                .then(res => res.text())
+                                .then(response => {
+                                    if (response.trim() === 'success') {
+                                        Swal.fire('Updated!', 'Equipment successfully updated.', 'success')
+                                            .then(() => location.reload());
+                                    } else {
+                                        Swal.fire('Error', response, 'error');
+                                    }
+                                })
+                                .catch(err => Swal.fire('Error', err.message, 'error'));
                         }
                     });
-
                 });
             });
-        });
 
+            document.querySelectorAll('.bg-delete').forEach(button => {
+                button.addEventListener('click', () => {
+                    const row = button.closest('tr');
+                    const equipmentID = row.querySelector('.edit-equipment-btn').dataset.id;
 
-
-        //script for the time
-        function updateTime() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
-        }
-
-        // Update every second
-        setInterval(updateTime, 1000);
-
-        // Initial call
-        updateTime();
-
-
-        const dropdownHeader = document.querySelector('.dropdown-header');
-
-        dropdownHeader.addEventListener('click', () => {
-            dropdownHeader.classList.toggle('active');
-        });
-
-        // Optional: function to filter or set status
-        function filterStatus(status) {
-            const rows = document.querySelectorAll('.requests-table tbody tr');
-            rows.forEach(row => {
-                row.cells[3].textContent = status; // update the 4th column (Status)
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded'
+                                    },
+                                    body: new URLSearchParams({
+                                        action: 'deleteEquipment',
+                                        equipmentID: equipmentID
+                                    })
+                                })
+                                .then(res => res.text())
+                                .then(data => {
+                                    if (data.trim() === 'success') {
+                                        Swal.fire('Deleted!', 'Equipment has been deleted.', 'success')
+                                            .then(() => location.reload());
+                                    } else {
+                                        Swal.fire('Error', data, 'error');
+                                    }
+                                })
+                                .catch(err => Swal.fire('Error', err.message, 'error'));
+                        }
+                    });
+                });
             });
-            dropdownHeader.classList.remove('active');
-        }
-
-        //Script for the add equipment modal
-        document.getElementById('addEquipmentBtn').addEventListener('click', function() {
-            Swal.fire({
-                title: 'Add New Equipment',
-                html: `<input type="text" id="equipmentName" class="swal2-input" placeholder="Equipment Name">
-    <input type="number" id="equipmentQty" class="swal2-input" placeholder="Quantity">`,
-                confirmButtonText: 'Add',
-                focusConfirm: false,
-                preConfirm: () => {
-                    const name = Swal.getPopup().querySelector('#equipmentName').value;
-                    const qty = Swal.getPopup().querySelector('#equipmentQty').value;
-                    if (!name || !qty) {
-                        Swal.showValidationMessage(`Please enter both fields`);
-                    }
-                    return {
-                        name: name,
-                        qty: qty
-                    }
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    console.log('Equipment Name:', result.value.name);
-                    console.log('Quantity:', result.value.qty);
-
-                    // Here you can add the logic to actually insert it into the table
-                    const table = document.querySelector('.requests-table tbody');
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-    <td>${result.value.name}</td>
-    <td>${result.value.qty}</td>
-    <td>0</td>
-    <td>Available</td>
-    <td>
-        <button class="badge bg-edit">Edit</button>
-        <button class="badge bg-delete">Delete</button>
-    </td>
-    `;
-                    table.appendChild(row);
-                }
-            });
-        });
-    </script>
+        </script>
 
 </body>

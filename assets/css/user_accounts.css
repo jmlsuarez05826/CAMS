@@ -9,6 +9,7 @@ background: white;
 header {
   background-color: #ffffff;
   position: sticky;
+  margin-left: 70px ;
   top: 0;
   z-index: 1000;
   border-bottom: 2px solid #d9d9d9;
@@ -103,6 +104,14 @@ header {
   margin: 0;
   font-size: 0.85rem;
   color: #666;
+}
+
+#time {
+  font-size: 20px;
+  font-weight: bold;
+  color: #000000;
+  gap: 25px;
+  padding-right: 50px;
 }
 .add-user-btn{
     margin-top: 45px;
