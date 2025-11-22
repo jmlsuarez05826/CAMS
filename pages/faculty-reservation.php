@@ -2,16 +2,23 @@
 require_once '../pages/camsdatabase.php';
 require_once '../pages/cams-sp.php';
 
-
 $crud = new Crud();
+
+// Return JSON for units if equipmentID is provided
+if(isset($_GET['equipmentID'])){
+    $equipmentID = (int)$_GET['equipmentID'];
+    $units = $crud->getEquipmentUnits($equipmentID);
+    header('Content-Type: application/json');
+    echo json_encode($units);
+    exit; // stop execution here
+}
 
 $buildings = $crud->getBuildings();
 $floors = $crud->getFloors();
 $rooms = $crud->getRooms();
 $equipments = $crud->getEquipments();
-
-
 ?>
+
 
 
 <!DOCTYPE html>
@@ -27,6 +34,7 @@ $equipments = $crud->getEquipments();
 
     <link rel="stylesheet" href="../assets/css/faculty-reservation.css">
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </head>
 
@@ -148,20 +156,24 @@ $equipments = $crud->getEquipments();
                                 <tbody>
     <?php if (!empty($equipments)): ?>
         <?php foreach ($equipments as $equipment): ?>
-            <tr>
-                <td><?= htmlspecialchars($equipment['EquipmentID']) ?></td>
-                <td><?= htmlspecialchars($equipment['EquipmentName']) ?></td>
-                <td><?= htmlspecialchars($equipment['Quantity']) ?></td>
-                <td>
-                    <span class="badge 
-                        <?= isset($equipment['Status']) && strtolower($equipment['Status']) === 'available' 
-                            ? 'bg-success' 
-                            : 'bg-danger' ?>">
-                        <?= htmlspecialchars($equipment['Status'] ?? 'Available') ?>
-                    </span>
-                </td>
-                <td><button class="btn btn-primary btn-sm">Reserve</button></td>
-            </tr>
+           <tr class="clickable-row" 
+    data-id="<?= $equipment['EquipmentID'] ?>" 
+    data-image="<?= htmlspecialchars($equipment['EquipmentIMG'] ? '../uploads/equipments/' . $equipment['EquipmentIMG'] : '../uploads/equipments/default.png') ?>"
+>
+    <td><?= htmlspecialchars($equipment['EquipmentID']) ?></td>
+    <td><?= htmlspecialchars($equipment['EquipmentName']) ?></td>
+    <td><?= htmlspecialchars($equipment['Quantity']) ?></td>
+    <td>
+        <span class="badge 
+            <?= isset($equipment['Status']) && strtolower($equipment['Status']) === 'available' 
+                ? 'bg-success' 
+                : 'bg-danger' ?>">
+            <?= htmlspecialchars($equipment['Status'] ?? 'Available') ?>
+        </span>
+    </td>
+</tr>
+
+
         <?php endforeach; ?>
     <?php else: ?>
         <tr>
@@ -192,69 +204,7 @@ $equipments = $crud->getEquipments();
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Projector</td>
-                                    <td>5</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Viewboard</td>
-                                    <td>7</td>
-                                    <td><span class="badge bg-success">Available</span></td>
-                                    <td>Reserve</td>
-                                </tr>
+                                
                             </tbody>
                         </table>
                     </div>
@@ -267,6 +217,8 @@ $equipments = $crud->getEquipments();
     </main>
 
     <script>
+
+        
         // Select all tab buttons
         const tabButtons = document.querySelectorAll('.tab-btn');
 
@@ -318,6 +270,67 @@ $equipments = $crud->getEquipments();
                 });
             });
         });
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    document.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const id = row.dataset.id;
+            const equipmentName = row.cells[1].innerText;
+            const totalQty = row.cells[2].innerText;
+            const imgSrc = row.dataset.image || 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png';
+
+            fetch(`../pages/faculty-reservation.php?equipmentID=${id}`)
+                .then(res => res.json())
+                .then(units => {
+                    const unitListHTML = units.map(u => `
+    <div class="unit-card ${u.Status.toLowerCase().replace(' ', '-')}" data-unit-id="${u.UnitID}">
+        <span class="dot"></span>
+        <span class="unit-label">${equipmentName} #${u.UnitNumber}</span>
+        <span class="unit-status">${u.Status}</span>
+        ${u.Status.toLowerCase() === 'available' ? '<button class="reserve-btn">Reserve</button>' : ''}
+    </div>
+`).join('');
+
+
+                    Swal.fire({
+                        width: "650px",            // string with px
+    heightAuto: false,
+    showConfirmButton: true,   // same as admin
+    showCloseButton: true,
+    customClass: { popup: "equip-modal" }, // apply same modal CSS
+                        html: `
+                            <div class="equip-modal">
+                                <div class="equip-header">
+                                    <h2 class="equip-title">Equipment Information</h2>
+                                    <hr class="equip-divider">
+                                </div>
+                                <div class="equip-container" style="display:flex; gap:20px;">
+                                    <div class="equip-image-box">
+                                        <img src="${imgSrc}" alt="${equipmentName}" style="width:140px; height:140px; object-fit:cover; border-radius:5px;">
+                                    </div>
+                                    <div class="equip-info">
+                                        <p><strong>Equipment Name:</strong> ${equipmentName}</p>
+                                        <p><strong>Total Units:</strong> ${totalQty}</p>
+                                        <p>Available: ${units.filter(u => u.Status.toLowerCase() === "available").length}</p>
+                                        <p>Reserved: ${units.filter(u => u.Status.toLowerCase() !== "available").length}</p>
+                                    </div>
+                                </div>
+                                <hr class="equip-divider">
+                                <h3 class="unit-status-title">Unit Status</h3>
+                                <div class="unit-list" style="display:flex; flex-wrap:wrap; gap:10px;">
+                                    ${unitListHTML}
+                                </div>
+                            </div>
+                        `
+                    });
+                })
+                .catch(err => Swal.fire('Error', 'Failed to fetch units: ' + err.message, 'error'));
+        });
+    });
+
+});
+
 
         //script for the rooms
         document.querySelectorAll('.building-block').forEach(buildingBlock => {

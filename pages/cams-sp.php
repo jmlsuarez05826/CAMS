@@ -111,13 +111,17 @@ class Crud
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function editEquipment($equipmentID, $equipmentname, $quantity)
-    {
-  
-            $stmt = $this->conn->prepare("CALL editEquipment(?, ?, ?)");
-            $stmt->execute([$equipmentID, $equipmentname, $quantity]);
-            return true;
+public function editEquipment($equipmentID, $equipmentname, $quantity, $equipmentIMG)
+{
+    // If no new image uploaded, pass NULL
+    if (empty($equipmentIMG)) {
+        $equipmentIMG = null;
     }
+
+    $stmt = $this->conn->prepare("CALL editEquipment(?, ?, ?, ?)");
+    $stmt->execute([$equipmentID, $equipmentname, $quantity, $equipmentIMG]);
+    return true;
+}
 
     public function deleteEquipment($equipmentID)
     {

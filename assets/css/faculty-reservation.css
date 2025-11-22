@@ -517,3 +517,150 @@ header {
 .tab-scroll::-webkit-scrollbar-button {
     display: none; /* remove up/down arrows */
 }
+
+/* Popup modal padding */
+.equip-modal {
+    padding: 20px 25px !important;
+}
+
+/* Header title aligned left */
+.equip-header {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.equip-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Divider line */
+.equip-divider {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 15px 0;
+}
+
+/* TOP SECTION: image + info side-by-side */
+.equip-container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Image */
+.equip-image-box {
+    width: 150px;
+}
+
+.equip-image {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #eee;
+}
+
+/* Right-side info */
+.equip-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: none;
+}
+
+.equip-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.equip-summary p {
+    margin: 2px 0;
+    font-size: 16px;
+}
+
+/* Unit Status title */
+.unit-status-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* Ensure unit cards are stacked vertically like admin */
+.unit-list {
+    display: flex;
+    flex-direction: column;  /* stack units vertically */
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 8px;
+    padding-right: 5px;
+}
+
+.unit-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+
+.unit-card .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.available .dot { background: #28a745; }
+.reserved .dot { background: #d9534f; }
+
+/* SweetAlert2 close (X) button */
+.swal2-close {
+    background: none !important;
+    color: #333 !important;
+    border: none !important;
+    font-size: 20px !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+
+.swal2-close:hover {
+    color: red !important;
+}
+
+/* Optional layout for unit rows inside modal */
+.equip-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 3px;
+}
+
+.equip-input {
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    padding: 2px 4px;
+    width: 150px;
+    outline: none;
+    border-bottom: 1px solid #ccc;
+}
+
+.equip-input:focus {
+    border-bottom: 1px solid #007bff;
+}
+
+.summary-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+    font-size: 16px;
+}

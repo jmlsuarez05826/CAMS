@@ -23,11 +23,36 @@ if(isset($_POST['action'])) {
             $qty = $_POST['quantity'];
             if($crud->addEquipment($name, $qty)) echo 'success';
         } elseif($action === 'editEquipment') {
-            $id = $_POST['equipmentID'];
-            $name = $_POST['equipmentname'];
-            $qty = $_POST['quantity'];
-            if($crud->editEquipment($id, $name, $qty)) echo 'success';
-        } elseif($action === 'deleteEquipment') {
+    $id = $_POST['equipmentID'];
+    $name = $_POST['equipmentname'];
+    $qty = $_POST['quantity'];
+    $imagePath = null;
+
+    // Handle file upload
+    if(isset($_FILES['image']) && $_FILES['image']['error'] === 0){
+        // Server path for upload
+$uploadDir = __DIR__ . '/../uploads/equipments/'; 
+if(!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+// File name
+$fileName = time() . '_' . preg_replace('/[^A-Za-z0-9_\-\.]/', '_', basename($_FILES['image']['name']));
+
+$fullPath = $uploadDir . $fileName;
+
+// Move file
+if(move_uploaded_file($_FILES['image']['tmp_name'], $fullPath)){
+    // Browser-accessible path
+    $imagePath = $fileName; // just filename
+}
+
+    }
+
+    // Only update image if a new file was uploaded
+    if($crud->editEquipment($id, $name, $qty, $imagePath)) {
+        echo 'success';
+    }
+}
+ elseif($action === 'deleteEquipment') {
             $id = $_POST['equipmentID'];
             if($crud->deleteEquipment($id)) echo 'success';
         }
@@ -81,12 +106,16 @@ $equipments = $crud->getEquipments();
             </thead>
             <tbody>
             <?php foreach($equipments as $eq): ?>
-                <tr class="equipment-row" data-id="<?= $eq['EquipmentID'] ?>">
+                <tr class="equipment-row" 
+    data-id="<?= $eq['EquipmentID'] ?>" 
+    data-image="<?= htmlspecialchars($eq['EquipmentIMG'] ? '../uploads/equipments/' . $eq['EquipmentIMG'] : '../uploads/equipments/default.png') ?>"
+>
+    
+
                     <td><?= htmlspecialchars($eq['EquipmentName']) ?></td>
                     <td><?= htmlspecialchars($eq['Quantity']) ?></td>
                     <td>0</td>
                     <td>
-                        <button class="badge bg-edit action-btn">Edit</button>
                         <button class="badge bg-delete action-btn">Delete</button>
                     </td>
                 </tr>
@@ -233,8 +262,12 @@ row.addEventListener('click', (e) => {
 `,
 
                 didOpen: () => {
-                    const img = Swal.getHtmlContainer().querySelector('#equip-image-preview');
-                    const upload = Swal.getHtmlContainer().querySelector('#equip-image-upload');
+                   const img = Swal.getHtmlContainer().querySelector('#equip-image-preview');
+const upload = Swal.getHtmlContainer().querySelector('#equip-image-upload');
+
+// Set current image from data attribute
+img.src = row.dataset.image || 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png';
+
 
                     img.addEventListener('click', () => upload.click());
 
@@ -260,16 +293,23 @@ row.addEventListener('click', (e) => {
                 if (result.isConfirmed) {
 
                     // CALL editEquipment backend
-                    fetch('', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            action: 'editEquipment',
-                            equipmentID: id,
-                            equipmentname: result.value.name,
-                            quantity: result.value.qty
-                        })
-                    })
+                    const formData = new FormData();
+formData.append('action', 'editEquipment');
+formData.append('equipmentID', id);
+formData.append('equipmentname', result.value.name);
+formData.append('quantity', result.value.qty);
+
+// ADD IMAGE
+let imageFile = document.getElementById("equip-image-upload").files[0];
+if (imageFile) {
+    formData.append('image', imageFile);
+}
+
+fetch('', {
+    method: 'POST',
+    body: formData
+})
+
                     .then(res => res.text())
                     .then(data => {
                         if (data.trim() === 'success') {
@@ -287,6 +327,45 @@ row.addEventListener('click', (e) => {
 
     });
 
+// DELETE EQUIPMENT
+document.querySelectorAll('.bg-delete').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation(); // prevent row click from opening modal
+
+        const row = this.closest('.equipment-row');
+        const id = row.dataset.id;
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This equipment and all its units will be deleted.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel"
+        }).then(result => {
+            if (result.isConfirmed) {
+
+                fetch('', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'deleteEquipment',
+                        equipmentID: id
+                    })
+                })
+                .then(res => res.text())
+                .then(data => {
+                    if (data.trim() === 'success') {
+                        Swal.fire("Deleted!", "Equipment removed.", "success")
+                            .then(() => row.remove());
+                    } else {
+                        Swal.fire("Error", data, "error");
+                    }
+                });
+            }
+        });
+    });
+});
 
 </script>
 </body>

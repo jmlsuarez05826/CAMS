@@ -28,7 +28,7 @@
 
 /* Search container as a flex box */
 .search-container {
-    
+        
     display: flex;              /* flex layout */
     align-items: center;        /* vertical centering */
     background-color: #D9D9D9;
