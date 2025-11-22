@@ -305,9 +305,242 @@ $rooms = $crud->getRooms();
             </div>
         </section>
 
+        <!-- class sched modal -->
+        <div class="custom-modal" id="classroomModal">
+            <div class="custom-modal-dialog">
+                <div class="custom-modal-content">
+                    <div class="custom-modal-header">
+                        <h5 class="custom-modal-title">Classroom Schedule</h5>
+                        <button type="button" class="custom-close" id="closeclassroomModal">&times;</button>
+                    </div>
+
+                    <div class="custom-modal-body">
+                        <form method="post" id="classSchedForm">
+
+                            <p>Building Name Room No</p>
+                            <div class="Sched-table-wrapper">
+                                <table class="classSchedTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Instructor</th>
+                                            <th>Class Code </th>
+                                            <th>Subject</th>
+                                            <th>Time</th>
+                                            <th>Section</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Dharz</td>
+                                            <td>GED104</td>
+                                            <td>Science</td>
+                                            <td>8:00 am- 10:00 am</td>
+                                            <td>BSIT 1101</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dharz</td>
+                                            <td>GED104</td>
+                                            <td>Science</td>
+                                            <td>8:00 am- 10:00 am</td>
+                                            <td>BSIT 1101</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dharz</td>
+                                            <td>GED104</td>
+                                            <td>Science</td>
+                                            <td>8:00 am- 10:00 am</td>
+                                            <td>BSIT 1101</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dharz</td>
+                                            <td>GED104</td>
+                                            <td>Science</td>
+                                            <td>8:00 am- 10:00 am</td>
+                                            <td>BSIT 1101</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dharz</td>
+                                            <td>GED104</td>
+                                            <td>Science</td>
+                                            <td>8:00 am- 10:00 am</td>
+                                            <td>BSIT 1101</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kino</td>
+                                            <td>GED101</td>
+                                            <td>Math</td>
+                                            <td>10:00 am- 12:00 pm</td>
+                                            <td>BSIT 1102</td>
+                                        </tr>
+                                        <tr>
+                                            <td>John Mark</td>
+                                            <td>GED111</td>
+                                            <td>Arts</td>
+                                            <td>1:00 pm- 3:00 pm</td>
+                                            <td>BSIT 1103</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <hr class="table-separator">
+
+                            <div class="custom-modal-footer">
+                                <button type="button" class="btn-close-modal" id="closeAddUserFooter">Close</button>
+                                <button type="submit" name="add" id="addBtn">Reserve</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservation Modal -->
+        <div class="custom-modal" id="reserveModal">
+            <div class="custom-modal-dialog">
+                <div class="custom-modal-content">
+                    <div class="custom-modal-header">
+                        <h5 class="custom-modal-title">Reserve Classroom</h5>
+                        <button type="button" class="custom-close" id="closeReserveModal">&times;</button>
+                    </div>
+
+                    <div class="custom-modal-body">
+                        <form id="reserveForm">
+                            <div class="form-group">
+                                <label for="classCode">Class Code</label>
+                                <input type="text" id="classCode" name="classCode" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject">Subject</label>
+                                <input type="text" id="subject" name="subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fromTime">From</label>
+                                <input type="time" id="fromTime" name="fromTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="toTime">To</label>
+                                <input type="time" id="toTime" name="toTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" id="date" name="date" required>
+                            </div>
+
+                            <hr class="table-separator">
+
+                            <div class="custom-modal-footer">
+                                <button type="button" class="btn-close-modal" id="closeReserveFooter">Cancel</button>
+                                <button type="submit" id="confirmReserve">Reserve</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </main>
 
     <script>
+        // =========================
+        // 1. Get modal element
+        // =========================
+        const classroomModal = document.getElementById("classroomModal");
+
+        // Close buttons inside the modal
+        const closeModalBtn = document.getElementById("closeclassroomModal");
+        const closeFooterBtn = document.getElementById("closeAddUserFooter");
+
+        // =========================
+        // 2. Function to open modal
+        // =========================
+        function openClassroomModal() {
+            classroomModal.classList.add("show"); // makes modal visible
+        }
+
+        // =========================
+        // 3. Function to close modal
+        // =========================
+        function closeClassroomModal() {
+            classroomModal.classList.remove("show"); // hides modal
+        }
+
+        // =========================
+        // 4. Attach click event to all .room-card items
+        //    THIS IS THE TRIGGER
+        // =========================
+        document.querySelectorAll(".room-card").forEach(card => {
+            card.addEventListener("click", () => {
+                openClassroomModal(); // show modal when clicking any room
+            });
+        });
+
+        // =========================
+        // 5. Close modal using the "X" button
+        // =========================
+        closeModalBtn.addEventListener("click", closeClassroomModal);
+
+        // =========================
+        // 6. Close modal using footer Close button
+        // =========================
+        closeFooterBtn.addEventListener("click", closeClassroomModal);
+
+        // =========================
+        // 7. Close modal when clicking outside content
+        // =========================
+        window.addEventListener("click", (e) => {
+            if (e.target === classroomModal) {
+                closeClassroomModal();
+            }
+        });
+
+        const reserveBtn = document.getElementById("addBtn");
+        const reserveModal = document.getElementById("reserveModal");
+        const closeReserveBtn = document.getElementById("closeReserveModal");
+        const closeReserveFooter = document.getElementById("closeReserveFooter");
+
+        // Show second modal on reserve click
+        reserveBtn.addEventListener("click", function(e) {
+            e.preventDefault(); // prevent form submission
+            reserveModal.classList.add("show");
+        });
+
+        // Close second modal
+        closeReserveBtn.addEventListener("click", () => reserveModal.classList.remove("show"));
+        closeReserveFooter.addEventListener("click", () => reserveModal.classList.remove("show"));
+
+        // Optional: click outside modal closes it
+        window.addEventListener("click", (e) => {
+            if (e.target === reserveModal) {
+                reserveModal.classList.remove("show");
+            }
+        });
+
+
+        const reserveForm = document.getElementById("reserveForm");
+
+        reserveForm.addEventListener("submit", function(e) {
+            e.preventDefault(); // prevent actual form submission for demo
+
+            // Close the modal
+            reserveModal.classList.remove("show");
+
+            // Show SweetAlert
+            Swal.fire({
+                icon: 'success',
+                title: 'Request Sent!',
+                text: 'Your classroom reservation request has been sent.',
+                timer: 2000, // auto close after 2 seconds
+                showConfirmButton: false
+            });
+
+            // Optional: reset form fields
+            reserveForm.reset();
+        });
+
+
+
         document.addEventListener('DOMContentLoaded', () => {
             const rows = document.querySelectorAll('.equipment-row');
 
@@ -327,14 +560,14 @@ $rooms = $crud->getRooms();
                         const num = i + 1;
                         const isReserved = num <= 4; // placeholder logic
                         unitListHTML += `
-                    <div class="unit-card ${isReserved ? 'reserved' : 'available'}" data-unit="${num}">
-                        <span class="dot"></span>
-                        <span class="unit-label">${item} #${num}</span>
-                        <span class="unit-status">
-                            ${isReserved ? 'Reserved until 3PM' : 'Available'}
-                        </span>
-                    </div>
-                `;
+        <div class="unit-card ${isReserved ? 'reserved' : 'available'}" data-unit="${num}">
+        <span class="dot"></span>
+        <span class="unit-label">${item} #${num}</span>
+        <span class="unit-status">
+            ${isReserved ? 'Reserved until 3PM' : 'Available'}
+        </span>
+        </div>
+        `;
                     }
 
                     Swal.fire({
@@ -347,35 +580,35 @@ $rooms = $crud->getRooms();
                             popup: "equip-modal"
                         },
                         html: `
-                    <div class="equip-header">
-                        <h2 class="equip-title">Equipment Information</h2>
-                        <hr class="equip-divider">
-                    </div>
+        <div class="equip-header">
+            <h2 class="equip-title">Equipment Information</h2>
+            <hr class="equip-divider">
+        </div>
 
-                    <div class="equip-container">
+        <div class="equip-container">
 
-                        <div class="equip-image-box">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png" class="equip-image">
-                        </div>
+            <div class="equip-image-box">
+                <img src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png" class="equip-image">
+            </div>
 
-                        <div class="equip-info">
+            <div class="equip-info">
 
-                            <h2 class="equip-name">${item}</h2>
-                            <div class="equip-summary">
-                                <p><strong>Total Units:</strong> ${quantity}</p>
-                                <p><strong>Available:</strong> 3</p>
-                                <p><strong>Reserved:</strong> 4</p>
-                            </div>
+                <h2 class="equip-name">${item}</h2>
+                <div class="equip-summary">
+                    <p><strong>Total Units:</strong> ${quantity}</p>
+                    <p><strong>Available:</strong> 3</p>
+                    <p><strong>Reserved:</strong> 4</p>
+                </div>
 
-                        </div>
-                    </div>
+            </div>
+        </div>
 
-                    <hr class="equip-divider">
-                    <h3 class="unit-status-title">Unit Status</h3>
-                    <div class="unit-list">
-                        ${unitListHTML}
-                    </div>
-                `,
+        <hr class="equip-divider">
+        <h3 class="unit-status-title">Unit Status</h3>
+        <div class="unit-list">
+            ${unitListHTML}
+        </div>
+        `,
                         focusConfirm: false,
                         preConfirm: () => ({
                             name: document.getElementById("edit-name")?.value ?? "",
@@ -395,49 +628,49 @@ $rooms = $crud->getRooms();
                                     Swal.fire({
                                         title: `Reserve ${equipmentName}`,
                                         html: `
-<div class="reserve-modal">
-    <div class="section-title">Class Information</div>
-    <hr class="equip-divider">
+        <div class="reserve-modal">
+            <div class="section-title">Class Information</div>
+            <hr class="equip-divider">
 
-    <div class="row">
-        <label>Class Code</label>
-        <input id="reserve-class" class="swal2-input" placeholder="IT202">
-    </div>
+            <div class="row">
+                <label>Class Code</label>
+                <input id="reserve-class" class="swal2-input" placeholder="IT202">
+            </div>
 
-    <div class="row">
-        <label>Subject Name</label>
-        <input id="reserve-subject" class="swal2-input" placeholder="Database Sys">
-    </div>
+            <div class="row">
+                <label>Subject Name</label>
+                <input id="reserve-subject" class="swal2-input" placeholder="Database Sys">
+            </div>
 
-    <br>
-    <div class="section-title">Reservation Schedule</div>
-    <hr class="equip-divider">
-    <div class="row">
-        <label>Date</label>
-        <input id="reserve-date" type="date" class="swal2-input">
-    </div>
-   <div class="row">
-    <label>Time</label>
-    <div class="time-range">
-        <input id="reserve-from" type="time" class="swal2-input small-input" placeholder="From">
-        <span class="dash"> - </span>
-        <input id="reserve-to" type="time" class="swal2-input small-input" placeholder="To">
-    </div>
-</div>
+            <br>
+            <div class="section-title">Reservation Schedule</div>
+            <hr class="equip-divider">
+            <div class="row">
+                <label>Date</label>
+                <input id="reserve-date" type="date" class="swal2-input">
+            </div>
+            <div class="row">
+                <label>Time</label>
+                <div class="time-range">
+                    <input id="reserve-from" type="time" class="swal2-input small-input" placeholder="From">
+                    <span class="dash"> - </span>
+                    <input id="reserve-to" type="time" class="swal2-input small-input" placeholder="To">
+                </div>
+            </div>
 
 
-    <div class="row">
-        <label>Equipment</label>
-        <input id="reserve-equipment" class="swal2-input" value="${equipmentName}" readonly>
-    </div>
+            <div class="row">
+                <label>Equipment</label>
+                <input id="reserve-equipment" class="swal2-input" value="${equipmentName}" readonly>
+            </div>
 
-    <hr class="equip-divider">
-    <div class="row">
-        <label>Purpose (optional)</label>
-        <textarea id="reserve-purpose" class="swal2-textarea" placeholder="Presentation for Lab 3"></textarea>
-    </div>
-</div>
-`,
+            <hr class="equip-divider">
+            <div class="row">
+                <label>Purpose (optional)</label>
+                <textarea id="reserve-purpose" class="swal2-textarea" placeholder="Presentation for Lab 3"></textarea>
+            </div>
+        </div>
+        `,
 
                                         showCancelButton: true,
                                         confirmButtonText: 'Reserve',
@@ -489,12 +722,12 @@ $rooms = $crud->getRooms();
                     title: `${room}`,
                     html: `
         <div style="text-align:left; font-size:16px;">
-          <p><b>Capacity:</b> ${capacity}</p>
-          <p><b>Status:</b> ${status}</p>
-          <hr>
-          <button id="editBtn" class="swal2-confirm swal2-styled" style="margin-top:10px;">Edit</button>
+            <p><b>Capacity:</b> ${capacity}</p>
+            <p><b>Status:</b> ${status}</p>
+            <hr>
+            <button id="editBtn" class="swal2-confirm swal2-styled" style="margin-top:10px;">Edit</button>
         </div>
-      `,
+        `,
                     showConfirmButton: false,
                     width: "400px",
                     didOpen: () => {
@@ -534,37 +767,42 @@ $rooms = $crud->getRooms();
             });
         });
 
-        //script for the red floor indicator
         document.querySelectorAll('.building-block').forEach(building => {
             const floors = building.querySelectorAll('.floor');
             const indicator = building.querySelector('.floor-indicator');
 
-            //Default active floor 
-            if (floors.length > 0) {
-                const defaultFloor = floors[0];
-                defaultFloor.classList.add('active');
-
-                const position = defaultFloor.offsetLeft;
-                const width = defaultFloor.offsetWidth;
+            // Function to update indicator
+            const updateIndicator = (floor) => {
+                const position = floor.offsetLeft;
+                const width = floor.offsetWidth;
 
                 indicator.style.left = position + "px";
                 indicator.style.width = width + "px";
             }
 
-            // Handle user clicks
+            // Default active floor
+            if (floors.length > 0) {
+                const defaultFloor = floors[0];
+                defaultFloor.classList.add('active');
+                updateIndicator(defaultFloor);
+            }
+
+            // Handle clicks
             floors.forEach((floor) => {
                 floor.addEventListener('click', () => {
                     floors.forEach(f => f.classList.remove('active'));
                     floor.classList.add('active');
-
-                    const position = floor.offsetLeft;
-                    const width = floor.offsetWidth;
-
-                    indicator.style.left = position + "px";
-                    indicator.style.width = width + "px";
+                    updateIndicator(floor);
                 });
             });
+
+            // Update indicator on window resize
+            window.addEventListener('resize', () => {
+                const activeFloor = building.querySelector('.floor.active');
+                if (activeFloor) updateIndicator(activeFloor);
+            });
         });
+
 
         //script for the rooms
         document.querySelectorAll('.building-block').forEach(buildingBlock => {
