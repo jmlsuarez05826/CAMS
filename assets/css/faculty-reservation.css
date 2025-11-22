@@ -1,0 +1,692 @@
+/* ======== BASIC RESETS ======== */
+body {
+  margin: 0;
+  font-family: "Poppins";
+  overflow-x: hidden;
+  overflow-y: hidden;
+
+}
+
+/* ======== HEADER + TOPBAR ======== */
+header {
+  background-color: #ffffff;
+  
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* reduce space between notif and profile */
+}
+
+
+/* ======== TITLE ======== */
+.system-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #8B1717;
+  margin-left: 50px;
+}
+
+/* ======== SEARCH FIELD ======== */
+.search-field {
+  display: flex;
+  align-items: center;
+  background-color: #d9d9d9;
+  padding: 6px 10px;
+  border-radius: 10px;
+  width: 280px;
+}
+
+.search-field i {
+  color: #666;
+  margin-right: 8px;
+}
+
+.search-field input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+/* ======== NOTIFICATION ICON ======== */
+.notification-icon i {
+  font-size: 1.4rem;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  
+}
+
+.notification-icon i:hover {
+  color: #007bff;
+}
+
+/* ======== PROFILE INFO ======== */
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 50px;
+  position: relative;
+}
+
+.profile-icon {
+  font-size: 1.6rem;
+  color: #333;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.profile-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+.profile-number {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.profile-dropdown {
+    display: none; /* hide by default */
+    position: absolute;
+    top: 100%; /* right below the profile-info */
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 10;
+    width: 120px;
+}
+
+.profile-dropdown p {
+    margin: 0;
+    padding: 10px;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+}
+
+.profile-dropdown p:hover {
+    background-color: #f2f2f2;
+}
+
+/* Show dropdown on hover */
+.profile-info:hover .profile-dropdown {
+    display: block;
+}
+
+
+/* ======== SEPARATOR LINE ======== */
+.separator {
+  height: 1px;
+  background-color: #ddd;
+  width: 80%;
+  margin: 0 auto;
+}
+
+
+.main-top{
+    margin-left: 200px;
+}
+
+.main-title{
+    color: #8B1717;
+    font-weight: 400;
+}
+
+.main-options {
+    display: flex;
+    gap: 10px; /* space between buttons */
+    margin-bottom: 20px;
+}
+
+/* Tab buttons */
+.tab-btn {
+    padding: 8px 16px;
+    background-color: transparent; /* no fill */
+    border: 2px solid #8B1717;         /* red stroke */
+    color: #8B1717;                     /* text color */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.tab-btn:hover {
+    background-color: #8B1717;
+    color: #fff;
+}
+
+/* Active tab */
+.tab-btn.active {
+    background-color: #8B1717;
+    color: #fff;
+}
+
+
+/* maint content table starts here */
+/* equipments table */
+.table-wrapper {
+    margin: 50px auto;
+    width: 900px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 2px solid #d9d9d9;   /* visible border */
+    border-radius: 10px;
+    background-color: white;
+    overflow: hidden;            /* round corners effect */
+    padding: 0;
+}
+
+.table-wrapper table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-color: #8B1717 #d9d9d9;
+    scrollbar-width: thin;
+}
+
+.table-scroll::-webkit-scrollbar {
+    width: 15px;                   /* scrollbar width */
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: #d9d9d9;            /* track (background) */
+    border-radius: 10px;
+}
+.table-scroll::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+
+/* TABLE */
+.equipment-table {
+    width: 100%;
+    border-collapse: separate;   /* ← THIS is key difference */
+    border-spacing: 0;           /* remove gaps */
+    background-color: white;
+}
+
+/* HEADER */
+.equipment-table th {
+    padding: 20px 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    border-bottom: 2px solid #8B1717;
+}
+.equipment-table thead th{
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 2;
+}
+
+/* CELLS */
+.equipment-table td {
+    text-align: center;
+    padding: 12px;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+/* ROW HOVER */
+.equipment-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.equipment-table thead tr {
+    border-bottom: 2px solid #8B1717; 
+}
+
+
+/* Optional row hover effect */
+.equipment-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.equipment-table {
+    background-color: white;
+}
+
+.equipment-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+
+.tab-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Reservation table */
+
+.reservation-table {
+    width: 100%;
+    border-collapse: separate;   /* ← THIS is key difference */
+    border-spacing: 0;           /* remove gaps */
+    background-color: white;
+}
+
+/* HEADER */
+.reservation-table th {
+    padding: 20px 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    border-bottom: 2px solid #8B1717;
+}
+.reservation-table thead th{
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 2;
+}
+
+/* CELLS */
+.reservation-table td {
+    text-align: center;
+    padding: 12px;
+    border-bottom: 1px solid #d9d9d9;
+}
+
+/* ROW HOVER */
+.reservation-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.reservation-table thead tr {
+    border-bottom: 2px solid #8B1717; 
+}
+
+/* Optional row hover effect */
+.reservation-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.reservation-table {
+    background-color: white;
+}
+
+.reservation-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+
+.building-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 0px;
+    padding: 10px 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: black;
+   /* matches the gray background */
+}
+
+
+
+.floor-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 20px; /* space between floor blocks */
+  padding: 20px;
+  margin: 7px 0px 0px 0px; /* space from building title and sides */
+  background-color: white; /* white rectangular container */
+  border-radius: 10px 10px 0px 0px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* subtle shadow */
+}
+
+.floor {
+  padding: 15px 25px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.floor:hover {
+  color: #8b1717;
+}
+
+.floor.active {
+  color: #8b1717; /* text color */
+  font-weight: bold;
+}
+
+.floor-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 4px; /* thickness of the bar */
+  width: 0; /* initial width, updated with JS */
+  background-color: #8b1717; /* color of active floor */
+  transition: all 0.3s ease;
+}
+
+
+/* Common style for all room cards */
+.room-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 15px;
+  min-width: 120px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.room-card hr {
+  width: 80%;
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px solid #ccc;
+}
+
+.room-label {
+  font-size: 12px;
+  color: #8b1717;
+}
+
+.room-number {
+  font-size: 20px;
+  margin-top: 5px;
+  color: #8b1717;
+  font-style: bold;
+}
+
+.room-status {
+  font-size: 12px;
+  color: green; /* or red if occupied */
+  margin-top: 5px;
+}
+
+.building-title + .floor-container {
+  margin-top: 0px; /* reduce space for next building group */
+}
+.room-container {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: left;  /* center rooms nicely */
+  align-items: center;
+  padding: 2em;
+  overflow: hidden;
+  margin: 0 0 2em 0px; /* leave space for sidebar */
+  border-radius: 0 0 10px 10px;
+
+  /* background */
+  background-image: url("../../images/bsu_front.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 300px; 
+}
+
+
+/* Optional soft overlay for better readability */
+.room-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.4) for dark */
+  z-index: 1;
+}
+
+/* Rooms should appear above the overlay */
+.room-card {
+  background-color: white;
+  border-radius: 10px;
+  min-width: 120px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 2;
+  padding: 1em;
+  margin: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.room-card:hover {
+  transform: scale(1.01);
+}
+
+.tab-scroll {
+    max-height: 500px;            /* limit visible height */
+    margin: 0 80px 50px 80px;
+    overflow-y: auto;             /* enable vertical scroll */
+    overflow-x: hidden;
+    padding-right: 10px;          /* space for scrollbar */
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+    scrollbar-color: #8B1717 #d9d9d9;
+    scrollbar-width: thin;   
+}
+
+/* WebKit for Chrome, Edge, Safari */
+.tab-scroll::-webkit-scrollbar {
+    width: 12px;
+}
+
+.tab-scroll::-webkit-scrollbar-track {
+    background: #d9d9d9;
+    border-radius: 10px;
+}
+
+.tab-scroll::-webkit-scrollbar-thumb {
+    background: #8B1717;
+    border-radius: 10px;
+}
+
+.tab-scroll::-webkit-scrollbar-button {
+    display: none; /* remove up/down arrows */
+}
+
+
+.equip-modal {
+    padding: 20px 25px !important;
+}
+
+/* Header title aligned left */
+.equip-header {
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+.equip-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Divider line */
+.equip-divider {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 15px 0;
+}
+
+/* TOP SECTION: image + info only (side-by-side) */
+.equip-container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Image */
+.equip-image-box {
+    width: 150px;
+}
+.equip-image {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #eee;
+}
+
+/* Right-side info */
+.equip-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: none;
+}
+
+.equip-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.equip-summary p {
+    margin: 2px 0;
+    font-size: 14px;
+}
+
+/* "Unit Status" title */
+.unit-status-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* Unit list MUST be below (vertical layout) */
+.unit-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 8px;
+    padding-right: 5px;
+}
+
+/* Individual unit rows */
+.unit-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.unit-card .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.available .dot { background: #28a745; }
+.reserved .dot { background: #d9534f; }
+
+/* Close (X) button fix */
+.swal2-close {
+    background: none !important;
+    color: #333 !important;
+    border: none !important;
+    font-size: 20px !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+.swal2-close:hover {
+    color: red !important;
+}
+
+
+/* Modal wrapper */
+.reserve-modal {
+    text-align: left;
+}
+
+/* Section titles */
+.reserve-modal .section-title {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+/* Row layout for label + input */
+.reserve-modal .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* Labels */
+.reserve-modal .row label {
+    width: 100px;       /* fixed width for labels */
+    height: 20px;
+    margin-right: 10px;
+    font-weight: 500;
+    font-size: 17px;
+}
+
+.reserve-modal .row input.swal2-input,
+.reserve-modal .row textarea.swal2-textarea {
+    flex: 1;
+    height: 30px;       /* smaller height */
+    font-size: 14px;    /* smaller text */
+    padding: 4px 8px;   /* reduce inner padding */
+    box-sizing: border-box; /* ensures padding is included in height */
+}
+
+/* Wrapper for two time inputs */
+.reserve-modal .time-range {
+    display: flex;
+    align-items: center;
+}
+
+/* Dash in between */
+.reserve-modal .time-range .dash {
+    margin: 0 5px;
+    font-weight: lighter;
+}
+
+/* Smaller inputs */
+.reserve-modal .time-range input.small-input {
+    flex: 1;            /* take equal space */
+    height: 30px;       /* compact height */
+    padding: 4px 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}

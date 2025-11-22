@@ -92,13 +92,16 @@ class Crud
             return true;
     }
 
-    public function addFloor($buildingID, $floornumber)
+    public function addFloor($buildingID)
     {
   
-            $stmt = $this->conn->prepare("CALL addFloor(?, ?)");
-            $stmt->execute([$buildingID, $floornumber]);
+            $stmt = $this->conn->prepare("CALL addFloor(?)");
+            $stmt->execute([$buildingID]);
             return true;
     }
+
+
+
     public function addEquipment($equipmentname, $quantity)
     {
   
@@ -150,6 +153,65 @@ class Crud
 
         }
     }
+
+    public function addBuilding($buildingName, $buildingImage)
+    {
+  
+            $stmt = $this->conn->prepare("CALL addBuilding(?, ?)");
+            $stmt->execute([$buildingName, $buildingImage]);
+            return true;
+    }
+
+
+public function editBuilding($buildingID, $buildingName, $buildingImage = null) 
+{
+    $stmt = $this->conn->prepare("CALL editBuilding(?, ?, ?)");
+    $stmt->execute([$buildingID, $buildingName, $buildingImage]); // use the parameter, don't assign
+    return true;
+}
+
+public function getSchedulesByRoom($roomID) {
+    $stmt = $this->conn->prepare("SELECT * FROM Schedules WHERE RoomID = ?");
+    $stmt->execute([$roomID]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)
+ {
+    $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section]);
+    return true;
+}
+
+public function getMaxFloorNumber($buildingID) {
+    $sql = "SELECT COALESCE(MAX(FloorNumber), 0) AS MaxFloor
+            FROM Floors
+            WHERE BuildingID = :buildingID";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindParam(':buildingID', $buildingID, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return (int)$row['MaxFloor'];
+}
+
+public function addBuildingWithFloors($buildingName, $buildingImage, $floorCount)
+{
+    try {
+        $stmt = $this->conn->prepare("CALL addBuildingWithFloors(?, ?, ?)");
+        $stmt->execute([$buildingName, $buildingImage, $floorCount]);
+
+        // Optionally get the new building ID from the SELECT in SP
+        $newID = $stmt->fetch(PDO::FETCH_ASSOC)['NewBuildingID'] ?? null;
+
+        return $newID;
+    } catch (PDOException $e) {
+        throw $e;
+    }
+}
+
+
 }
 
 
