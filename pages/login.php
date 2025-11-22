@@ -4,142 +4,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <style>
-        body {
-            font-family: 'Ibarra Real Nova', serif;
-            background: #f5f5f5;
-        }
-    </style>
-    <link rel="preload" href="../images/BSU_BG_(2).webp" as="image"> <!-- Preload to bg img to improve performance -->
+    <title>Login — CAMS</title>
     <link rel="stylesheet" href="../assets/css/login.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
 
 </head>
 
 <body>
 
+
     <?php
+    session_start();
     require_once '../pages/camsdatabase.php';
+    require_once '../pages/cams-sp.php';
+
+
 
     if (isset($_POST['login'])) {
 
-        $name = $_POST['username'];
+        $number = $_POST['num'];
         $pass = $_POST['password'];
 
         $database = new Database();
         $conn = $database->getConnection();
 
+        $crud = new Crud();
+        $user = $crud->userLogin($number, $pass);
 
-
-        $sql = "SELECT * FROM users WHERE FirstName=:name AND Password=:password";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':password', $pass);
-
-
-        $stmt->execute();
-
-        if ($stmt->rowCount() > 0) {
-
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            session_start();
-            $SESSION['user'] = $user['FirstName'];
+        if ($user) {
+            $_SESSION['UserID'] = $user['UserID'];
+            $_SESSION['FirstName'] = $user['FirstName'];
+               $_SESSION['PhoneNumber'] = $user['PhoneNumber'];
+            $_SESSION['LastName'] = $user['LastName'];
+            $_SESSION['Role'] = $user['Role'];
+            $_SESSION['AdminType'] = $user['AdminType'];
 
             echo "
-    <script>
-    Swal.fire({
-        icon: 'success',
-        title: 'Login Succesful',
-        text: 'Welcome, {$user['FirstName']}!',
-        showConfirmButtom:false,
-        timer: 2000
-        }).then(() => {
-        window.location.href = 'user_accounts.php';
-        });
-    </script>";
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful!',
+                text: 'Welcome, {$user['FirstName']}',
+                timer: 1500,
+                showConfirmButton: false,
+                scrollbarPadding: false, // prevents layout shift
+                allowOutsideClick: false,
+                didOpen: () => {
+                document.body.style.overflow = 'hidden';
+                },
+                willClose: () => {
+                document.body.style.overflow = '';
+                }
+
+            }).then(() => {";
+
+            if ($user['Role'] === 'Admin') {
+                if ($user['AdminType'] === 'Superadmin') {
+                    echo "window.location.href = '../pages/user_accounts.php';";
+                } else {
+                    echo "window.location.href = '../pages/admin-dash.php';";
+                }
+            } elseif ($user['Role'] === 'Faculty') {
+                echo "window.location.href = '../pages/faculty-reservation.php';";
+            }
+
+            echo "});
+        </script>";
         } else {
-            // Wrong password
             echo "
-            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
             <script>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Password or Username',
-                    text: 'Please check your password and username then try again.'
-                }).then(() => {
-                    window.history.back();
-                });
-            </script>
-            ";
+            Swal.fire({
+             icon: 'error',
+    title: 'Login Failed',
+    text: 'Invalid number or password',
+    scrollbarPadding: false,
+    allowOutsideClick: false
+});
+</script>";
         }
     }
     ?>
 
 
-    <main class="login-page">
-        <div class="login-container">
-            <div class="left-content">
-                <img src="../images/BSU.webp" alt="bsu logo"
-                    style="height: 25em; max-width: 100%; background-repeat: no-repeat;  mix-blend-mode: multiply;">
-            </div>
-            <div class="right-content">
-                <h2>LOGIN</h2>
+    <!-- Login Page Container -->
+    <div class="login-container">
 
-                <form action="" method="POST">
-                    <div class="input-box">
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Username"
-                            required>
-                        <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
-                    </div>
+        <!-- Left Image / Branding -->
+        <div class="left-content">
+            <a class="go-back" href="../pages/landingpage.php">
+                <i class="bi bi-arrow-left-circle-fill"></i>
+                <span>GO BACK</span>
+            </a>
+            <img src="../images/BSU.webp" alt="BSU Logo" class="logo-img">
+            <h2>Welcome to CAMS</h2>
+            <p>Classroom Availability Management System</p>
+        </div>
 
-                    <div class="input-box">
-                        <input type="password" class="form-control" id="password" name="password" placeholder="Password"
-                            required>
+        <!-- Right Form -->
+        <div class="right-content">
+            <h2>Login</h2>
+            <form id="loginForm" action="" method="POST">
+                <div class="input-box">
+                    <input type="text" name="num" id="num" placeholder="Phone Number">
+                    <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                </div>
 
-                        <span class="input-group-text"><i class="bi bi-eye-slash" id="eyeIcon"></i></span>
+                <div class="input-box">
+                    <input type="password" name="password" id="password" placeholder="Password">
+                    <span class="input-group-text"><i class="bi bi-eye-slash" id="eyeIcon"></i></span>
+                </div>
 
-                    </div>
-                    <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
+                <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
 
-                    <div class="g-recaptcha" data-sitekey="6LezbQUsAAAAAMbmcqBhWd1PKyAv2Bx0ZfcYLRKC"
-                        data-callback="enableLoginBtn" data-expired-callback="disableLoginBtn"
-                        style="display:flex; justify-content:center; align-items:center;">
-                    </div>
+                <div class="g-recaptcha" id="captcha" data-sitekey="6LezbQUsAAAAAMbmcqBhWd1PKyAv2Bx0ZfcYLRKC"
+                    data-callback="enableLoginBtn" data-expired-callback="disableLoginBtn"
+                    style="display:flex; justify-content:center; align-items:center;">
+                </div>
 
-
-
-
-
-
-                    <button type="submit" name="login" id="loginbtn" disabled="disabled" >LOGIN</button>
-
-
-                </form>
-
-            </div>
-
+                <button type="submit" name="login" id="loginbtn" disabled>LOGIN</button>
+            </form>
         </div>
 
 
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            // Password show/hide
+            const eyeIcon = document.getElementById("eyeIcon");
+            const password = document.getElementById("password");
 
-        <!-- Script for the modal confirmation -->
-        <!-- SweetAlert2 CDN -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            eyeIcon.onclick = function () {
+                if (password.type === "password") {
+                    password.type = "text";
+                    eyeIcon.classList.replace("bi-eye-slash", "bi-eye");
+                } else {
+                    password.type = "password";
+                    eyeIcon.classList.replace("bi-eye", "bi-eye-slash");
+                }
+            }
 
-        <!-- SweetAlert2 CDN -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            function enableLoginBtn() {
+                const btn = document.getElementById("loginbtn");
+                btn.disabled = false;
+                btn.classList.remove("disabled");
+                btn.classList.add("enabled");
+            }
+            function disableLoginBtn() {
+                const btn = document.getElementById("loginbtn");
+                btn.disabled = true;
+                btn.classList.remove("enabled");
+                btn.classList.add("disabled");
+            }
+        </script>
 
-        <!-- SweetAlert2 CDN -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -160,6 +181,7 @@
                         cancelButtonColor: '#d33',
                     }).then((result) => {
                         if (result.isConfirmed) {
+
                             // Step 2: Phone number modal
                             Swal.fire({
                                 title: 'Verify Phone Number',
@@ -178,6 +200,7 @@
                                     const resendBtn = popup.querySelector('#resendBtn');
                                     const phoneInput = popup.querySelector('#phoneNumber');
 
+                                    // Verify button click
                                     verifyBtn.addEventListener('click', () => {
                                         const phone = phoneInput.value.trim();
                                         if (phone === '') {
@@ -192,12 +215,11 @@
                                             text: 'A verification code has been sent to your phone.',
                                             confirmButtonText: 'Next',
                                         }).then(() => {
+
                                             // Step 3: OTP input modal
                                             Swal.fire({
                                                 title: 'Enter Verification Code',
-                                                html: `
-                                        <input type="text" id="otpCode" class="swal2-input" placeholder="Enter code">
-                                    `,
+                                                html: `<input type="text" id="otpCode" class="swal2-input" placeholder="Enter code">`,
                                                 confirmButtonText: 'Verify Code',
                                                 cancelButtonText: 'Cancel',
                                                 showCancelButton: true,
@@ -228,9 +250,11 @@
                                                     });
                                                 }
                                             });
+
                                         });
                                     });
 
+                                    // Resend button click
                                     resendBtn.addEventListener('click', () => {
                                         Swal.fire({
                                             icon: 'info',
@@ -239,56 +263,15 @@
                                             confirmButtonText: 'OK'
                                         });
                                     });
+
                                 }
                             });
+
                         }
                     });
                 });
             });
         </script>
-
-
-
-
-    </main>
-
-    <script>
-        let eyeIcon = document.getElementById("eyeIcon");
-        let password = document.getElementById("password");
-
-        eyeIcon.onclick = function () {
-            if (password.type === "password") {
-                password.type = "text";
-                eyeIcon.classList.replace("bi-eye-slash", "bi-eye");
-            } else {
-                password.type = "password";
-                eyeIcon.classList.replace("bi-eye", "bi-eye-slash");
-
-            }
-
-        }
-
-
-    </script>
-
-<script>
-  function enableLoginBtn() {
-    const btn = document.getElementById("loginbtn");
-    btn.disabled = false;
-    btn.classList.remove("disabled");
-    btn.classList.add("enabled");
-  }
-
-  function disableLoginBtn() {
-    const btn = document.getElementById("loginbtn");
-    btn.disabled = true;
-    btn.classList.remove("enabled");
-    btn.classList.add("disabled");
-  }
-
-
-</script>
-
 
 </body>
 

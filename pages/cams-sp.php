@@ -225,6 +225,55 @@ function getEquipmentUnits($equipmentID) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+public function userLogin($number, $password)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL UserLogin(?, ?)");
+            $stmt->execute([
+                $number,
+                $password
+
+            ]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $user;
+
+
+        } catch (PDOException $e) {
+            echo "Database Error: " . $e->getMessage();
+        }
+    }
+
+    public function reserveEquipment($unitID, $userID)
+{
+    $stmt = $this->conn->prepare("CALL reserveEquipment(?, ?)");
+    return $stmt->execute([$unitID, $userID]);
+}
+
+function getUserReservations($userID) {
+    $stmt = $this->conn->prepare("
+        SELECT er.*, e.EquipmentName
+        FROM equipment_reservations er
+        JOIN equipment_units eu ON er.UnitID = eu.UnitID
+        JOIN equipments e ON eu.EquipmentID = e.EquipmentID
+        WHERE er.UserID = ?
+    ");
+    $stmt->execute([$userID]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function cancelReservation($reservationID) 
+{
+    $stmt = $this->conn->prepare("CALL cancelReservation(?)");
+    $stmt->execute([$reservationID]);
+    return true;
+}
+
+public function getUserPendingUnitReservations($userID) {
+    $stmt = $this->conn->prepare("SELECT UnitID FROM reservations WHERE UserID = :userID AND Status = 'pending'");
+    $stmt->execute(['userID' => $userID]);
+    return $stmt->fetchAll(PDO::FETCH_COLUMN); // return array of UnitIDs
+}
 
 }
 
