@@ -1,6 +1,18 @@
 <?php
+session_start();
 require_once '../pages/camsdatabase.php';
 require_once '../pages/cams-sp.php';
+
+if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
+    header("Location: ../pages/login.php");
+    exit();
+}
+
+if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
+    // Not an admin, redirect or show error
+    header("Location: ../pages/login.php");
+    exit();
+}
 
 
 $crud = new Crud();
@@ -38,7 +50,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'addBuilding') {
 
     if (isset($_FILES['buildingImage']) && $_FILES['buildingImage']['error'] === UPLOAD_ERR_OK) {
         $uploadDir = '../uploads/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        if (!is_dir($uploadDir))
+            mkdir($uploadDir, 0777, true);
 
         $fileName = uniqid() . '_' . basename($_FILES['buildingImage']['name']);
         $targetPath = $uploadDir . $fileName;
@@ -72,7 +85,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'editBuilding') {
 
     if (isset($_FILES['buildingImage']) && $_FILES['buildingImage']['error'] === UPLOAD_ERR_OK) {
         $uploadDir = '../uploads/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+        if (!is_dir($uploadDir))
+            mkdir($uploadDir, 0777, true);
 
         $fileName = uniqid() . '_' . basename($_FILES['buildingImage']['name']);
         $targetPath = $uploadDir . $fileName;
@@ -105,10 +119,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'addSchedule') {
     $timeFrom = $_POST['timeFrom'];
     $timeTo = $_POST['timeTo'];
     $section = $_POST['section'];
+    $weekType = $_POST['weekType'];
+    $dayOfWeek = $_POST['dayOfWeek'];
 
     try {
-        if ($crud->addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)) {
+        if ($crud->addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section, $weekType, $dayOfWeek)) {
             echo "success";
+        } else {
+            echo "error: failed to insert";
         }
     } catch (PDOException $e) {
         echo "error: " . $e->getMessage();
@@ -116,16 +134,21 @@ if (isset($_POST['action']) && $_POST['action'] === 'addSchedule') {
     exit;
 }
 
+
 if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
     $roomID = $_POST['roomID'];
+    $dayOfWeek = $_POST['dayOfWeek'] ?? null;
+    $weekType = $_POST['weekType'] ?? null;
+
     try {
-        $schedules = $crud->getSchedulesByRoom($roomID);
+        $schedules = $crud->getSchedulesByRoom($roomID, $dayOfWeek, $weekType);
         echo json_encode($schedules);
     } catch (PDOException $e) {
         echo json_encode(['error' => $e->getMessage()]);
     }
     exit;
 }
+
 
 
 
@@ -153,30 +176,48 @@ $rooms = $crud->getRooms();
 
 <body>
 
-    <div class="topbar">
-        <h2>Welcome Admin!</h2>
+    <header>
 
-        <div class="topbar-right">
-            <div class="search-container">
+        <div class="topbar">
+            <h2 class="system-title">Welcome Admin!</h2>
+
+            <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" placeholder="Search" class="search-field">
-                <div class="notification-wrapper">
+                <input type="text" placeholder="Search">
+            </div>
+
+            <div class="topbar-right">
+                <div class="notification-icon">
                     <i class="bi bi-bell-fill notification-icon"></i>
                 </div>
+
+                <div class="profile-info">
+                    <i class="bi bi-person-circle profile-icon"></i>
+                    <div class="profile-text">
+                        <p class="profile-name">Mark Cristopher</p>
+                        <p class="profile-number">093480324</p>
+                        <div id="time"></div>
+                    </div>
+                </div>
+
             </div>
-            <div id="time"></div>
+
+
         </div>
+        </div>
+    </header>
 
+    <!-- Button for the week identifier -->
+    <div class="weekIdentifier">
+        <button class="oddWeek-btn">Odd Week</button>
     </div>
-
 
     <?php foreach ($buildings as $index => $building): ?>
         <div class="building-title">
             <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
 
             <!-- Edit button for every building -->
-            <button class="editBuilding-btn"
-                data-id="<?= $building['BuildingID'] ?>"
+            <button class="editBuilding-btn" data-id="<?= $building['BuildingID'] ?>"
                 data-name="<?= htmlspecialchars($building['BuildingName']) ?>"
                 data-image="<?= htmlspecialchars($building['BuildingIMG']) ?>">
                 <i class="bi bi-pencil"></i> <!-- Edit Icon -->
@@ -214,29 +255,28 @@ $rooms = $crud->getRooms();
                     <?php
                     $bgImage = !empty($building['BuildingIMG']) ? "../uploads/" . htmlspecialchars($building['BuildingIMG']) : "../../images/bsu_front.webp";
                     ?>
-                    <div class="room-container" 
-     data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" 
-     style="display:none; background-image: url('<?= $bgImage ?>');">
+                    <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>"
+                        style="display:none; background-image: url('<?= $bgImage ?>');">
 
 
 
 
                         <!-- Add Room button -->
                         <div class="room-card add-room-btn" data-floor="<?= $floor['FloorID'] ?>">
-                            <i class="bi bi-door-open"></i>
-                            <span>Add Room (Floor <?= htmlspecialchars($floor['FloorNumber']) ?>)</span>
+                            <i class="bi bi-door-open" style="color: #8b1717;"></i>
+                            <span style="color: black;">Add Room (Floor <?= htmlspecialchars($floor['FloorNumber']) ?>)</span>
                         </div>
 
                         <?php foreach ($rooms as $room): ?>
-    <?php if ($room['FloorID'] == $floor['FloorID']): ?>
-        <div class="room-card clickable-room" data-room="<?= $room['RoomID'] ?>">
-            <div class="room-label">Room no</div>
-            <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
-            <hr>
-            <div class="room-status">Available</div>
-        </div>
-    <?php endif; ?>
-<?php endforeach; ?>
+                            <?php if ($room['FloorID'] == $floor['FloorID']): ?>
+                                <div class="room-card clickable-room" data-room="<?= $room['RoomID'] ?>">
+                                    <div class="room-label">Room no</div>
+                                    <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
+                                    <hr>
+                                    <div class="room-status">Available</div>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
 
                     </div>
                 <?php endif; ?>
@@ -246,19 +286,82 @@ $rooms = $crud->getRooms();
 
 
     <script>
-       document.querySelectorAll(".room-card.clickable-room").forEach(roomCard => {
-    roomCard.addEventListener("click", () => {
-        const roomID = roomCard.getAttribute("data-room");
+        
+       const weekBtn = document.querySelector(".oddWeek-btn");
 
-        Swal.fire({
-            title: "Room Schedule",
-            width: "800px",
-            html: `
+// --- Add this right after defining weekBtn ---
+const savedWeek = localStorage.getItem("selectedWeek");
+if (savedWeek) {
+    weekBtn.textContent = `${savedWeek} Week`;
+} else {
+    weekBtn.textContent = "Odd Week"; // default
+}
+
+// Now your existing event listener
+weekBtn.addEventListener("click", function() {
+    const currentWeek = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
+    const nextWeek = currentWeek === "Odd" ? "Even" : "Odd";
+
+    Swal.fire({
+        title: "Change Week?",
+        text: `Are you sure you want to change the week to ${nextWeek}?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: `Yes, change to ${nextWeek}`,
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            weekBtn.textContent = `${nextWeek} Week`;
+
+            // Save to localStorage
+            localStorage.setItem("selectedWeek", nextWeek);
+
+            Swal.fire({
+                title: "Week Changed!",
+                text: `The week has been updated to ${nextWeek}.`,
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+
+            if (window.currentRoomID && window.currentDay) {
+                loadSchedules(window.currentDay);
+            }
+        }
+    });
+});
+
+
+
+
+        document.querySelectorAll(".room-card.clickable-room").forEach(roomCard => {
+            roomCard.addEventListener("click", () => {
+                const roomID = roomCard.getAttribute("data-room");
+
+                Swal.fire({
+                    title: "Room Schedule",
+                    width: "800px",
+                    html: `
   <div style="text-align:left; font-size:14px;">
     <div style="font-size:18px; font-weight:bold; margin-bottom:5px;">
       Room ID: ${roomID}
       <hr style="margin:0 0 5px 0;">
     </div>
+
+    <!-- Day of the week dropdown -->
+    <div style="margin-bottom:10px;">
+      <label for="daySelect" style="font-weight:bold;">Select Day:</label>
+      <select id="daySelect" style="margin-left:5px; padding:3px;">
+        <option value="">--Choose Day--</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+        <option value="Sunday">Sunday</option>
+      </select>
+    </div>
+
     <div style="max-height:250px; overflow-y:auto; border:1px solid #ccc; border-radius:5px; padding:5px;">
       <table id="scheduleTable" style="width:100%; border-collapse:collapse; font-size:16px;">
         <thead>
@@ -276,61 +379,78 @@ $rooms = $crud->getRooms();
       <button id="addScheduleBtn" style="margin-top:5px;">+ Add Schedule</button>
     </div>
   </div>
-`
-,
-            showCancelButton: true,
-            confirmButtonText: "Save",
-            cancelButtonText: "Cancel",
-            didOpen: () => {
-    const table = Swal.getPopup().querySelector("#scheduleTable tbody");
-    table.innerHTML = ""; // Clear table
+`,
+                    showCancelButton: true,
+                    confirmButtonText: "Save",
+                    cancelButtonText: "Cancel",
+                    didOpen: () => {
+                       const daySelect = Swal.getPopup().querySelector('#daySelect');
+const table = Swal.getPopup().querySelector("#scheduleTable tbody");
 
-    // Fetch schedules for this room
-    fetch("", {
-        method: "POST",
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: `action=getSchedules&roomID=${roomID}`
-    })
+function loadSchedules(selectedDay) {
+    table.innerHTML = ""; // Clear table
+const weekType = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
+
+fetch("", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `action=getSchedules&roomID=${roomID}&dayOfWeek=${encodeURIComponent(selectedDay)}&weekType=${weekType}`
+})
+
     .then(res => res.json())
     .then(schedules => {
         if (schedules.length === 0) {
-    const emptyRow = document.createElement("tr");
-    emptyRow.innerHTML = `
-        <td colspan="6" style="text-align:center;">No schedules available</td>
-    `;
-    table.appendChild(emptyRow);
-}
- else {
+            const emptyRow = document.createElement("tr");
+            emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">No schedules available</td>`;
+            table.appendChild(emptyRow);
+        } else {
             schedules.forEach(s => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>${s.Subject}</td>
-        <td>${s.Instructor}</td>
-        <td>${s.TimeFrom}</td>
-        <td>${s.TimeTo}</td>
-        <td>${s.Section}</td>
-        <td>—</td> <!-- No actions, read-only -->
-    `;
-    table.appendChild(row);
-});
-
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${s.Subject}</td>
+                    <td>${s.Instructor}</td>
+                    <td>${s.TimeFrom}</td>
+                    <td>${s.TimeTo}</td>
+                    <td>${s.Section}</td>
+                    <td>—</td>
+                `;
+                table.appendChild(row);
+            });
         }
     });
+}
+
+// Set current day as default
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const today = new Date();
+daySelect.value = days[today.getDay()];
+
+// Load schedules for the default day
+loadSchedules(daySelect.value);
+
+// Reload schedules whenever day changes
+daySelect.addEventListener('change', function() {
+    loadSchedules(this.value);
+});
 
 
-    // Inside didOpen
-const addScheduleBtn = Swal.getPopup().querySelector("#addScheduleBtn");
-addScheduleBtn.addEventListener("click", () => {
-    const table = Swal.getPopup().querySelector("#scheduleTable tbody");
 
-    // Remove "No schedules available" row if it exists
-    const noSchedulesRow = table.querySelector('tr td[colspan="6"]');
-    if (noSchedulesRow) table.innerHTML = "";
 
-    // Create a new editable row
-   const newRow = document.createElement("tr");
-newRow.classList.add("new-schedule"); // mark it as new
-newRow.innerHTML = `
+                        // Inside didOpen
+                        const addScheduleBtn = Swal.getPopup().querySelector("#addScheduleBtn");
+                        addScheduleBtn.addEventListener("click", () => {
+                            const table = Swal.getPopup().querySelector("#scheduleTable tbody");
+
+                            // Remove "No schedules available" row if it exists
+                            const noSchedulesRow = table.querySelector('tr td[colspan="6"]');
+                            if (noSchedulesRow) table.innerHTML = "";
+
+                            // Create a new editable row
+                            const newRow = document.createElement("tr");
+                            newRow.classList.add("new-schedule"); // mark it as new
+                            newRow.innerHTML = `
     <td contenteditable="true"></td>
     <td contenteditable="true"></td>
     <td><input type="time" style="width:100%;"></td>
@@ -338,91 +458,101 @@ newRow.innerHTML = `
     <td contenteditable="true"></td>
     <td><button class="deleteRowBtn">X</button></td>
 `;
-table.appendChild(newRow);
+                            table.appendChild(newRow);
 
 
-    // Add delete functionality
-    newRow.querySelector(".deleteRowBtn").addEventListener("click", () => {
-        newRow.remove();
-        if (table.rows.length === 0) {
-            const emptyRow = document.createElement("tr");
-            emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">No schedules available</td>`;
-            table.appendChild(emptyRow);
-        }
-    });
+                            // Add delete functionality
+                            newRow.querySelector(".deleteRowBtn").addEventListener("click", () => {
+                                newRow.remove();
+                                if (table.rows.length === 0) {
+                                    const emptyRow = document.createElement("tr");
+                                    emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">No schedules available</td>`;
+                                    table.appendChild(emptyRow);
+                                }
+                            });
+                        });
+
+                    },
+
+                    preConfirm: () => {
+                        const popup = Swal.getPopup();
+                        const rows = popup.querySelectorAll("#scheduleTable tbody tr.new-schedule"); // only new rows
+                        let hasError = false;
+                        const schedules = [];
+
+                        rows.forEach(row => {
+                            const subject = row.cells[0].innerText.trim();
+                            const instructor = row.cells[1].innerText.trim();
+                            const timeFromInput = row.cells[2].querySelector("input");
+                            const timeToInput = row.cells[3].querySelector("input");
+                            const timeFrom = timeFromInput ? timeFromInput.value : row.cells[2].innerText.trim();
+                            const timeTo = timeToInput ? timeToInput.value : row.cells[3].innerText.trim();
+                            const section = row.cells[4].innerText.trim();
+
+                            if (!subject && !instructor && !timeFrom && !timeTo && !section) return;
+
+                            if (!subject || !instructor || !timeFrom || !timeTo || !section) {
+                                hasError = true;
+                                return;
+                            }
+
+                            schedules.push({
+                                subject,
+                                instructor,
+                                timeFrom,
+                                timeTo,
+                                section
+                            });
+                        });
+
+                        if (hasError) {
+                            Swal.showValidationMessage("All fields must be filled out before saving!");
+                            return false;
+                        }
+
+                        return schedules;
+                    }
+
+
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const schedules = result.value;
+
+                       schedules.forEach(s => {
+    const formData = new URLSearchParams();
+    formData.append("action", "addSchedule");
+    formData.append("roomID", roomID);
+    formData.append("subject", s.subject);
+    formData.append("instructor", s.instructor);
+    formData.append("timeFrom", s.timeFrom);
+    formData.append("timeTo", s.timeTo);
+    formData.append("section", s.section);
+    formData.append("weekType", weekBtn.textContent.includes("Odd") ? "Odd" : "Even");
+    formData.append("dayOfWeek", daySelect.value);
+
+    fetch("", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
+    })
+    .then(res => res.text())
+    .then(res => {
+        if (res.trim() !== "success") console.error("Failed to add schedule:", res);
+    })
+    .catch(err => console.error("Error:", err));
 });
 
-},
-
-           preConfirm: () => {
-    const popup = Swal.getPopup();
-    const rows = popup.querySelectorAll("#scheduleTable tbody tr.new-schedule"); // only new rows
-    let hasError = false;
-    const schedules = [];
-
-    rows.forEach(row => {
-        const subject = row.cells[0].innerText.trim();
-        const instructor = row.cells[1].innerText.trim();
-        const timeFromInput = row.cells[2].querySelector("input");
-        const timeToInput = row.cells[3].querySelector("input");
-        const timeFrom = timeFromInput ? timeFromInput.value : row.cells[2].innerText.trim();
-        const timeTo = timeToInput ? timeToInput.value : row.cells[3].innerText.trim();
-        const section = row.cells[4].innerText.trim();
-
-        if (!subject && !instructor && !timeFrom && !timeTo && !section) return;
-
-        if (!subject || !instructor || !timeFrom || !timeTo || !section) {
-            hasError = true;
-            return;
-        }
-
-        schedules.push({subject, instructor, timeFrom, timeTo, section});
-    });
-
-    if (hasError) {
-        Swal.showValidationMessage("All fields must be filled out before saving!");
-        return false;
-    }
-
-    return schedules;
-}
-
-
-        }).then(result => {
-            if (result.isConfirmed) {
-                const schedules = result.value;
-
-                schedules.forEach(s => {
-                    const formData = new URLSearchParams();
-                    formData.append("action", "addSchedule");
-                    formData.append("roomID", roomID);
-                    formData.append("subject", s.subject);
-                    formData.append("instructor", s.instructor);
-                    formData.append("timeFrom", s.timeFrom);
-                    formData.append("timeTo", s.timeTo);
-                    formData.append("section", s.section);
-
-                    fetch("", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        body: formData.toString()
-                    })
-                    .then(res => res.text())
-                    .then(res => {
-                        if (res.trim() !== "success") console.error("Failed to add schedule:", res);
-                    })
-                    .catch(err => console.error("Error:", err));
+                        Swal.fire({
+                            icon: "success",
+                            title: "Schedules saved successfully!",
+                            confirmButtonText: "OK"
+                        }).then(() => window.location.reload());
+                    }
                 });
-
-                Swal.fire({
-                    icon: "success",
-                    title: "Schedules saved successfully!",
-                    confirmButtonText: "OK"
-                }).then(() => window.location.reload());
-            }
+            });
         });
-    });
-});
 
 
 
@@ -590,13 +720,19 @@ table.appendChild(newRow);
 
 
 
-        // Script for the time
+        // Script for the time in 12-hour format with AM/PM
         function updateTime() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
+            let hours = now.getHours();
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            // Convert 24-hour to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = String(hours).padStart(2, '0');
+
+            document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
         }
 
         // Update every second
@@ -607,56 +743,58 @@ table.appendChild(newRow);
 
         // SWAL for the Add Floor button
         document.querySelectorAll(".add-floor").forEach(button => {
-    button.addEventListener("click", () => {
-        const buildingID = button.getAttribute("data-building");
+            button.addEventListener("click", () => {
+                const buildingID = button.getAttribute("data-building");
 
-        Swal.fire({
-            title: "Add Floor",
-            html: `<p>Click Add to create a new floor automatically.</p>`,
-            confirmButtonText: "Add Floor",
-            showCancelButton: true,
-            cancelButtonText: "Cancel",
-            preConfirm: () => {
-                return { buildingID }; // only send buildingID
-            }
-        }).then(result => {
-            if (result.isConfirmed) {
-                const data = result.value;
-
-                fetch("", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: `action=addFloor&buildingID=${encodeURIComponent(data.buildingID)}`
-                })
-                .then(response => response.text())
-                .then(res => {
-                    if (res.trim() === "success") {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Floor added successfully!",
-                            confirmButtonText: "OK"
-                        }).then(() => window.location.reload());
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Failed to add floor",
-                            text: res
-                        });
+                Swal.fire({
+                    title: "Add Floor",
+                    html: `<p>Click Add to create a new floor automatically.</p>`,
+                    confirmButtonText: "Add Floor",
+                    showCancelButton: true,
+                    cancelButtonText: "Cancel",
+                    preConfirm: () => {
+                        return {
+                            buildingID
+                        }; // only send buildingID
                     }
-                })
-                .catch(err => {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: err
-                    });
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const data = result.value;
+
+                        fetch("", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: `action=addFloor&buildingID=${encodeURIComponent(data.buildingID)}`
+                            })
+                            .then(response => response.text())
+                            .then(res => {
+                                if (res.trim() === "success") {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "Floor added successfully!",
+                                        confirmButtonText: "OK"
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Failed to add floor",
+                                        text: res
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: err
+                                });
+                            });
+                    }
                 });
-            }
+            });
         });
-    });
-});
 
 
         document.querySelectorAll('.building-block').forEach(buildingBlock => {
@@ -752,7 +890,6 @@ table.appendChild(newRow);
             });
         });
     </script>
-
 </body>
 
 </html>

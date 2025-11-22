@@ -168,18 +168,34 @@ public function editBuilding($buildingID, $buildingName, $buildingImage = null)
     return true;
 }
 
-public function getSchedulesByRoom($roomID) {
-    $stmt = $this->conn->prepare("SELECT * FROM Schedules WHERE RoomID = ?");
-    $stmt->execute([$roomID]);
+public function getSchedulesByRoom($roomID, $dayOfWeek = null, $weekType = null) {
+    $query = "SELECT * FROM schedules WHERE RoomID = ?";
+    $params = [$roomID];
+
+    if ($dayOfWeek) {
+        $query .= " AND DayOfWeek = ?";
+        $params[] = $dayOfWeek;
+    }
+
+    if ($weekType) {
+        $query .= " AND WeekType = ?";
+        $params[] = $weekType;
+    }
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)
- {
-    $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section]);
+
+
+public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section, $weekType, $dayOfWeek)
+{
+    $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section, $weekType, $dayOfWeek]);
     return true;
 }
+
 
 public function getMaxFloorNumber($buildingID) {
     $sql = "SELECT COALESCE(MAX(FloorNumber), 0) AS MaxFloor
