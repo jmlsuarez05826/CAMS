@@ -42,8 +42,8 @@ class Crud
     public function getUsersPaginated($limit, $offset)
     {
         $stmt = $this->conn->prepare("SELECT * FROM users ORDER BY UserID LIMIT :limit OFFSET :offset");
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -64,9 +64,16 @@ class Crud
 
     public function getBuildings()
     {
-        $stmt = $this->conn->prepare("SELECT * from buildings");
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->conn->prepare("CALL GetBuildings()");
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt->closeCursor();
+            return $result;
+        } catch (PDOException $e) {
+            echo "Database Error: " . $e->getMessage();
+            return [];
+        }
     }
 
     public function getFloors()
@@ -82,32 +89,32 @@ class Crud
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
 
     public function addRoom($floorID, $roomnumber)
     {
-  
-            $stmt = $this->conn->prepare("CALL addRoom(?, ?)");
-            $stmt->execute([$floorID, $roomnumber]);
-            return true;
+
+        $stmt = $this->conn->prepare("CALL addRoom(?, ?)");
+        $stmt->execute([$floorID, $roomnumber]);
+        return true;
     }
 
     public function addFloor($buildingID)
     {
-  
-            $stmt = $this->conn->prepare("CALL addFloor(?)");
-            $stmt->execute([$buildingID]);
-            return true;
+
+        $stmt = $this->conn->prepare("CALL addFloor(?)");
+        $stmt->execute([$buildingID]);
+        return true;
     }
 
 
 
     public function addEquipment($equipmentname, $quantity)
     {
-  
-            $stmt = $this->conn->prepare("CALL addEquipment(?, ?)");
-            $stmt->execute([$equipmentname, $quantity]);
-            return true;
+
+        $stmt = $this->conn->prepare("CALL addEquipment(?, ?)");
+        $stmt->execute([$equipmentname, $quantity]);
+        return true;
     }
 
     public function getEquipments()
@@ -119,18 +126,18 @@ class Crud
 
     public function editEquipment($equipmentID, $equipmentname, $quantity)
     {
-  
-            $stmt = $this->conn->prepare("CALL editEquipment(?, ?, ?)");
-            $stmt->execute([$equipmentID, $equipmentname, $quantity]);
-            return true;
+
+        $stmt = $this->conn->prepare("CALL editEquipment(?, ?, ?)");
+        $stmt->execute([$equipmentID, $equipmentname, $quantity]);
+        return true;
     }
 
     public function deleteEquipment($equipmentID)
     {
-  
-            $stmt = $this->conn->prepare("CALL deleteEquipment(?)");
-            $stmt->execute([$equipmentID]);
-            return true;
+
+        $stmt = $this->conn->prepare("CALL deleteEquipment(?)");
+        $stmt->execute([$equipmentID]);
+        return true;
     }
 
     public function addAdmin($firstname, $lastname, $phonenumber, $email, $password, $admintype)
@@ -156,60 +163,110 @@ class Crud
 
     public function addBuilding($buildingName, $buildingImage)
     {
-  
-            $stmt = $this->conn->prepare("CALL addBuilding(?, ?)");
-            $stmt->execute([$buildingName, $buildingImage]);
-            return true;
+
+        $stmt = $this->conn->prepare("CALL addBuilding(?, ?)");
+        $stmt->execute([$buildingName, $buildingImage]);
+        return true;
     }
 
 
-public function editBuilding($buildingID, $buildingName, $buildingImage = null) 
-{
-    $stmt = $this->conn->prepare("CALL editBuilding(?, ?, ?)");
-    $stmt->execute([$buildingID, $buildingName, $buildingImage]); // use the parameter, don't assign
-    return true;
-}
+    public function editBuilding($buildingID, $buildingName, $buildingImage = null)
+    {
+        $stmt = $this->conn->prepare("CALL editBuilding(?, ?, ?)");
+        $stmt->execute([$buildingID, $buildingName, $buildingImage]); // use the parameter, don't assign
+        return true;
+    }
 
-public function getSchedulesByRoom($roomID) {
-    $stmt = $this->conn->prepare("SELECT * FROM Schedules WHERE RoomID = ?");
-    $stmt->execute([$roomID]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+    public function getSchedulesByRoom($roomID)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM Schedules WHERE RoomID = ?");
+        $stmt->execute([$roomID]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)
- {
-    $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section]);
-    return true;
-}
+    public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)
+    {
+        $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section]);
+        return true;
+    }
 
-public function getMaxFloorNumber($buildingID) {
-    $sql = "SELECT COALESCE(MAX(FloorNumber), 0) AS MaxFloor
+    public function getMaxFloorNumber($buildingID)
+    {
+        $sql = "SELECT COALESCE(MAX(FloorNumber), 0) AS MaxFloor
             FROM Floors
             WHERE BuildingID = :buildingID";
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindParam(':buildingID', $buildingID, PDO::PARAM_INT);
-    $stmt->execute();
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':buildingID', $buildingID, PDO::PARAM_INT);
+        $stmt->execute();
 
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    return (int)$row['MaxFloor'];
-}
-
-public function addBuildingWithFloors($buildingName, $buildingImage, $floorCount)
-{
-    try {
-        $stmt = $this->conn->prepare("CALL addBuildingWithFloors(?, ?, ?)");
-        $stmt->execute([$buildingName, $buildingImage, $floorCount]);
-
-        // Optionally get the new building ID from the SELECT in SP
-        $newID = $stmt->fetch(PDO::FETCH_ASSOC)['NewBuildingID'] ?? null;
-
-        return $newID;
-    } catch (PDOException $e) {
-        throw $e;
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int) $row['MaxFloor'];
     }
-}
+
+    public function addBuildingWithFloors($buildingName, $buildingImage, $floorCount)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL addBuildingWithFloors(?, ?, ?)");
+            $stmt->execute([$buildingName, $buildingImage, $floorCount]);
+
+            // Optionally get the new building ID from the SELECT in SP
+            $newID = $stmt->fetch(PDO::FETCH_ASSOC)['NewBuildingID'] ?? null;
+
+            return $newID;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
+
+    public function getRoomStatus()
+    {
+        try {
+
+            $stmt = $this->conn->prepare("CALL GetRoomStatus()");
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+
+
+
+        } catch (PDOException $e) {
+            echo "Database Error: " . $e->getMessage();
+        }
+    }
+
+    public function getEquipmentStatus()
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL GetEquipmentStatus()");
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        } catch (PDOException $e) {
+            echo "Database Error: " . $e->getMessage();
+        }
+    }
+
+    public function userLogin($number, $password)
+    {
+        try {
+            $stmt = $this->conn->prepare("CALL UserLogin(?, ?)");
+            $stmt->execute([
+                $number,
+                $password
+
+            ]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $user;
+
+
+        } catch (PDOException $e) {
+            echo "Database Error: " . $e->getMessage();
+        }
+    }
+
 
 
 }

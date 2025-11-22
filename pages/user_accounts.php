@@ -25,6 +25,7 @@ if (isset($_POST["add"])) {
     }
 }
 
+
 // Handle form submission first
 if (isset($_POST["addAdmin"])) {
     $firstname = $_POST["fname"];
@@ -67,30 +68,36 @@ $users = $crud->getAllUsers();
 <body>
 
     <div class="main-content">
-        <header>
-            <div class="topbar">
-                <h2 class="system-title">Welcome Admin!</h2>
+    <header>
 
-                <div class="search-field">
+        <div class="topbar">
+            <h2 class="system-title">Welcome Admin!</h2>
+
+                   <div class="search-field">
                     <i class="bi bi-search search-icon"></i>
                     <input type="text" placeholder="Search">
                 </div>
 
-                <div class="topbar-right">
+                          <div class="topbar-right">
                     <div class="notification-icon">
-                        <i class="bi bi-bell-fill"></i>
+                        <i class="bi bi-bell-fill notification-icon"></i>
                     </div>
 
-                    <div class="profile-info">
+                       <div class="profile-info">
                         <i class="bi bi-person-circle profile-icon"></i>
                         <div class="profile-text">
                             <p class="profile-name">Mark Cristopher</p>
                             <p class="profile-number">093480324</p>
+                            <div id="time"></div>
                         </div>
                     </div>
+
                 </div>
+      
+
             </div>
-        </header>
+        </div>
+    </header>
 
         <main>
             <?php
@@ -326,6 +333,27 @@ $users = $crud->getAllUsers();
     <?php endif; ?>
 
     <script>
+
+          // Script for the time in 12-hour format with AM/PM
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            // Convert 24-hour to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = String(hours).padStart(2, '0');
+
+            document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
+        }
+
+        // Update every second
+        setInterval(updateTime, 1000);
+
+        // Initial call
+        updateTime();
         //script for the add user modal
 
         // Open modal

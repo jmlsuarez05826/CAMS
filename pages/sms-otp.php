@@ -58,7 +58,7 @@ class PhoneVerification
 
     public function sendSMS($fname, $lname, $number, $otp)
 {
-    $testMode = true; 
+    $testMode = false; 
 
     if ($testMode) {
         return json_encode([
