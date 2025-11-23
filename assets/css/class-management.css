@@ -140,11 +140,40 @@ header {
   cursor: pointer;
 }
 
+.weekIdentifier {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 350px;   /* SAME as building-title */
+    padding: 10px 20px;   /* SAME as building-title */
+    width: fit-content;
+
+}
+.oddWeek-btn {
+  padding: 10px 15px;
+  border: 2px dotted #333; /* dotted border */
+  background-color: transparent;
+  font-weight: bold;
+  cursor: pointer;
+  color: #333;
+  margin-left: auto;
+  border-radius: 10px;
+
+  box-shadow: 0 4px #999;
+  transition: all 0.1s ease;
+}
+
+.oddWeek-btn:active {
+  transform: translateY(4px); /* move down like being pressed */
+  box-shadow: 0 2px #666; /* shadow shrinks */
+}
+
 
 .building-title {
     display: flex;
     align-items: center;
-  margin-top: 1em;
+  
   margin-left: 350px;
   padding: 10px 20px; /* adjust spacing from sides */
   font-size: 24px;

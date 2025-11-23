@@ -119,10 +119,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'addSchedule') {
     $timeFrom = $_POST['timeFrom'];
     $timeTo = $_POST['timeTo'];
     $section = $_POST['section'];
+    $weekType = $_POST['weekType'];
+    $dayOfWeek = $_POST['dayOfWeek'];
 
     try {
-        if ($crud->addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)) {
+        if ($crud->addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section, $weekType, $dayOfWeek)) {
             echo "success";
+        } else {
+            echo "error: failed to insert";
         }
     } catch (PDOException $e) {
         echo "error: " . $e->getMessage();
@@ -130,16 +134,21 @@ if (isset($_POST['action']) && $_POST['action'] === 'addSchedule') {
     exit;
 }
 
+
 if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
     $roomID = $_POST['roomID'];
+    $dayOfWeek = $_POST['dayOfWeek'] ?? null;
+    $weekType = $_POST['weekType'] ?? null;
+
     try {
-        $schedules = $crud->getSchedulesByRoom($roomID);
+        $schedules = $crud->getSchedulesByRoom($roomID, $dayOfWeek, $weekType);
         echo json_encode($schedules);
     } catch (PDOException $e) {
         echo json_encode(['error' => $e->getMessage()]);
     }
     exit;
 }
+
 
 
 
@@ -197,6 +206,11 @@ $rooms = $crud->getRooms();
         </div>
         </div>
     </header>
+
+    <!-- Button for the week identifier -->
+    <div class="weekIdentifier">
+        <button class="oddWeek-btn">Odd Week</button>
+    </div>
 
     <?php foreach ($buildings as $index => $building): ?>
         <div class="building-title">
@@ -272,6 +286,53 @@ $rooms = $crud->getRooms();
 
 
     <script>
+        
+       const weekBtn = document.querySelector(".oddWeek-btn");
+
+// --- Add this right after defining weekBtn ---
+const savedWeek = localStorage.getItem("selectedWeek");
+if (savedWeek) {
+    weekBtn.textContent = `${savedWeek} Week`;
+} else {
+    weekBtn.textContent = "Odd Week"; // default
+}
+
+// Now your existing event listener
+weekBtn.addEventListener("click", function() {
+    const currentWeek = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
+    const nextWeek = currentWeek === "Odd" ? "Even" : "Odd";
+
+    Swal.fire({
+        title: "Change Week?",
+        text: `Are you sure you want to change the week to ${nextWeek}?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: `Yes, change to ${nextWeek}`,
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            weekBtn.textContent = `${nextWeek} Week`;
+
+            // Save to localStorage
+            localStorage.setItem("selectedWeek", nextWeek);
+
+            Swal.fire({
+                title: "Week Changed!",
+                text: `The week has been updated to ${nextWeek}.`,
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+
+            if (window.currentRoomID && window.currentDay) {
+                loadSchedules(window.currentDay);
+            }
+        }
+    });
+});
+
+
+
+
         document.querySelectorAll(".room-card.clickable-room").forEach(roomCard => {
             roomCard.addEventListener("click", () => {
                 const roomID = roomCard.getAttribute("data-room");
@@ -285,6 +346,22 @@ $rooms = $crud->getRooms();
       Room ID: ${roomID}
       <hr style="margin:0 0 5px 0;">
     </div>
+
+    <!-- Day of the week dropdown -->
+    <div style="margin-bottom:10px;">
+      <label for="daySelect" style="font-weight:bold;">Select Day:</label>
+      <select id="daySelect" style="margin-left:5px; padding:3px;">
+        <option value="">--Choose Day--</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+        <option value="Sunday">Sunday</option>
+      </select>
+    </div>
+
     <div style="max-height:250px; overflow-y:auto; border:1px solid #ccc; border-radius:5px; padding:5px;">
       <table id="scheduleTable" style="width:100%; border-collapse:collapse; font-size:16px;">
         <thead>
@@ -302,46 +379,63 @@ $rooms = $crud->getRooms();
       <button id="addScheduleBtn" style="margin-top:5px;">+ Add Schedule</button>
     </div>
   </div>
-`
-                    ,
+`,
                     showCancelButton: true,
                     confirmButtonText: "Save",
                     cancelButtonText: "Cancel",
                     didOpen: () => {
-                        const table = Swal.getPopup().querySelector("#scheduleTable tbody");
-                        table.innerHTML = ""; // Clear table
+                       const daySelect = Swal.getPopup().querySelector('#daySelect');
+const table = Swal.getPopup().querySelector("#scheduleTable tbody");
 
-                        // Fetch schedules for this room
-                        fetch("", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: `action=getSchedules&roomID=${roomID}`
-                        })
-                            .then(res => res.json())
-                            .then(schedules => {
-                                if (schedules.length === 0) {
-                                    const emptyRow = document.createElement("tr");
-                                    emptyRow.innerHTML = `
-        <td colspan="6" style="text-align:center;">No schedules available</td>
-    `;
-                                    table.appendChild(emptyRow);
-                                }
-                                else {
-                                    schedules.forEach(s => {
-                                        const row = document.createElement("tr");
-                                        row.innerHTML = `
-        <td>${s.Subject}</td>
-        <td>${s.Instructor}</td>
-        <td>${s.TimeFrom}</td>
-        <td>${s.TimeTo}</td>
-        <td>${s.Section}</td>
-        <td>—</td> <!-- No actions, read-only -->
-    `;
-                                        table.appendChild(row);
-                                    });
+function loadSchedules(selectedDay) {
+    table.innerHTML = ""; // Clear table
+const weekType = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
 
-                                }
-                            });
+fetch("", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `action=getSchedules&roomID=${roomID}&dayOfWeek=${encodeURIComponent(selectedDay)}&weekType=${weekType}`
+})
+
+    .then(res => res.json())
+    .then(schedules => {
+        if (schedules.length === 0) {
+            const emptyRow = document.createElement("tr");
+            emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">No schedules available</td>`;
+            table.appendChild(emptyRow);
+        } else {
+            schedules.forEach(s => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${s.Subject}</td>
+                    <td>${s.Instructor}</td>
+                    <td>${s.TimeFrom}</td>
+                    <td>${s.TimeTo}</td>
+                    <td>${s.Section}</td>
+                    <td>—</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+    });
+}
+
+// Set current day as default
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const today = new Date();
+daySelect.value = days[today.getDay()];
+
+// Load schedules for the default day
+loadSchedules(daySelect.value);
+
+// Reload schedules whenever day changes
+daySelect.addEventListener('change', function() {
+    loadSchedules(this.value);
+});
+
+
 
 
                         // Inside didOpen
@@ -402,7 +496,13 @@ $rooms = $crud->getRooms();
                                 return;
                             }
 
-                            schedules.push({ subject, instructor, timeFrom, timeTo, section });
+                            schedules.push({
+                                subject,
+                                instructor,
+                                timeFrom,
+                                timeTo,
+                                section
+                            });
                         });
 
                         if (hasError) {
@@ -418,27 +518,31 @@ $rooms = $crud->getRooms();
                     if (result.isConfirmed) {
                         const schedules = result.value;
 
-                        schedules.forEach(s => {
-                            const formData = new URLSearchParams();
-                            formData.append("action", "addSchedule");
-                            formData.append("roomID", roomID);
-                            formData.append("subject", s.subject);
-                            formData.append("instructor", s.instructor);
-                            formData.append("timeFrom", s.timeFrom);
-                            formData.append("timeTo", s.timeTo);
-                            formData.append("section", s.section);
+                       schedules.forEach(s => {
+    const formData = new URLSearchParams();
+    formData.append("action", "addSchedule");
+    formData.append("roomID", roomID);
+    formData.append("subject", s.subject);
+    formData.append("instructor", s.instructor);
+    formData.append("timeFrom", s.timeFrom);
+    formData.append("timeTo", s.timeTo);
+    formData.append("section", s.section);
+    formData.append("weekType", weekBtn.textContent.includes("Odd") ? "Odd" : "Even");
+    formData.append("dayOfWeek", daySelect.value);
 
-                            fetch("", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                                body: formData.toString()
-                            })
-                                .then(res => res.text())
-                                .then(res => {
-                                    if (res.trim() !== "success") console.error("Failed to add schedule:", res);
-                                })
-                                .catch(err => console.error("Error:", err));
-                        });
+    fetch("", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
+    })
+    .then(res => res.text())
+    .then(res => {
+        if (res.trim() !== "success") console.error("Failed to add schedule:", res);
+    })
+    .catch(err => console.error("Error:", err));
+});
 
                         Swal.fire({
                             icon: "success",
@@ -482,12 +586,12 @@ $rooms = $crud->getRooms();
 
                         // AJAX request to same file
                         fetch("", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/x-www-form-urlencoded"
-                            },
-                            body: `action=addRoom&floorID=${encodeURIComponent(data.floorID)}&roomNumber=${encodeURIComponent(data.roomNumber)}`
-                        })
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: `action=addRoom&floorID=${encodeURIComponent(data.floorID)}&roomNumber=${encodeURIComponent(data.roomNumber)}`
+                            })
                             .then(response => response.text())
                             .then(res => {
                                 if (res.trim() === "success") {
@@ -581,9 +685,9 @@ $rooms = $crud->getRooms();
                         if (file) formData.append("buildingImage", file);
 
                         fetch("", {
-                            method: "POST",
-                            body: formData
-                        })
+                                method: "POST",
+                                body: formData
+                            })
                             .then(response => response.json()) // parse JSON
                             .then(res => {
                                 if (res.status === "success") {
@@ -649,19 +753,21 @@ $rooms = $crud->getRooms();
                     showCancelButton: true,
                     cancelButtonText: "Cancel",
                     preConfirm: () => {
-                        return { buildingID }; // only send buildingID
+                        return {
+                            buildingID
+                        }; // only send buildingID
                     }
                 }).then(result => {
                     if (result.isConfirmed) {
                         const data = result.value;
 
                         fetch("", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/x-www-form-urlencoded"
-                            },
-                            body: `action=addFloor&buildingID=${encodeURIComponent(data.buildingID)}`
-                        })
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: `action=addFloor&buildingID=${encodeURIComponent(data.buildingID)}`
+                            })
                             .then(response => response.text())
                             .then(res => {
                                 if (res.trim() === "success") {
@@ -753,9 +859,9 @@ $rooms = $crud->getRooms();
                         if (file) formData.append("buildingImage", file);
 
                         fetch("", {
-                            method: "POST",
-                            body: formData
-                        })
+                                method: "POST",
+                                body: formData
+                            })
                             .then(response => response.json())
                             .then(res => {
                                 if (res.status === "success") {
