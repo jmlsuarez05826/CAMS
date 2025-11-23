@@ -1,3 +1,38 @@
+<?php
+require_once '../pages/camsdatabase.php';
+require_once '../pages/cams-sp.php';
+
+$crud = new Crud();
+
+// Return all equipment requests as JSON
+if (isset($_GET['getRequests'])) {
+    $requests = $crud->getEquipmentRequests(); // You create this function
+    header('Content-Type: application/json');
+    echo json_encode($requests);
+    exit;
+}
+
+// PROCESS APPROVE / REJECT USING SP
+if (isset($_POST['action']) && isset($_POST['ids'])) {
+
+    $ids = $_POST['ids'];
+
+    foreach ($ids as $id) {
+        if ($_POST['action'] === "approve") {
+            $crud->approveEquipmentRequest($id);
+        } 
+        else if ($_POST['action'] === "reject") {
+            $crud->rejectEquipmentRequest($id);
+        }
+    }
+
+    echo json_encode(["success" => true]);
+    exit;
+}
+
+require_once '../includes/admin-sidebar.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,10 +43,9 @@
 
 
     <link rel="stylesheet" href="../assets/css/room-req.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <?php
-    require_once '../includes/admin-sidebar.php';
-    ?>
+
 
 </head>
 
@@ -49,26 +83,8 @@
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>1</td>
-                    <td>Projector</td>
-                    <td>John Doe</td>
-                    <td>Nov 5, 10:00 AM</td>
-                    <td>Nov 2, 2:30 PM</td>
-                    <td><span class="badge bg-success">Approved</span></td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>2</td>
-                    <td>Vieboard</td>
-                    <td>Jane Smith</td>
-                    <td>Nov 6, 1:00 PM</td>
-                    <td>Nov 3, 11:00 AM</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                </tr>
-            </tbody>
+           <tbody id="requestTableBody"></tbody>
+
         </table>
     </div>
 
@@ -103,43 +119,151 @@
         // Initial call
         updateTime();
 
+   function loadRequests() {
+    fetch("equipment-req.php?getRequests=1")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("requestTableBody");
+            tbody.innerHTML = "";
 
+            data.forEach(req => {
+                const statusClass = 
+                    req.Status === "Approved" ? "badge bg-success" :
+                    req.Status === "Rejected" ? "badge bg-danger" :
+                    "badge bg-warning text-dark";
 
-        //script for a smooth popup of the action bar/footer
-        const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-        const footer = document.getElementById("actionFooter");
-        const countText = document.getElementById("selectedCount");
+                const row = `
+                <tr>
+                    <td><input type="checkbox" class="rowCheck"></td>
+                    <td>${req.ReservationID}</td>
+                    <td>${req.EquipmentName}</td>
+                    <td>${req.Requester}</td>
+                    <td>${req.RequestTime}</td>
+                    <td>${req.CreatedAt}</td>
+                    <td><span class="${statusClass}">${req.Status}</span></td>
+                </tr>`;
 
-        // Count total number of rows once
-        const totalRows = document.querySelectorAll('tbody tr').length;
+                tbody.innerHTML += row;
+            });
 
-        function updateFooter() {
-            const selected = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
-
-            if (selected > 0) {
-                countText.textContent = `${selected} selected out of ${totalRows}`;
-                footer.classList.add("show"); // show footer
-            } else {
-                footer.classList.remove("show"); // hide footer
-            }
-        }
-
-        // Add event listeners to all checkboxes
-        checkboxes.forEach(cb => {
-            cb.addEventListener("change", updateFooter);
+            refreshCheckboxLogic();
         });
+}
 
-        // Optional: handle "Select All" checkbox if exists
-        const selectAll = document.getElementById("selectAll");
-        if (selectAll) {
-            selectAll.addEventListener("change", () => {
-                checkboxes.forEach(cb => cb.checked = selectAll.checked);
-                updateFooter();
+document.addEventListener("DOMContentLoaded", loadRequests);
+
+       function refreshCheckboxLogic() {
+    const checkboxes = document.querySelectorAll('.rowCheck');
+    const footer = document.getElementById("actionFooter");
+    const countText = document.getElementById("selectedCount");
+
+    const totalRows = checkboxes.length;
+
+    function updateFooter() {
+        const selected = document.querySelectorAll('.rowCheck:checked').length;
+
+        if (selected > 0) {
+            countText.textContent = `${selected} selected out of ${totalRows}`;
+            footer.classList.add("show");
+        } else {
+            footer.classList.remove("show");
+        }
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", updateFooter);
+    });
+
+    updateFooter();
+}
+
+
+     
+function getSelectedRows() {
+    const ids = [];
+    document.querySelectorAll("#requestTableBody tr").forEach(row => {
+        if (row.querySelector(".rowCheck").checked) {
+            ids.push(row.children[1].textContent);
+        }
+    });
+    return ids;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.querySelector(".btn-success").addEventListener("click", () => {
+        processAction("approve");
+    });
+
+    document.querySelector(".btn-danger").addEventListener("click", () => {
+        processAction("reject");
+    });
+
+});
+
+function processAction(action) {
+    const ids = getSelectedRows();
+
+    if (ids.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No selection',
+            text: 'Please select at least one request.'
+        });
+        return;
+    }
+
+    // Confirmation popup
+    Swal.fire({
+        title: `Are you sure you want to ${action} ${ids.length} request(s)?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: action === 'approve' ? 'Yes, Approve' : 'Yes, Reject',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with action
+            const formData = new FormData();
+            formData.append('action', action);
+            ids.forEach(id => formData.append('ids[]', id));
+
+            fetch("equipment-req.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadRequests(); // refresh table
+                    Swal.fire({
+                        icon: 'success',
+                        title: action === 'approve' ? 'Approved!' : 'Rejected!',
+                        text: `${ids.length} request(s) ${action === 'approve' ? 'approved' : 'rejected'} successfully!`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.'
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Cannot connect to server.'
+                });
             });
         }
+    });
+}
 
-        // Initialize footer on page load
-        updateFooter();
+
+
     </script>
 
 </body>

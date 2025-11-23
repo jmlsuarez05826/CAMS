@@ -8,98 +8,98 @@
     $crud = new Crud();
 
     // Return JSON for units if equipmentID is provided
-   // Return JSON for units if equipmentID is provided
-if(isset($_GET['equipmentID'])){
-    $equipmentID = (int)$_GET['equipmentID'];
-    $units = $crud->getEquipmentUnits($equipmentID);
+    // Return JSON for units if equipmentID is provided
+    if (isset($_GET['equipmentID'])) {
+        $equipmentID = (int)$_GET['equipmentID'];
+        $units = $crud->getEquipmentUnits($equipmentID);
 
-    // Add "hasPending" flag for each unit based on current user's reservations
-    $userID = $_SESSION['UserID'] ?? null;
-    $userReservations = $userID ? $crud->getUserReservations($userID) : [];
+        // Add "hasPending" flag for each unit based on current user's reservations
+        $userID = $_SESSION['UserID'] ?? null;
+        $userReservations = $userID ? $crud->getUserReservations($userID) : [];
 
-    foreach ($units as &$unit) {
-        $unit['hasPending'] = false;
-        foreach ($userReservations as $res) {
-            if ($res['UnitID'] == $unit['UnitID'] && strtolower($res['Status']) === 'pending') {
-                $unit['hasPending'] = true;
-                break;
+        foreach ($units as &$unit) {
+            $unit['hasPending'] = false;
+            foreach ($userReservations as $res) {
+                if ($res['UnitID'] == $unit['UnitID'] && strtolower($res['Status']) === 'pending') {
+                    $unit['hasPending'] = true;
+                    break;
+                }
             }
         }
+
+        header('Content-Type: application/json');
+        echo json_encode($units);
+        exit; // stop execution here
     }
 
-    header('Content-Type: application/json');
-    echo json_encode($units);
-    exit; // stop execution here
-}
 
 
-    
-if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
-    $roomID = $_POST['roomID'];
-    try {
-        $schedules = $crud->getSchedulesByRoom($roomID);
-        echo json_encode($schedules);
-    } catch (PDOException $e) {
-        echo json_encode(['error' => $e->getMessage()]);
-    }
-    exit;
-}
-
-if(isset($_GET['roomID'])){
-    $roomID = (int)$_GET['roomID'];
-    $schedules = $crud->getSchedulesByRoom($roomID);
-    header('Content-Type: application/json');
-    echo json_encode($schedules);
-    exit;
-}
-
-if(isset($_POST['reserveUnit'])){
-    $unitID = $_POST['unitID'];
-    $userID = $_SESSION['UserID'] ?? null;
-
-    if(!$userID){
-        echo "error: no user ID";
+    if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
+        $roomID = $_POST['roomID'];
+        try {
+            $schedules = $crud->getSchedulesByRoom($roomID);
+            echo json_encode($schedules);
+        } catch (PDOException $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
         exit;
     }
 
-    try {
-        if($crud->reserveEquipment($unitID, $userID)){
-            echo "success";
-        } else {
-            echo "error";
-        }
-    } catch(PDOException $e){
-        echo "error: " . $e->getMessage();
+    if (isset($_GET['roomID'])) {
+        $roomID = (int)$_GET['roomID'];
+        $schedules = $crud->getSchedulesByRoom($roomID);
+        header('Content-Type: application/json');
+        echo json_encode($schedules);
+        exit;
     }
 
-    exit;
-}
+    if (isset($_POST['reserveUnit'])) {
+        $unitID = $_POST['unitID'];
+        $userID = $_SESSION['UserID'] ?? null;
 
-$userID = $_SESSION['UserID'] ?? null;
-$userReservations = [];
+        if (!$userID) {
+            echo "error: no user ID";
+            exit;
+        }
 
-if ($userID) {
-    $userReservations = $crud->getUserReservations($userID);
-}
-
-if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
-    $reservationID = $_POST['reservationID'] ?? null;
-
-    if($reservationID) {
         try {
-            if($crud->cancelReservation($reservationID)){
-                echo json_encode(['status' => 'success']);
+            if ($crud->reserveEquipment($unitID, $userID)) {
+                echo "success";
             } else {
-                echo json_encode(['status' => 'error', 'message' => 'Failed to cancel']);
+                echo "error";
             }
-        } catch(PDOException $e) {
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        } catch (PDOException $e) {
+            echo "error: " . $e->getMessage();
         }
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'No reservation ID provided']);
+
+        exit;
     }
-    exit;
-}
+
+    $userID = $_SESSION['UserID'] ?? null;
+    $userReservations = [];
+
+    if ($userID) {
+        $userReservations = $crud->getUserReservations($userID);
+    }
+
+    if (isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
+        $reservationID = $_POST['reservationID'] ?? null;
+
+        if ($reservationID) {
+            try {
+                if ($crud->cancelReservation($reservationID)) {
+                    echo json_encode(['status' => 'success']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Failed to cancel']);
+                }
+            } catch (PDOException $e) {
+                echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'No reservation ID provided']);
+        }
+        exit;
+    }
 
 
 
@@ -151,17 +151,18 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                         <i class="bi bi-person-circle profile-icon"></i>
                         <div class="profile-text">
                             <p class="profile-name">
-                            <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
-                        </p>
-                        <p class="profile-number">  <?php echo $_SESSION['PhoneNumber'] ?></p>
+                                <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
+                            </p>
+                            <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
                         </div>
 
                         <!-- Dropdown arrow -->
                         <i class="bi bi-caret-down-fill dropdown-icon"></i>
 
                         <!-- Dropdown menu -->
+                        <!-- Dropdown menu -->
                         <div class="profile-dropdown">
-                            <p class="logout">Logout</p>
+                            <p class="logout" id="logout-btn">Logout</p>
                         </div>
                     </div>
 
@@ -220,11 +221,11 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                                                 <?php foreach ($rooms as $room): ?>
                                                     <?php if ($room['FloorID'] == $floor['FloorID']): ?>
                                                         <div class="room-card" data-room-id="<?= $room['RoomID'] ?>">
-    <div class="room-label">Room no</div>
-    <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
-    <hr>
-    <div class="room-status">Available</div>
-</div>
+                                                            <div class="room-label">Room no</div>
+                                                            <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
+                                                            <hr>
+                                                            <div class="room-status">Available</div>
+                                                        </div>
 
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
@@ -236,7 +237,6 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                         </div>
                     </div>
 
-                    <!-- The Equipment data content starts here -->
                     <!-- The Equipment data content starts here -->
                     <div id="equipments" class="tab-content">
                         <div class="table-wrapper">
@@ -252,33 +252,34 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                                         </tr>
                                     </thead>
                                     <tbody>
-        <?php if (!empty($equipments)): ?>
-            <?php foreach ($equipments as $equipment): ?>
-            <tr class="clickable-row" 
-        data-id="<?= $equipment['EquipmentID'] ?>" 
-        data-image="<?= htmlspecialchars($equipment['EquipmentIMG'] ? '../uploads/equipments/' . $equipment['EquipmentIMG'] : '../uploads/equipments/default.png') ?>"
-    >
-        <td><?= htmlspecialchars($equipment['EquipmentID']) ?></td>
-        <td><?= htmlspecialchars($equipment['EquipmentName']) ?></td>
-        <td><?= htmlspecialchars($equipment['Quantity']) ?></td>
-        <td>
-            <span class="badge 
-                <?= isset($equipment['Status']) && strtolower($equipment['Status']) === 'available' 
-                    ? 'bg-success' 
-                    : 'bg-danger' ?>">
-                <?= htmlspecialchars($equipment['Status'] ?? 'Available') ?>
-            </span>
-        </td>
-    </tr>
+                                        <?php if (!empty($equipments)): ?>
+                                            <?php foreach ($equipments as $equipment): ?>
+                                                <tr class="clickable-row"
+                                                    data-id="<?= $equipment['EquipmentID'] ?>"
+                                                    data-image="<?= htmlspecialchars($equipment['EquipmentIMG'] ? '../uploads/equipments/' . $equipment['EquipmentIMG'] : '../uploads/equipments/default.png') ?>">
+                                                    <td><?= htmlspecialchars($equipment['EquipmentID']) ?></td>
+                                                    <td><?= htmlspecialchars($equipment['EquipmentName']) ?></td>
+                                                    <td><?= htmlspecialchars($equipment['Quantity']) ?></td>
+                                                    <td>
+                                                        <span class="badge 
+                                                <?php
+                                                $status = strtolower(trim($equipment['Status'] ?? 'available'));
+                                                echo $status === 'available' ? 'available' : ($status === 'reserved' ? 'reserved' : 'maintenance');
+                                                ?>">
+                                                            <?= htmlspecialchars($equipment['Status'] ?? 'Available') ?>
+                                                        </span>
+
+                                                    </td>
+                                                </tr>
 
 
-            <?php endforeach; ?>
-        <?php else: ?>
-            <tr>
-                <td colspan="5" class="text-center">No equipment found</td>
-            </tr>
-        <?php endif; ?>
-    </tbody>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="5" class="text-center">No equipment found</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
 
                                 </table>
                             </div>
@@ -302,33 +303,34 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                                         <th></th>
                                     </tr>
                                 </thead>
-                               <tbody>
-<?php if (!empty($userReservations)): ?>
-    <?php foreach ($userReservations as $res): ?>
-        <tr>
-            <td><?= htmlspecialchars($res['ReservationID']) ?></td>
-            <td><?= htmlspecialchars($res['EquipmentName']) ?></td>
-            <td>
-                <span class="badge 
-                    <?= strtolower($res['Status']) === 'available' ? 'bg-success' : 'bg-warning' ?>">
-                    <?= htmlspecialchars($res['Status']) ?>
-                </span>
-            </td>
-            <td>
-    <?php if (strtolower($res['Status']) === 'pending'): ?>
-        <button class="cancelBtn" data-id="<?= $res['ReservationID'] ?>">Cancel</button>
-    <?php endif; ?>
-</td>
+                                <tbody>
+                                    <?php if (!empty($userReservations)): ?>
+                                        <?php foreach ($userReservations as $res): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($res['ReservationID']) ?></td>
+                                                <td><?= htmlspecialchars($res['EquipmentName']) ?></td>
+                                                <td>
+                                                    <span class="badge 
+                                                        <?= strtolower(trim($res['Status'])) === 'available' ? 'available' : (strtolower(trim($res['Status'])) === 'pending' ? 'pending' : 'cancelled') ?>">
+                                                        <?= htmlspecialchars($res['Status']) ?>
+                                                    </span>
 
-        </tr>
-    <?php endforeach; ?>
-<?php else: ?>
-    <tr>
-        <td colspan="5" class="text-center">No reservations found</td>
-    </tr>
-<?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if (strtolower($res['Status']) === 'pending'): ?>
+                                                        <button class="cancelBtn" data-id="<?= $res['ReservationID'] ?>"><i class="bi bi-x-lg cancelIcon"></i></button>
+                                                    <?php endif; ?>
+                                                </td>
 
-</tbody>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center">No reservations found</td>
+                                        </tr>
+                                    <?php endif; ?>
+
+                                </tbody>
 
                             </table>
                         </div>
@@ -338,7 +340,7 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                 </div>
             </section>
 
-                </div>
+            </div>
             </section>
 
             <!-- class sched modal -->
@@ -417,8 +419,8 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                                 <hr class="table-separator">
 
                                 <div class="custom-modal-footer">
-                                    <button type="button" class="btn-close-modal" id="closeReserveFooter">Cancel</button>
-                                    <button type="submit" id="confirmReserve">Reserve</button>
+                                    <button type="button" class="btn-cancel" id="closeReserveFooter">Cancel</button>
+                                    <button type="submit" class="btn-confirm" id="confirmReserve">Reserve</button>
                                 </div>
                             </form>
                         </div>
@@ -428,42 +430,68 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
 
 
         </main>
+        <script>
+            document.getElementById('logout-btn').addEventListener('click', function(e) {
+                e.preventDefault(); // prevent immediate navigation
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You will be logged out.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '../pages/logout.php';
+                    }
+                });
+            });
+        </script>
 
         <script>
             document.addEventListener('DOMContentLoaded', () => {
 
-        document.querySelectorAll('.clickable-row').forEach(row => {
-            row.addEventListener('click', () => {
-                const id = row.dataset.id;
-                const equipmentName = row.cells[1].innerText;
-                const totalQty = row.cells[2].innerText;
-                const imgSrc = row.dataset.image || 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png';
+                document.querySelectorAll('.clickable-row').forEach(row => {
+                    row.addEventListener('click', () => {
+                        const id = row.dataset.id;
+                        const equipmentName = row.cells[1].innerText;
+                        const totalQty = row.cells[2].innerText;
+                        const imgSrc = row.dataset.image || 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png';
 
-                fetch(`../pages/faculty-reservation.php?equipmentID=${id}`)
-                    .then(res => res.json())
-                    .then(units => {
-                        const unitListHTML = units.map(u => `
+                        fetch(`../pages/faculty-reservation.php?equipmentID=${id}`)
+                            .then(res => res.json())
+                            .then(units => {
+                                const unitListHTML = units.map(u => {
+                                    let btnHTML = '';
+                                    if (u.hasPending) {
+                                        btnHTML = `<button class="reserveBtn pending" disabled>Pending Request</button>`;
+                                    } else if (u.Status.toLowerCase() === 'available') {
+                                        btnHTML = `<button class="reserveBtn available" data-unit-id="${u.UnitID}">Reserve</button>`;
+                                    }
+                                    // else leave btnHTML empty for unavailable
+
+                                    return `
         <div class="unit-card ${u.Status.toLowerCase().replace(' ', '-')}" data-unit-id="${u.UnitID}">
             <span class="dot"></span>
             <span class="unit-label">${equipmentName} #${u.UnitNumber}</span>
             <span class="unit-status">${u.Status}</span>
-           ${u.hasPending 
-    ? '<button class="reserveBtn" disabled>Pending Request</button>'
-    : u.Status.toLowerCase() === 'available'
-        ? `<button class="reserveBtn" data-unit-id="${u.UnitID}">Reserve</button>`
-        : ''}
-
+            ${btnHTML}
         </div>
-    `).join('');
+    `;
+                                }).join('');
 
 
-                        Swal.fire({
-                            width: "650px",            // string with px
-        heightAuto: false,
-        showConfirmButton: true,   // same as admin
-        showCloseButton: true,
-        customClass: { popup: "equip-modal" }, // apply same modal CSS
-                            html: `
+
+                                Swal.fire({
+                                    width: "650px", // string with px
+                                    heightAuto: false,
+                                    showConfirmButton: true, // same as admin
+                                    showCloseButton: true,
+                                    customClass: {
+                                        popup: "equip-modal"
+                                    }, // apply same modal CSS
+                                    html: `
                                 <div class="equip-modal">
                                     <div class="equip-header">
                                         <h2 class="equip-title">Equipment Information</h2>
@@ -487,13 +515,13 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                                     </div>
                                 </div>
                             `
-                        });
-                    })
-                    .catch(err => Swal.fire('Error', 'Failed to fetch units: ' + err.message, 'error'));
-            });
-        });
+                                });
+                            })
+                            .catch(err => Swal.fire('Error', 'Failed to fetch units: ' + err.message, 'error'));
+                    });
+                });
 
-    });
+            });
 
             // =========================
             // 1. Get modal element
@@ -884,29 +912,29 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
             });
 
             document.querySelectorAll(".room-card").forEach(card => {
-    card.addEventListener("click", () => {
-        const roomID = card.getAttribute("data-room-id"); // make sure to set this in PHP
-        const roomNumber = card.querySelector(".room-number").innerText;
+                card.addEventListener("click", () => {
+                    const roomID = card.getAttribute("data-room-id"); // make sure to set this in PHP
+                    const roomNumber = card.querySelector(".room-number").innerText;
 
-        // Open modal
-        const classroomModal = document.getElementById("classroomModal");
-        classroomModal.classList.add("show");
+                    // Open modal
+                    const classroomModal = document.getElementById("classroomModal");
+                    classroomModal.classList.add("show");
 
-        // Update modal title with room number
-        document.querySelector("#classroomModal .custom-modal-title").innerText = `Classroom Schedule - Room ${roomNumber}`;
+                    // Update modal title with room number
+                    document.querySelector("#classroomModal .custom-modal-title").innerText = `Classroom Schedule - Room ${roomNumber}`;
 
-        // Fetch schedules from backend
-        fetch(`../pages/faculty-reservation.php?roomID=${roomID}`)
-            .then(res => res.json())
-            .then(schedules => {
-                const tbody = document.querySelector(".classSchedTable tbody");
-                tbody.innerHTML = ""; // clear existing rows
+                    // Fetch schedules from backend
+                    fetch(`../pages/faculty-reservation.php?roomID=${roomID}`)
+                        .then(res => res.json())
+                        .then(schedules => {
+                            const tbody = document.querySelector(".classSchedTable tbody");
+                            tbody.innerHTML = ""; // clear existing rows
 
-                if(schedules.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center">No schedule found</td></tr>`;
-                } else {
-                    schedules.forEach(s => {
-                        tbody.innerHTML += `
+                            if (schedules.length === 0) {
+                                tbody.innerHTML = `<tr><td colspan="5" class="text-center">No schedule found</td></tr>`;
+                            } else {
+                                schedules.forEach(s => {
+                                    tbody.innerHTML += `
                             <tr>
                                 <td>${s.Instructor}</td>
                                 <td>${s.ClassCode}</td>
@@ -915,87 +943,90 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                                 <td>${s.Section}</td>
                             </tr>
                         `;
+                                });
+                            }
+                        })
+                        .catch(err => console.error("Failed to fetch schedules:", err));
+                });
+            });
+
+            document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("reserveBtn")) {
+                    let unitID = e.target.getAttribute("data-unit-id");
+
+
+                    Swal.fire({
+                        title: "Reserve this unit?",
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, reserve"
+                    }).then(result => {
+                        if (result.isConfirmed) {
+
+                            fetch("faculty-reservation.php", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: "reserveUnit=1&unitID=" + unitID
+                                })
+                                .then(res => res.text())
+                                .then(response => {
+                                    if (response.trim() === "success") {
+                                        Swal.fire("Reserved!", "Request is now pending.", "success");
+
+                                        // Update the button/UI
+                                        e.target.innerText = "Reserved";
+                                        e.target.disabled = true;
+                                        e.target.closest('.unit-card').classList.remove('available');
+                                        e.target.closest('.unit-card').classList.add('reserved');
+                                    } else {
+                                        Swal.fire("Error", "Failed to reserve.", "error");
+                                    }
+                                });
+
+                        }
                     });
                 }
-            })
-            .catch(err => console.error("Failed to fetch schedules:", err));
-    });
-});
+            });
 
-document.addEventListener("click", function(e) {
-    if (e.target.classList.contains("reserveBtn")) {
-        let unitID = e.target.getAttribute("data-unit-id");
+            document.addEventListener("click", function(e) {
+                const btn = e.target.closest(".cancelBtn"); // button or child icon
+                if (!btn) return; // not a cancel button click
 
+                const reservationID = btn.dataset.id; // always use btn
+                const row = btn.closest("tr");
 
-        Swal.fire({
-            title: "Reserve this unit?",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonText: "Yes, reserve"
-        }).then(result => {
-            if (result.isConfirmed) {
-
-                fetch("faculty-reservation.php", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                    body: "reserveUnit=1&unitID=" + unitID
-                })
-                .then(res => res.text())
-                .then(response => {
-                    if (response.trim() === "success") {
-                        Swal.fire("Reserved!", "Request is now pending.", "success");
-
-                        // Update the button/UI
-                        e.target.innerText = "Reserved";
-                        e.target.disabled = true;
-                        e.target.closest('.unit-card').classList.remove('available');
-                        e.target.closest('.unit-card').classList.add('reserved');
-                    } else {
-                        Swal.fire("Error", "Failed to reserve.", "error");
+                Swal.fire({
+                    title: "Cancel this reservation?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, cancel",
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        fetch("../pages/faculty-reservation.php", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: `action=cancelReservation&reservationID=${reservationID}`
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.status === "success") {
+                                    Swal.fire("Cancelled!", "Your reservation has been cancelled.", "success");
+                                    row.remove(); // remove the row
+                                } else {
+                                    Swal.fire("Error", data.message || "Something went wrong.", "error");
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                Swal.fire("Error", "Network or server error", "error");
+                            });
                     }
                 });
-
-            }
-        });
-    }
-});
-
-document.addEventListener("click", function(e) {
-    if (e.target.classList.contains("cancelBtn")) {
-        const reservationID = e.target.dataset.id;
-
-        Swal.fire({
-            title: "Cancel this reservation?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, cancel",
-        }).then(result => {
-            if (result.isConfirmed) {
-                fetch("../pages/faculty-reservation.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: `action=cancelReservation&reservationID=${reservationID}`
-                })
-                .then(res => res.json())
-                .then(data => {
-                    console.log(data); // debug
-                    if(data.status === "success") {
-                        Swal.fire("Cancelled!", "Your reservation has been cancelled.", "success");
-                        e.target.closest("tr").remove(); // ✅ remove row immediately
-                    } else {
-                        Swal.fire("Error", data.message || "Something went wrong.", "error");
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    Swal.fire("Error", "Network or server error", "error");
-                });
-            }
-        });
-    }
-});
-
-
+            });
         </script>
 
 

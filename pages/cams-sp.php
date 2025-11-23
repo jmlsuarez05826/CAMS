@@ -291,6 +291,35 @@ public function getUserPendingUnitReservations($userID) {
     return $stmt->fetchAll(PDO::FETCH_COLUMN); // return array of UnitIDs
 }
 
+public function getEquipmentRequests() {
+    $stmt = $this->conn->prepare("
+        SELECT 
+            er.*,
+            e.EquipmentName,
+            CONCAT(u.FirstName, ' ', u.LastName) AS Requester
+        FROM equipment_reservations er
+        JOIN equipment_units eu ON er.UnitID = eu.UnitID
+        JOIN equipments e ON eu.EquipmentID = e.EquipmentID
+        JOIN users u ON er.UserID = u.UserID
+    ");
+
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function approveEquipmentRequest($id) {
+    $stmt = $this->conn->prepare("CALL approveEquipmentReq(?)");
+    $stmt->execute([$id]);
+    return true;
+}
+
+public function rejectEquipmentRequest($id) {
+    $stmt = $this->conn->prepare("CALL rejectEquipmentReq(?)");
+    $stmt->execute([$id]);
+    return true;
+}
+
+
 }
 
 
