@@ -391,4 +391,71 @@ height: 70px;
     font-weight: bold;
 }
 
+/* Css for the schedule modal*/
+#scheduleTable td{
+  text-align: center;
+  padding: 5px;
+}
+#scheduleTable td, #scheduleTable th {
+    border-bottom: 1px solid #ccc;
+  }
 
+  .delete-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Trash icon styling */
+.delete-icon {
+  color: #b22222;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+
+/* Optional hover effect */
+.delete-icon:hover {
+  color: darkred;
+}
+
+
+/* Target the entire new schedule row */
+.new-schedule {
+  background-color: #f9f9f9;  /* light background for new rows */
+  font-weight: normal;
+}
+
+/* Optional: give padding to each cell in the new row */
+.new-schedule td {
+  padding: 5px 8px;
+  text-align: center;
+}
+
+/* Trash / X button for new rows */
+.deleteRowBtn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+/* Icon inside the button */
+.deleteRowBtn i {
+  color: red;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+
+/* Hover effect */
+.deleteRowBtn:hover i {
+  color: darkred;
+}
+
+.editable:empty:before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;  /* allows typing over it */
+}

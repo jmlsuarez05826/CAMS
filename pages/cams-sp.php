@@ -123,11 +123,15 @@ class Crud
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function editEquipment($equipmentID, $equipmentname, $quantity)
+    public function editEquipment($equipmentID, $equipmentname, $quantity, $equipmentIMG)
     {
+        // If no new image uploaded, pass NULL
+        if (empty($equipmentIMG)) {
+            $equipmentIMG = null;
+        }
 
-        $stmt = $this->conn->prepare("CALL editEquipment(?, ?, ?)");
-        $stmt->execute([$equipmentID, $equipmentname, $quantity]);
+        $stmt = $this->conn->prepare("CALL editEquipment(?, ?, ?, ?)");
+        $stmt->execute([$equipmentID, $equipmentname, $quantity, $equipmentIMG]);
         return true;
     }
 
@@ -175,20 +179,32 @@ class Crud
         return true;
     }
 
-    public function getSchedulesByRoom($roomID)
+    public function getSchedulesByRoom($roomID, $dayOfWeek = null, $weekType = null)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM Schedules WHERE RoomID = ?");
-        $stmt->execute([$roomID]);
+        $query = "SELECT * FROM schedules WHERE RoomID = ?";
+        $params = [$roomID];
+
+        if ($dayOfWeek) {
+            $query .= " AND DayOfWeek = ?";
+            $params[] = $dayOfWeek;
+        }
+
+        if ($weekType) {
+            $query .= " AND WeekType = ?";
+            $params[] = $weekType;
+        }
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)
+    public function addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section, $weekType, $dayOfWeek)
     {
-        $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section]);
+        $stmt = $this->conn->prepare("CALL addSchedule (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$roomID, $subject, $instructor, $timeFrom, $timeTo, $section, $weekType, $dayOfWeek]);
         return true;
     }
-
     public function getMaxFloorNumber($buildingID)
     {
         $sql = "SELECT COALESCE(MAX(FloorNumber), 0) AS MaxFloor
@@ -258,5 +274,44 @@ class Crud
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
         }
+    }
+
+    public function reserveEquipment($unitID, $userID)
+    {
+        $stmt = $this->conn->prepare("CALL reserveEquipment(?, ?)");
+        return $stmt->execute([$unitID, $userID]);
+    }
+
+    function getUserReservations($userID)
+    {
+        $stmt = $this->conn->prepare("
+        SELECT er.*, e.EquipmentName
+        FROM equipment_reservations er
+        JOIN equipment_units eu ON er.UnitID = eu.UnitID
+        JOIN equipments e ON eu.EquipmentID = e.EquipmentID
+        WHERE er.UserID = ?
+    ");
+        $stmt->execute([$userID]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function cancelReservation($reservationID)
+    {
+        $stmt = $this->conn->prepare("CALL cancelReservation(?)");
+        $stmt->execute([$reservationID]);
+        return true;
+    }
+
+    public function getUserPendingUnitReservations($userID)
+    {
+        $stmt = $this->conn->prepare("SELECT UnitID FROM reservations WHERE UserID = :userID AND Status = 'pending'");
+        $stmt->execute(['userID' => $userID]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN); // return array of UnitIDs
+    }
+    function getEquipmentUnits($equipmentID)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM equipment_units WHERE EquipmentID = ?");
+        $stmt->execute([$equipmentID]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

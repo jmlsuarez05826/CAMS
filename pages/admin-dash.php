@@ -60,6 +60,15 @@ foreach ($results as $row) {
 }
 $labels_json_d = json_encode($date);
 $data_json_d = json_encode($count);
+
+
+$firstname = $_SESSION['FirstName'] ?? null;
+$lastname = $_SESSION['LastName'] ?? null;
+$number = $_SESSION['PhoneNumber'] ?? null;
+$user_id = $_SESSION['UserID'] ?? null;
+$role = $_SESSION['Role'] ?? null;
+
+
 ?>
 
 <!DOCTYPE html>
@@ -79,20 +88,18 @@ $data_json_d = json_encode($count);
 
     <header>
         <div class="topbar">
-            <h2 class="system-title">Welcome Admin!</h2>
+            <h2 class="system-title">Welcome <?= $firstname; ?>!</h2>
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
                 <input type="text" placeholder="Search">
             </div>
             <div class="topbar-right">
-                <div class="notification-icon">
-                    <i class="bi bi-bell-fill notification-icon"></i>
-                </div>
+
                 <div class="profile-info">
                     <i class="bi bi-person-circle profile-icon"></i>
                     <div class="profile-text">
-                        <p class="profile-name">Mark Cristopher</p>
-                        <p class="profile-number">093480324</p>
+                        <p class="profile-name"><?= $firstname; ?> <?= $lastname; ?></p>
+                        <p class="profile-number"><?= $number; ?></p>
                         <div id="time"></div>
                     </div>
                 </div>
@@ -173,14 +180,22 @@ $data_json_d = json_encode($count);
     </select>
 
 
-    <div id="chat-toggle">💬</div>
+    <div id="chat-toggle">
+        💬
+        <div id="chat-notif"></div>
+    </div>
+
+
+
+
 
     <!-- Chat container -->
     <div id="chat-container">
         <div id="chat-header">
-            <span id="back-btn" style="display:none;">⬅</span>
-            <span id="chat-title">Select Faculty</span>
-            <span id="close-btn">✖</span>
+            <span id="back-btn" style="display:none;">
+                < </span>
+                    <span id="chat-title">Contact</span>
+                    <span id="close-btn">✖</span>
         </div>
 
         <!-- Faculty list view -->
@@ -335,7 +350,6 @@ $data_json_d = json_encode($count);
                 backBtn.style.display = 'none';
             }
 
-            // Show faculty list
             function showFacultyList() {
                 chatMessages.style.display = 'none';
                 chatInput.style.display = 'none';
@@ -347,34 +361,40 @@ $data_json_d = json_encode($count);
                     .then(res => res.json())
                     .then(data => {
                         facultyListDiv.innerHTML = '';
+
                         data.forEach(fac => {
                             const div = document.createElement('div');
                             div.classList.add('faculty-item');
-                            div.textContent = fac.FirstName + ' ' + fac.LastName + ' (' + fac.PhoneNumber + ')';
+                            div.textContent = fac.FirstName + ' ' + fac.LastName;
+
+                            // Check if this faculty has unread messages
+                            fetch(`chat_api.php?action=fetch_unread_count&faculty_id=${fac.UserID}`)
+                                .then(res => res.json())
+                                .then(countData => {
+                                    if (countData.unread > 0) {
+                                        div.style.fontWeight = 'bold';
+                                    } else {
+                                        div.style.fontWeight = 'normal';
+                                    }
+                                });
+
                             div.onclick = function() {
                                 openChat(fac.UserID, fac.FirstName + ' ' + fac.LastName);
-                            }
+                            };
+
                             facultyListDiv.appendChild(div);
                         });
                     });
             }
 
-            // Open chat with selected faculty
-            function openChat(facultyId, facultyName) {
-                currentFacultyId = facultyId;
-                facultyListDiv.style.display = 'none';
-                chatMessages.style.display = 'flex';
-                chatInput.style.display = 'flex';
-                backBtn.style.display = 'inline';
-                chatTitle.textContent = facultyName;
-                loadChat();
-            }
 
-            // Load chat messages
-            function loadChat(forceScroll = false) {
+            function loadChat(forceScroll = false, markRead = false) {
                 if (!currentFacultyId) return;
 
-                fetch(`chat_api.php?action=get_messages&faculty_id=${currentFacultyId}`)
+                let url = `chat_api.php?action=get_messages&faculty_id=${currentFacultyId}`;
+                if (markRead) url += '&mark_read=1';
+
+                fetch(url)
                     .then(res => res.json())
                     .then(data => {
                         chatMessages.innerHTML = '';
@@ -388,16 +408,31 @@ $data_json_d = json_encode($count);
 
                         // Scroll behavior
                         if (!chatMessages.dataset.hasScrolled || forceScroll) {
-                            // First load or forced scroll
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                             chatMessages.dataset.hasScrolled = true;
                         } else {
-                            // Only scroll if user is already at bottom
                             const isAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop === chatMessages.clientHeight;
                             if (isAtBottom) chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
                     });
             }
+
+            // Open chat with selected faculty
+            function openChat(facultyId, facultyName) {
+                currentFacultyId = facultyId;
+                facultyListDiv.style.display = 'none';
+                chatMessages.style.display = 'flex';
+                chatInput.style.display = 'flex';
+                backBtn.style.display = 'inline';
+                chatTitle.textContent = facultyName;
+
+
+
+                loadChat(true, true);
+            }
+
+
+
 
             // Send chat message
             function sendChat() {
@@ -433,6 +468,19 @@ $data_json_d = json_encode($count);
                 sendChat(); // call your send function
             }
         });
+
+        function updateNotifDot() {
+            fetch('chat_api.php?action=fetch_unread_count')
+                .then(res => res.json())
+                .then(data => {
+                    const dot = document.getElementById('chat-notif');
+                    if (dot) dot.style.display = data.unread > 0 ? 'block' : 'none';
+                })
+                .catch(err => console.error(err));
+        }
+
+        setInterval(updateNotifDot, 3000);
+        updateNotifDot();
     </script>
 
 </body>

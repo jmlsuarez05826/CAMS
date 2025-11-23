@@ -119,10 +119,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'addSchedule') {
     $timeFrom = $_POST['timeFrom'];
     $timeTo = $_POST['timeTo'];
     $section = $_POST['section'];
+    $weekType = $_POST['weekType'];
+    $dayOfWeek = $_POST['dayOfWeek'];
 
     try {
-        if ($crud->addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section)) {
+        if ($crud->addSchedule($roomID, $subject, $instructor, $timeFrom, $timeTo, $section, $weekType, $dayOfWeek)) {
             echo "success";
+        } else {
+            echo "error: failed to insert";
         }
     } catch (PDOException $e) {
         echo "error: " . $e->getMessage();
@@ -130,16 +134,21 @@ if (isset($_POST['action']) && $_POST['action'] === 'addSchedule') {
     exit;
 }
 
+
 if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
     $roomID = $_POST['roomID'];
+    $dayOfWeek = $_POST['dayOfWeek'] ?? null;
+    $weekType = $_POST['weekType'] ?? null;
+
     try {
-        $schedules = $crud->getSchedulesByRoom($roomID);
+        $schedules = $crud->getSchedulesByRoom($roomID, $dayOfWeek, $weekType);
         echo json_encode($schedules);
     } catch (PDOException $e) {
         echo json_encode(['error' => $e->getMessage()]);
     }
     exit;
 }
+
 
 
 
@@ -278,9 +287,15 @@ $rooms = $crud->getRooms();
 
     <script>
         const weekBtn = document.querySelector(".oddWeek-btn");
+        const savedWeek = localStorage.getItem("selectedWeek");
+        if (savedWeek) {
+            weekBtn.textContent = `${savedWeek} Week`;
+        } else {
+            weekBtn.textContent = "Odd Week"; // default
+        }
 
+        // Now your existing event listener
         weekBtn.addEventListener("click", function() {
-            // Determine current week based on button text
             const currentWeek = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
             const nextWeek = currentWeek === "Odd" ? "Even" : "Odd";
 
@@ -293,8 +308,10 @@ $rooms = $crud->getRooms();
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Change button text to the new week
                     weekBtn.textContent = `${nextWeek} Week`;
+
+                    // Save to localStorage
+                    localStorage.setItem("selectedWeek", nextWeek);
 
                     Swal.fire({
                         title: "Week Changed!",
@@ -302,9 +319,16 @@ $rooms = $crud->getRooms();
                         icon: "success",
                         confirmButtonText: "OK"
                     });
+
+                    if (window.currentRoomID && window.currentDay) {
+                        loadSchedules(window.currentDay);
+                    }
                 }
             });
         });
+
+
+        //Script for the room schedule modal
 
         document.querySelectorAll(".room-card.clickable-room").forEach(roomCard => {
             roomCard.addEventListener("click", () => {
@@ -320,23 +344,33 @@ $rooms = $crud->getRooms();
       <hr style="margin:0 0 5px 0;">
     </div>
 
+    <br>
+
     <!-- Day of the week dropdown -->
-    <div style="margin-bottom:10px;">
-      <label for="daySelect" style="font-weight:bold;">Select Day:</label>
-      <select id="daySelect" style="margin-left:5px; padding:3px;">
-        <option value="">--Choose Day--</option>
-        <option value="Monday">Monday</option>
-        <option value="Tuesday">Tuesday</option>
-        <option value="Wednesday">Wednesday</option>
-        <option value="Thursday">Thursday</option>
-        <option value="Friday">Friday</option>
-        <option value="Saturday">Saturday</option>
-        <option value="Sunday">Sunday</option>
-      </select>
-    </div>
+   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+  
+  <!-- LEFT SIDE (Day dropdown) -->
+  <div>
+    <label for="daySelect" style="font-weight:bold;">Select Day:</label>
+    <select id="daySelect" style="margin-left:5px; padding:3px; border-radius:5px;">
+      <option value="">--Choose Day--</option>
+      <option value="Monday">Monday</option>
+      <option value="Tuesday">Tuesday</option>
+      <option value="Wednesday">Wednesday</option>
+      <option value="Thursday">Thursday</option>
+      <option value="Friday">Friday</option>
+      <option value="Saturday">Saturday</option>
+      <option value="Sunday">Sunday</option>
+    </select>
+  </div>
+
+  <!-- RIGHT SIDE (Button) -->
+  <button id="addScheduleBtn" style="padding:5px 10px; border-radius:10px">+ Add Schedule</button>
+</div>
+
 
     <div style="max-height:250px; overflow-y:auto; border:1px solid #ccc; border-radius:5px; padding:5px;">
-      <table id="scheduleTable" style="width:100%; border-collapse:collapse; font-size:16px;">
+      <table id="scheduleTable" style="width:100%; border-collapse:collapse; align-items:center; font-size:16px;">
         <thead>
           <tr style="background:#eee; font-weight:bold;">
             <th>Subject</th>
@@ -349,7 +383,6 @@ $rooms = $crud->getRooms();
         </thead>
         <tbody></tbody>
       </table>
-      <button id="addScheduleBtn" style="margin-top:5px;">+ Add Schedule</button>
     </div>
   </div>
 `,
@@ -357,58 +390,62 @@ $rooms = $crud->getRooms();
                     confirmButtonText: "Save",
                     cancelButtonText: "Cancel",
                     didOpen: () => {
+                        const daySelect = Swal.getPopup().querySelector('#daySelect');
                         const table = Swal.getPopup().querySelector("#scheduleTable tbody");
-                        table.innerHTML = ""; // Clear table
 
-                        // Fetch schedules for this room
-                        fetch("", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                },
-                                body: `action=getSchedules&roomID=${roomID}`
-                            })
-                            .then(res => res.json())
-                            .then(schedules => {
-                                if (schedules.length === 0) {
-                                    const emptyRow = document.createElement("tr");
-                                    emptyRow.innerHTML = `
-        <td colspan="6" style="text-align:center;">No schedules available</td>
-    `;
-                                    table.appendChild(emptyRow);
-                                } else {
-                                    schedules.forEach(s => {
-                                        const row = document.createElement("tr");
-                                        row.innerHTML = `
-        <td>${s.Subject}</td>
-        <td>${s.Instructor}</td>
-        <td>${s.TimeFrom}</td>
-        <td>${s.TimeTo}</td>
-        <td>${s.Section}</td>
-        <td>—</td> <!-- No actions, read-only -->
-    `;
-                                        table.appendChild(row);
-                                    });
+                        function loadSchedules(selectedDay) {
+                            table.innerHTML = ""; // Clear table
+                            const weekType = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
 
-                                }
-                            });
+                            fetch("", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/x-www-form-urlencoded"
+                                    },
+                                    body: `action=getSchedules&roomID=${roomID}&dayOfWeek=${encodeURIComponent(selectedDay)}&weekType=${weekType}`
+                                })
 
+                                .then(res => res.json())
+                                .then(schedules => {
+                                    if (schedules.length === 0) {
+                                        const emptyRow = document.createElement("tr");
+                                        emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">No schedules available</td>`;
+                                        table.appendChild(emptyRow);
+                                    } else {
+                                        schedules.forEach(s => {
+                                            const row = document.createElement("tr");
+                                            row.innerHTML = `
+                    <td>${s.Subject}</td>
+                    <td>${s.Instructor}</td>
+                    <td>${s.TimeFrom}</td>
+                    <td>${s.TimeTo}</td>
+                    <td>${s.Section}</td>
+                    <td class="text-center cell-padding">
+                        <button class="delete-btn" data-id="${s.UserID}">
+                            <i class="bi bi-trash-fill delete-icon"></i>
+                        </button>
+                    </td>
 
-                        //Current day script
-                        const daySelect = document.getElementById('daySelect');
+                `;
+                                            table.appendChild(row);
+                                        });
+                                    }
+                                });
+                        }
 
-                        // Get current day as string
+                        // Set current day as default
                         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
                         const today = new Date();
-                        const currentDay = days[today.getDay()]; // getDay() returns 0 (Sunday) to 6 (Saturday)
+                        daySelect.value = days[today.getDay()];
 
-                        // Set the dropdown value to current day
-                        daySelect.value = currentDay;
+                        // Load schedules for the default day
+                        loadSchedules(daySelect.value);
 
-                        // Optional: add event listener to do something when user changes day
+                        // Reload schedules whenever day changes
                         daySelect.addEventListener('change', function() {
-                            console.log('Selected day:', this.value);
+                            loadSchedules(this.value);
                         });
+
 
 
 
@@ -425,12 +462,12 @@ $rooms = $crud->getRooms();
                             const newRow = document.createElement("tr");
                             newRow.classList.add("new-schedule"); // mark it as new
                             newRow.innerHTML = `
-    <td contenteditable="true"></td>
-    <td contenteditable="true"></td>
-    <td><input type="time" style="width:100%;"></td>
-    <td><input type="time" style="width:100%;"></td>
-    <td contenteditable="true"></td>
-    <td><button class="deleteRowBtn">X</button></td>
+    <td contenteditable="true" class="editable" data-placeholder="Enter Subject"></td>
+    <td contenteditable="true" class="editable" data-placeholder="Enter Instructor"></td>
+    <td><input type="time" style="width:80%;"></td>
+    <td><input type="time" style="width:80%;"></td>
+    <td contenteditable="true" class="editable" data-placeholder="Enter Section"></td>
+    <td><button class="deleteRowBtn"><i class="bi bi-x"></i></button></td>
 `;
                             table.appendChild(newRow);
 
@@ -501,6 +538,8 @@ $rooms = $crud->getRooms();
                             formData.append("timeFrom", s.timeFrom);
                             formData.append("timeTo", s.timeTo);
                             formData.append("section", s.section);
+                            formData.append("weekType", weekBtn.textContent.includes("Odd") ? "Odd" : "Even");
+                            formData.append("dayOfWeek", daySelect.value);
 
                             fetch("", {
                                     method: "POST",
