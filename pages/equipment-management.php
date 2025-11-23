@@ -144,14 +144,26 @@ $equipments = $crud->getEquipments();
 
 <script>
 // Time update
-function updateTime() {
-    const now = new Date();
-    document.getElementById('time').textContent =
-        `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-}
-setInterval(updateTime, 1000);
-updateTime();
+        // Script for the time in 12-hour format with AM/PM
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
 
+            // Convert 24-hour to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = String(hours).padStart(2, '0');
+
+            document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
+        }
+
+        // Update every second
+        setInterval(updateTime, 1000);
+
+        // Initial call
+        updateTime();
 
 
 // Add Equipment

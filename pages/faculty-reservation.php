@@ -427,8 +427,143 @@ if(isset($_POST['action']) && $_POST['action'] === 'cancelReservation') {
                 </div>
             </div>
 
+            <!-- Chat Toggle -->
+    <div id="chat-toggle">💬</div>
+
+    <!-- Chat container -->
+    <div id="chat-container">
+        <div id="chat-header">
+            <span id="back-btn" style="display:none;">⬅</span>
+            <span id="chat-title">Select Faculty</span>
+            <span id="close-btn">✖</span>
+        </div>
+
+        <!-- Faculty list -->
+        <div id="faculty-list"></div>
+
+        <!-- Chat messages -->
+        <div id="chat-messages" style="display:none;"></div>
+
+        <!-- Chat input -->
+        <div id="chat-input" style="display:none;">
+            <input type="text" id="chat-text" placeholder="Type a message...">
+            <button onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
 
         </main>
+        <script>
+     window.onload = function() {
+    const chatContainer = document.getElementById('chat-container');
+    const toggleBtn = document.getElementById('chat-toggle');
+    const closeBtn = document.getElementById('close-btn');
+    const backBtn = document.getElementById('back-btn');
+    const chatTitle = document.getElementById('chat-title');
+    const facultyListDiv = document.getElementById('faculty-list');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const userId = <?= $_SESSION['UserID']; ?>;
+    let currentFacultyId = null;
+
+    // Open chat
+    toggleBtn.onclick = function() {
+        chatContainer.style.display = 'flex';
+        toggleBtn.style.display = 'none';
+        showFacultyList();
+    };
+
+    // Close chat
+    closeBtn.onclick = function() {
+        chatContainer.style.display = 'none';
+        toggleBtn.style.display = 'flex';
+    };
+
+    // Back button
+    backBtn.onclick = function() {
+        currentFacultyId = null;
+        chatMessages.style.display = 'none';
+        chatInput.style.display = 'none';
+        facultyListDiv.style.display = 'block';
+        chatTitle.textContent = 'Select Faculty';
+        backBtn.style.display = 'none';
+    };
+
+    // Show faculty list
+    function showFacultyList() {
+        facultyListDiv.style.display = 'block';
+        chatMessages.style.display = 'none';
+        chatInput.style.display = 'none';
+        backBtn.style.display = 'none';
+        chatTitle.textContent = 'Select Faculty';
+
+        fetch('faculty_chat.php?action=get_faculty')
+            .then(res => res.json())
+            .then(data => {
+                facultyListDiv.innerHTML = '';
+                data.forEach(fac => {
+                    const div = document.createElement('div');
+                    div.classList.add('faculty-item');
+                    div.textContent = fac.FirstName + ' ' + fac.LastName + ' (' + fac.PhoneNumber + ')';
+                    div.onclick = function() {
+                        openChat(fac.UserID, fac.FirstName + ' ' + fac.LastName);
+                    };
+                    facultyListDiv.appendChild(div);
+                });
+            });
+    }
+
+    // Open chat with selected faculty
+    function openChat(facultyId, facultyName) {
+        currentFacultyId = facultyId;
+        facultyListDiv.style.display = 'none';
+        chatMessages.style.display = 'flex';
+        chatInput.style.display = 'flex';
+        backBtn.style.display = 'inline';
+        chatTitle.textContent = facultyName;
+        loadChat();
+    }
+
+    // Load chat messages
+    function loadChat() {
+        if (!currentFacultyId) return;
+        fetch('faculty_chat.php?action=fetch_messages&faculty_id=' + currentFacultyId)
+            .then(res => res.json())
+            .then(data => {
+                chatMessages.innerHTML = '';
+                data.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.classList.add('message');
+                    div.classList.add(msg.sender_id == userId ? 'admin' : 'faculty');
+                    div.innerHTML = `<span>${msg.message}</span><small>${msg.timestamp}</small>`;
+                    chatMessages.appendChild(div);
+                });
+
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+    }
+
+    // Send chat message
+    window.sendChat = function() {
+        const msgInput = document.getElementById('chat-text');
+        const msg = msgInput.value.trim();
+        if (msg === '' || !currentFacultyId) return;
+
+        fetch('faculty_chat.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'action=send_message&receiver_id=' + currentFacultyId + '&message=' + encodeURIComponent(msg)
+        }).then(() => {
+            msgInput.value = '';
+            loadChat();
+        });
+    };
+
+    // Auto-refresh chat
+    setInterval(loadChat, 1000);
+}; 
+    </script>
         <script>
             
   document.getElementById('logout-btn').addEventListener('click', function (e) {
