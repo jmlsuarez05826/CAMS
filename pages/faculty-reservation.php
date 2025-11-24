@@ -154,6 +154,7 @@
                                 <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
                             </p>
                             <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
+                            <p class="profile-time" id="timeDay"></p> <!-- Real-time day & time here -->
                         </div>
 
                         <!-- Dropdown arrow -->
@@ -181,7 +182,11 @@
                     <button class="tab-btn active" data-target="classrooms">Classrooms</button>
                     <button class="tab-btn" data-target="equipments">Equipments</button>
                     <button class="tab-btn" data-target="reservations">Reservations</button>
+
+                    <button class="oddWeek-btn">Odd Week</button>
+
                 </div>
+
             </section>
 
             <section class="main-content">
@@ -356,12 +361,22 @@
                             <form method="post" id="classSchedForm">
 
                                 <p>Building Name Room No</p>
+                                <select id="dayFilter" class="day-dropdown">
+                                    <option value="">Select Day</option>
+                                    <option>Monday</option>
+                                    <option>Tuesday</option>
+                                    <option>Wednesday</option>
+                                    <option>Thursday</option>
+                                    <option>Friday</option>
+                                    <option>Saturday</option>
+                                    <option>Sunday</option>
+                                </select>
+
                                 <div class="Sched-table-wrapper">
                                     <table class="classSchedTable">
                                         <thead>
                                             <tr>
                                                 <th>Instructor</th>
-                                                <th>Class Code </th>
                                                 <th>Subject</th>
                                                 <th>Time</th>
                                                 <th>Section</th>
@@ -396,10 +411,6 @@
                         <div class="custom-modal-body">
                             <form id="reserveForm">
                                 <div class="form-group">
-                                    <label for="classCode">Class Code</label>
-                                    <input type="text" id="classCode" name="classCode" required>
-                                </div>
-                                <div class="form-group">
                                     <label for="subject">Subject</label>
                                     <input type="text" id="subject" name="subject" required>
                                 </div>
@@ -428,9 +439,269 @@
                 </div>
             </div>
 
+            <!-- chat logic -->
+            <div id="chat-toggle">
+                💬
+                <div id="chat-notif"></div>
+            </div>
+
+
+            <!-- Chat container -->
+            <div id="chat-container">
+                <div id="chat-header">
+                    <span id="back-btn" style="display:none;">
+                        < </span>
+                            <span id="chat-title">Contact</span>
+                            <span id="close-btn">✖</span>
+                </div>
+
+                <!-- Faculty list view -->
+                <div id="faculty-list"></div>
+
+                <!-- Messages view -->
+                <div id="chat-messages" style="display:none;"></div>
+
+                <!-- Input -->
+                <div id="chat-input" style="display:none;">
+                    <input type="text" id="chat-text" placeholder="Type a message...">
+                    <button onclick="sendChat()">Send</button>
+                </div>
+            </div>
 
         </main>
+
         <script>
+            window.onload = function() {
+                const chatContainer = document.getElementById('chat-container');
+                const toggleBtn = document.getElementById('chat-toggle');
+                const closeBtn = document.getElementById('close-btn');
+                const backBtn = document.getElementById('back-btn');
+                const chatTitle = document.getElementById('chat-title');
+                const facultyListDiv = document.getElementById('faculty-list');
+                const chatMessages = document.getElementById('chat-messages');
+                const chatInput = document.getElementById('chat-input');
+                const chatText = document.getElementById('chat-text');
+                const notifDot = document.getElementById('chat-notif');
+                const userId = <?= $_SESSION['UserID']; ?>;
+                let currentFacultyId = null;
+
+                // ----------------- OPEN/CLOSE CHAT -----------------
+                toggleBtn.onclick = function() {
+                    chatContainer.style.display = 'flex';
+                    toggleBtn.style.display = 'none';
+                    showFacultyList();
+                };
+
+                closeBtn.onclick = function() {
+                    chatContainer.style.display = 'none';
+                    toggleBtn.style.display = 'flex';
+                };
+
+                backBtn.onclick = function() {
+                    currentFacultyId = null;
+                    chatMessages.style.display = 'none';
+                    chatInput.style.display = 'none';
+                    facultyListDiv.style.display = 'block';
+                    chatTitle.textContent = 'Select Faculty';
+                    backBtn.style.display = 'none';
+                };
+
+                // ----------------- SHOW FACULTY LIST -----------------
+                function showFacultyList() {
+                    facultyListDiv.style.display = 'block';
+                    chatMessages.style.display = 'none';
+                    chatInput.style.display = 'none';
+                    backBtn.style.display = 'none';
+                    chatTitle.textContent = 'Select Faculty';
+
+                    fetch('faculty_chat.php?action=get_faculty')
+                        .then(res => res.json())
+                        .then(data => {
+                            facultyListDiv.innerHTML = '';
+                            data.forEach(fac => {
+                                const div = document.createElement('div');
+                                div.classList.add('faculty-item');
+                                div.textContent = fac.FirstName + ' ' + fac.LastName + ' (' + fac.PhoneNumber + ')';
+
+                                // Open chat when clicked
+                                div.onclick = function() {
+                                    openChat(fac.UserID, fac.FirstName + ' ' + fac.LastName);
+                                };
+
+                                facultyListDiv.appendChild(div);
+                            });
+                        })
+                        .catch(err => console.error('Error fetching faculty:', err));
+                }
+
+                // ----------------- OPEN CHAT -----------------
+                function openChat(facultyId, facultyName) {
+                    currentFacultyId = facultyId;
+                    facultyListDiv.style.display = 'none';
+                    chatMessages.style.display = 'flex';
+                    chatInput.style.display = 'flex';
+                    backBtn.style.display = 'inline';
+                    chatTitle.textContent = facultyName;
+                    loadChat(true); // force scroll
+                }
+
+                // ----------------- LOAD CHAT MESSAGES -----------------
+                function loadChat(forceScroll = false) {
+                    if (!currentFacultyId) return;
+                    fetch(`faculty_chat.php?action=fetch_messages&faculty_id=${currentFacultyId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            chatMessages.innerHTML = '';
+                            data.forEach(msg => {
+                                const div = document.createElement('div');
+                                div.classList.add('message');
+                                div.classList.add(msg.sender_id == userId ? 'faculty' : 'admin');
+                                div.innerHTML = `<span>${msg.message}</span><small>${msg.timestamp}</small>`;
+                                chatMessages.appendChild(div);
+                            });
+
+                            if (forceScroll) chatMessages.scrollTop = chatMessages.scrollHeight;
+                        })
+                        .catch(err => console.error('Error loading chat:', err));
+                }
+
+                // ----------------- SEND CHAT -----------------
+                window.sendChat = function() {
+                    const msg = chatText.value.trim();
+                    if (!msg || !currentFacultyId) return;
+
+                    fetch('faculty_chat.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'action=send_message&receiver_id=' + currentFacultyId + '&message=' + encodeURIComponent(msg)
+                        })
+                        .then(res => res.json())
+                        .then(resp => {
+                            if (resp.success) {
+                                chatText.value = '';
+                                loadChat(true); // scroll to bottom
+                            } else {
+                                console.error(resp.error || 'Failed to send message');
+                                alert(resp.error || 'Failed to send message');
+                            }
+                        })
+                        .catch(err => console.error('Error sending chat:', err));
+                };
+
+                // ----------------- ENTER KEY TO SEND -----------------
+                chatText.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChat();
+                    }
+                });
+
+                // ----------------- AUTO-REFRESH -----------------
+                setInterval(() => {
+                    if (currentFacultyId) loadChat();
+                    updateNotifDot();
+                }, 1000);
+
+                // ----------------- UNREAD NOTIFICATION DOT -----------------
+                function updateNotifDot() {
+                    fetch('faculty_chat.php?action=get_faculty')
+                        .then(res => res.json())
+                        .then(data => {
+                            let hasUnread = false;
+                            const fetches = data.map(fac =>
+                                fetch(`faculty_chat.php?action=fetch_messages&faculty_id=${fac.UserID}`)
+                                .then(res => res.json())
+                                .then(msgs => {
+                                    if (msgs.some(m => m.status === 'unread' && m.sender_id != userId)) {
+                                        hasUnread = true;
+                                    }
+                                })
+                            );
+
+                            Promise.all(fetches).then(() => {
+                                notifDot.style.display = hasUnread ? 'block' : 'none';
+                            });
+                        });
+                }
+                updateNotifDot();
+            };
+        </script>
+        <script>
+            // Script for real-time day & 12-hour format time
+            function updateTimeDay() {
+                const now = new Date();
+
+                // Get day
+                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                const day = days[now.getDay()];
+
+                // Get hours and minutes
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+
+                // Convert 24-hour to 12-hour format
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                hours = String(hours).padStart(2, '0');
+
+                // Set the text content
+                document.getElementById('timeDay').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
+            }
+
+            // Update every second
+            setInterval(updateTimeDay, 1000);
+
+            // Initial call
+            updateTimeDay();
+
+
+            //odd week btn script
+            const weekBtn = document.querySelector(".oddWeek-btn");
+            const savedWeek = localStorage.getItem("selectedWeek");
+            if (savedWeek) {
+                weekBtn.textContent = `${savedWeek} Week`;
+            } else {
+                weekBtn.textContent = "Odd Week"; // default
+            }
+
+            // Now your existing event listener
+            weekBtn.addEventListener("click", function() {
+                const currentWeek = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
+                const nextWeek = currentWeek === "Odd" ? "Even" : "Odd";
+
+                Swal.fire({
+                    title: "Change Week?",
+                    text: `Are you sure you want to change the week to ${nextWeek}?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: `Yes, change to ${nextWeek}`,
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        weekBtn.textContent = `${nextWeek} Week`;
+
+                        // Save to localStorage
+                        localStorage.setItem("selectedWeek", nextWeek);
+
+                        Swal.fire({
+                            title: "Week Changed!",
+                            text: `The week has been updated to ${nextWeek}.`,
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        });
+
+                        if (window.currentRoomID && window.currentDay) {
+                            loadSchedules(window.currentDay);
+                        }
+                    }
+                });
+            });
+
+
             document.getElementById('logout-btn').addEventListener('click', function(e) {
                 e.preventDefault(); // prevent immediate navigation
                 Swal.fire({
@@ -757,7 +1028,6 @@
                                             cancelButtonText: 'Cancel',
                                             focusConfirm: false,
                                             preConfirm: () => ({
-                                                classCode: document.getElementById('reserve-class')?.value ?? "",
                                                 subject: document.getElementById('reserve-subject')?.value ?? "",
                                                 date: document.getElementById('reserve-date')?.value ?? "",
                                                 time: document.getElementById('reserve-time')?.value ?? "",
@@ -937,7 +1207,6 @@
                                     tbody.innerHTML += `
                             <tr>
                                 <td>${s.Instructor}</td>
-                                <td>${s.ClassCode}</td>
                                 <td>${s.Subject}</td>
                                 <td>${s.TimeFrom} - ${s.TimeTo}</td>
                                 <td>${s.Section}</td>

@@ -27,6 +27,7 @@ class Crud
             return true;
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
+
         }
     }
 
@@ -160,6 +161,7 @@ class Crud
             return true;
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
+
         }
     }
 
@@ -242,6 +244,9 @@ class Crud
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $result;
+
+
+
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
         }
@@ -271,6 +276,8 @@ class Crud
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $user;
+
+
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
         }
@@ -314,4 +321,9 @@ class Crud
         $stmt->execute([$equipmentID]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+
+
 }
+
+

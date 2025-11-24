@@ -361,6 +361,8 @@ $users = $crud->getAllUsers();
                 // Show or hide "No results" message
                 noResultsDiv.style.display = anyVisible ? 'none' : 'block';
             });
+
+
             // Script for the time in 12-hour format with AM/PM
             function updateTime() {
                 const now = new Date();
