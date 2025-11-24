@@ -361,7 +361,6 @@
                                         <thead>
                                             <tr>
                                                 <th>Instructor</th>
-                                                <th>Class Code </th>
                                                 <th>Subject</th>
                                                 <th>Time</th>
                                                 <th>Section</th>
@@ -395,10 +394,6 @@
 
                         <div class="custom-modal-body">
                             <form id="reserveForm">
-                                <div class="form-group">
-                                    <label for="classCode">Class Code</label>
-                                    <input type="text" id="classCode" name="classCode" required>
-                                </div>
                                 <div class="form-group">
                                     <label for="subject">Subject</label>
                                     <input type="text" id="subject" name="subject" required>
@@ -757,7 +752,6 @@
                                             cancelButtonText: 'Cancel',
                                             focusConfirm: false,
                                             preConfirm: () => ({
-                                                classCode: document.getElementById('reserve-class')?.value ?? "",
                                                 subject: document.getElementById('reserve-subject')?.value ?? "",
                                                 date: document.getElementById('reserve-date')?.value ?? "",
                                                 time: document.getElementById('reserve-time')?.value ?? "",
@@ -937,7 +931,6 @@
                                     tbody.innerHTML += `
                             <tr>
                                 <td>${s.Instructor}</td>
-                                <td>${s.ClassCode}</td>
                                 <td>${s.Subject}</td>
                                 <td>${s.TimeFrom} - ${s.TimeTo}</td>
                                 <td>${s.Section}</td>

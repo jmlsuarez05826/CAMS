@@ -301,11 +301,13 @@ public function getEquipmentRequests() {
         JOIN equipment_units eu ON er.UnitID = eu.UnitID
         JOIN equipments e ON eu.EquipmentID = e.EquipmentID
         JOIN users u ON er.UserID = u.UserID
+        WHERE er.Status IN ('Pending', 'Approved', 'Rejected')
     ");
 
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
 public function approveEquipmentRequest($id) {
     $stmt = $this->conn->prepare("CALL approveEquipmentReq(?)");
