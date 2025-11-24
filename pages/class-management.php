@@ -351,7 +351,6 @@ weekBtn.addEventListener("click", function() {
     <div style="margin-bottom:10px;">
       <label for="daySelect" style="font-weight:bold;">Select Day:</label>
       <select id="daySelect" style="margin-left:5px; padding:3px;">
-        <option value="">--Choose Day--</option>
         <option value="Monday">Monday</option>
         <option value="Tuesday">Tuesday</option>
         <option value="Wednesday">Wednesday</option>
