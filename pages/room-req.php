@@ -1,3 +1,38 @@
+<?php
+require_once '../pages/camsdatabase.php';
+require_once '../pages/cams-sp.php';
+
+$crud = new Crud();
+
+// Return all equipment requests as JSON
+if (isset($_GET['getRequests'])) {
+    $requests = $crud->getClassroomRequests(); // You create this function
+    header('Content-Type: application/json');
+    echo json_encode($requests);
+    exit;
+}
+
+// PROCESS APPROVE / REJECT USING SP
+if (isset($_POST['action']) && isset($_POST['ids'])) {
+
+    $ids = $_POST['ids'];
+
+    foreach ($ids as $id) {
+        if ($_POST['action'] === "approve") {
+            $crud->approveClassroomRequest($id);
+        } 
+        else if ($_POST['action'] === "reject") {
+            $crud->rejectClassroomRequest($id);
+        }
+    }
+
+    echo json_encode(["success" => true]);
+    exit;
+}
+
+require_once '../includes/admin-sidebar.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,14 +43,15 @@
 
 
     <link rel="stylesheet" href="../assets/css/room-req.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <?php
-    require_once '../includes/admin-sidebar.php';
-    ?>
+
 
 </head>
 
 <body>
+
+
 
     <div class="topbar">
         <h2>Welcome Admin!</h2>
@@ -40,33 +76,16 @@
                 <tr>
                     <th><input type="checkbox" id="selectAll"></th>
                     <th>ID</th>
-                    <th>Room No</th>
+                    <th>Room Number</th>
                     <th>Requester</th>
-                    <th>Req. Time</th>
+                    <th>Req Date</th>
+                    <th>Time</th>
                     <th>Submitted</th>
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>1</td>
-                    <td>101</td>
-                    <td>John Doe</td>
-                    <td>Nov 5, 10:00 AM</td>
-                    <td>Nov 2, 2:30 PM</td>
-                    <td><span class="badge bg-success">Approved</span></td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>2</td>
-                    <td>102</td>
-                    <td>Jane Smith</td>
-                    <td>Nov 6, 1:00 PM</td>
-                    <td>Nov 3, 11:00 AM</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                </tr>
-            </tbody>
+           <tbody id="requestTableBody"></tbody>
+
         </table>
     </div>
 
@@ -74,15 +93,13 @@
     <!-- Footer Action Bar -->
     <div id="actionFooter" class="action-footer hidden">
         <div class="footer-content">
-            <span id="selectedCount">0 selected</span>
-
+            <span id="selectedCount">0 selected out of 0</span>
             <div class="action-buttons">
                 <button class="btn btn-success btn-sm">Approve</button>
                 <button class="btn btn-danger btn-sm">Reject</button>
             </div>
         </div>
     </div>
-
 
 
 
@@ -103,27 +120,152 @@
         // Initial call
         updateTime();
 
+   function loadRequests() {
+    fetch("room-req.php?getRequests=1")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("requestTableBody");
+            tbody.innerHTML = "";
 
+            data.forEach(req => {
+                const statusClass = 
+                    req.Status === "Approved" ? "badge bg-success" :
+                    req.Status === "Rejected" ? "badge bg-danger" :
+                    "badge bg-warning text-dark";   
 
-        //script for a smooth popup of the action bar/footer
-        const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-        const footer = document.getElementById("actionFooter");
-        const countText = document.getElementById("selectedCount");
+                const row = `
+                <tr>
+                    <td><input type="checkbox" class="rowCheck"></td>
+                    <td>${req.ReservationID}</td>
+                    <td>${req.RoomNumber}</td>
+                    <td>${req.Requester}</td>
+                    <td>${req.ReservationDate}</td>
+                    <td>${req.Time}</td>
+                    <td>${req.CreatedAt}</td>
+                    <td><span class="${statusClass}">${req.Status}</span></td>
+                </tr>`;
 
-        function updateFooter() {
-            const selected = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
+                tbody.innerHTML += row;
+            });
 
-            if (selected > 0) {
-                countText.textContent = `${selected} selected`;
-                footer.classList.add("show");
-            } else {
-                footer.classList.remove("show");
-            }
-        }
-
-        checkboxes.forEach(cb => {
-            cb.addEventListener("change", updateFooter);
+            refreshCheckboxLogic();
         });
+}
+
+document.addEventListener("DOMContentLoaded", loadRequests);
+
+       function refreshCheckboxLogic() {
+    const checkboxes = document.querySelectorAll('.rowCheck');
+    const footer = document.getElementById("actionFooter");
+    const countText = document.getElementById("selectedCount");
+
+    const totalRows = checkboxes.length;
+
+    function updateFooter() {
+        const selected = document.querySelectorAll('.rowCheck:checked').length;
+
+        if (selected > 0) {
+            countText.textContent = `${selected} selected out of ${totalRows}`;
+            footer.classList.add("show");
+        } else {
+            footer.classList.remove("show");
+        }
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", updateFooter);
+    });
+
+    updateFooter();
+}
+
+
+     
+function getSelectedRows() {
+    const ids = [];
+    document.querySelectorAll("#requestTableBody tr").forEach(row => {
+        if (row.querySelector(".rowCheck").checked) {
+            ids.push(row.children[1].textContent);
+        }
+    });
+    return ids;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.querySelector(".btn-success").addEventListener("click", () => {
+        processAction("approve");
+    });
+
+    document.querySelector(".btn-danger").addEventListener("click", () => {
+        processAction("reject");
+    });
+
+});
+
+function processAction(action) {
+    const ids = getSelectedRows();
+
+    if (ids.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No selection',
+            text: 'Please select at least one request.'
+        });
+        return;
+    }
+
+    // Confirmation popup
+    Swal.fire({
+        title: `Are you sure you want to ${action} ${ids.length} request(s)?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: action === 'approve' ? 'Yes, Approve' : 'Yes, Reject',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with action
+            const formData = new FormData();
+            formData.append('action', action);
+            ids.forEach(id => formData.append('ids[]', id));
+
+            fetch("room-req.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadRequests(); // refresh table
+                    Swal.fire({
+                        icon: 'success',
+                        title: action === 'approve' ? 'Approved!' : 'Rejected!',
+                        text: `${ids.length} request(s) ${action === 'approve' ? 'approved' : 'rejected'} successfully!`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.'
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Cannot connect to server.'
+                });
+            });
+        }
+    });
+}
+
+
+
     </script>
 
 </body>

@@ -266,6 +266,11 @@ public function userLogin($number, $password)
     return $stmt->execute([$unitID, $userID, $date, $timeFrom, $timeTo]);
 }
 
+public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $timeTo)
+{
+    $stmt = $this->conn->prepare("CALL reserveClassroom(?, ?, ?, ?, ?, ?)");
+    return $stmt->execute([$roomID, $userID, $subject, $date, $timeFrom, $timeTo]);
+}
 
 function getUserReservations($userID) {
     $stmt = $this->conn->prepare("
@@ -322,8 +327,46 @@ public function rejectEquipmentRequest($id) {
     $stmt->execute([$id]);
     return true;
 }
+public function getUserClassroomReservations($userID) {
+    $stmt = $this->conn->prepare("
+        SELECT cr.*, r.RoomNumber, cr.Subject
+        FROM classroom_reservations cr
+        JOIN rooms r ON cr.RoomID = r.RoomID
+        WHERE cr.UserID = ?
+    ");
+    $stmt->execute([$userID]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
+public function getClassroomRequests() {
+    $stmt = $this->conn->prepare("
+        SELECT 
+            cr.*,
+            r.RoomNumber,
+            CONCAT(u.FirstName, ' ', u.LastName) AS Requester,
+            CONCAT(cr.TimeFrom, '-', cr.TimeTo) AS Time
+        FROM classroom_reservations cr
+        JOIN rooms r ON cr.RoomID = r.RoomID
+        JOIN users u ON cr.UserID = u.UserID
+        WHERE cr.Status IN ('Pending', 'Approved', 'Rejected')
+        ORDER BY cr.CreatedAt DESC
+    ");
 
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+public function approveClassroomRequest($id) {
+    $stmt = $this->conn->prepare("CALL approveClassroomReq(?)");
+    $stmt->execute([$id]);
+    return true;
+}
+
+public function rejectClassroomRequest($id) {
+    $stmt = $this->conn->prepare("CALL rejectClassroomReq(?)");
+    $stmt->execute([$id]);
+    return true;
+}
 }
 
 

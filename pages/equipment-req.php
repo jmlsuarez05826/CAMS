@@ -140,8 +140,8 @@ require_once '../includes/admin-sidebar.php';
                     <td>${req.EquipmentName}</td>
                     <td>${req.Requester}</td>
                     <td>${req.ReservationDate}</td>
-                    <td>${req.CreatedAt}</td>
                     <td>${req.Time}</td>
+                    <td>${req.CreatedAt}</td>
                     <td><span class="${statusClass}">${req.Status}</span></td>
                 </tr>`;
 
