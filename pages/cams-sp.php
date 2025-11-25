@@ -260,11 +260,12 @@ public function userLogin($number, $password)
         }
     }
 
-    public function reserveEquipment($unitID, $userID)
+   public function reserveEquipment($unitID, $userID, $date, $timeFrom, $timeTo)
 {
-    $stmt = $this->conn->prepare("CALL reserveEquipment(?, ?)");
-    return $stmt->execute([$unitID, $userID]);
+    $stmt = $this->conn->prepare("CALL reserveEquipment(?, ?, ?, ?, ?)");
+    return $stmt->execute([$unitID, $userID, $date, $timeFrom, $timeTo]);
 }
+
 
 function getUserReservations($userID) {
     $stmt = $this->conn->prepare("
@@ -297,6 +298,7 @@ public function getEquipmentRequests() {
             er.*,
             e.EquipmentName,
             CONCAT(u.FirstName, ' ', u.LastName) AS Requester
+            ,CONCAT (er.TimeFrom, '-', er.TimeTo) AS Time
         FROM equipment_reservations er
         JOIN equipment_units eu ON er.UnitID = eu.UnitID
         JOIN equipments e ON eu.EquipmentID = e.EquipmentID

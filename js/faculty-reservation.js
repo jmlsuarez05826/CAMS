@@ -747,46 +747,89 @@ function getCurrentWeekType() {
     });
 });
 
+// Updated equipment reservation modal with date/time + confirmation
+document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("reserveBtn")) {
+        const unitID = e.target.getAttribute("data-unit-id");
+        const equipmentName = e.target.closest(".unit-card").querySelector(".unit-label").innerText;
 
-            document.addEventListener("click", function(e) {
-                if (e.target.classList.contains("reserveBtn")) {
-                    let unitID = e.target.getAttribute("data-unit-id");
+        // FIRST MODAL: Ask for date & time range
+        Swal.fire({
+            title: "Reserve Equipment",
+            html: `
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="resDate" class="swal2-input">
 
+                    <label>Start Time:</label>
+                    <input type="time" id="startTime" class="swal2-input">
 
-                    Swal.fire({
-                        title: "Reserve this unit?",
-                        icon: "question",
-                        showCancelButton: true,
-                        confirmButtonText: "Yes, reserve"
-                    }).then(result => {
-                        if (result.isConfirmed) {
+                    <label>End Time:</label>
+                    <input type="time" id="endTime" class="swal2-input">
+                </div>
+            `,
+            confirmButtonText: "Next",
+            showCancelButton: true,
+            preConfirm: () => {
+                const date = document.getElementById("resDate").value;
+                const timeFrom = document.getElementById("startTime").value;
+                const timeTo = document.getElementById("endTime").value;
 
-                            fetch("faculty-reservation.php", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/x-www-form-urlencoded"
-                                    },
-                                    body: "reserveUnit=1&unitID=" + unitID
-                                })
-                                .then(res => res.text())
-                                .then(response => {
-                                    if (response.trim() === "success") {
-                                        Swal.fire("Reserved!", "Request is now pending.", "success");
-
-                                        // Update the button/UI
-                                        e.target.innerText = "Reserved";
-                                        e.target.disabled = true;
-                                        e.target.closest('.unit-card').classList.remove('available');
-                                        e.target.closest('.unit-card').classList.add('reserved');
-                                    } else {
-                                        Swal.fire("Error", "Failed to reserve.", "error");
-                                    }
-                                });
-
-                        }
-                    });
+                if (!date || !timeFrom || !timeTo) {
+                    Swal.showValidationMessage("Please fill up all fields.");
+                    return false;
                 }
+
+                return { date, timeFrom, timeTo };
+            }
+        }).then(firstStep => {
+            if (!firstStep.isConfirmed) return;
+
+            const { date, timeFrom, timeTo } = firstStep.value;
+
+            // SECOND MODAL: Confirmation with equipment name
+            Swal.fire({
+                title: "Confirm Reservation?",
+                html: `
+                    <div style="text-align:left; font-size:16px;">
+                        <p><strong>Equipment:</strong> ${equipmentName}</p>
+                        <p><strong>Date:</strong> ${date}</p>
+                        <p><strong>Time:</strong> ${timeFrom} - ${timeTo}</p>
+                    </div>
+                `,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, reserve"
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                // FINAL STEP: Submit reservation to backend
+                fetch("faculty-reservation.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                   body: `reserveUnit=1&unitID=${unitID}&date=${date}&timeFrom=${timeFrom}&timeTo=${timeTo}`
+
+                })
+                .then(res => res.text())
+                .then(response => {
+                    if (response.trim() === "success") {
+                        Swal.fire("Reserved!", "Your reservation request is now pending.", "success");
+
+                        // Update the UI
+                        e.target.innerText = "Reserved";
+                        e.target.disabled = true;
+                        e.target.closest('.unit-card').classList.remove('available');
+                        e.target.closest('.unit-card').classList.add('reserved');
+                    } else {
+                        Swal.fire("Error", "Failed to reserve.", "error");
+                    }
+                });
             });
+        });
+    }
+});
 
             
 

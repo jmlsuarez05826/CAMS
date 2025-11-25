@@ -49,28 +49,32 @@ if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
 }
 
 
+if (isset($_POST['reserveUnit'])) {
 
-    if (isset($_POST['reserveUnit'])) {
-        $unitID = $_POST['unitID'];
-        $userID = $_SESSION['UserID'] ?? null;
+    $unitID = $_POST['unitID'];
+    $userID = $_SESSION['UserID'] ?? null;
+    $date = $_POST['date'];
+    $timeFrom = $_POST['timeFrom'];
+    $timeTo = $_POST['timeTo'];
 
-        if (!$userID) {
-            echo "error: no user ID";
-            exit;
-        }
-
-        try {
-            if ($crud->reserveEquipment($unitID, $userID)) {
-                echo "success";
-            } else {
-                echo "error";
-            }
-        } catch (PDOException $e) {
-            echo "error: " . $e->getMessage();
-        }
-
+    if (!$userID) {
+        echo "error: no user ID";
         exit;
     }
+
+    try {
+        if ($crud->reserveEquipment($unitID, $userID, $date, $timeFrom, $timeTo)) {
+            echo "success";
+        } else {
+            echo "error";
+        }
+    } catch (PDOException $e) {
+        echo "error: " . $e->getMessage();
+    }
+
+    exit;
+}
+
 
     $userID = $_SESSION['UserID'] ?? null;
     $userReservations = [];

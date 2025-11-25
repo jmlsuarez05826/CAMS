@@ -78,7 +78,8 @@ require_once '../includes/admin-sidebar.php';
                     <th>ID</th>
                     <th>Equipment</th>
                     <th>Requester</th>
-                    <th>Req. Time</th>
+                    <th>Req Date</th>
+                    <th>Time</th>
                     <th>Submitted</th>
                     <th>Status</th>
                 </tr>
@@ -138,8 +139,9 @@ require_once '../includes/admin-sidebar.php';
                     <td>${req.ReservationID}</td>
                     <td>${req.EquipmentName}</td>
                     <td>${req.Requester}</td>
-                    <td>${req.RequestTime}</td>
+                    <td>${req.ReservationDate}</td>
                     <td>${req.CreatedAt}</td>
+                    <td>${req.Time}</td>
                     <td><span class="${statusClass}">${req.Status}</span></td>
                 </tr>`;
 
