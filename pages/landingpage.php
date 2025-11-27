@@ -15,8 +15,25 @@ $stmt->execute([$session_id, $ip]);
 
 $stmt->closeCursor();
 
-// 2️⃣ Use the correct class name → Crud
+
 $crud = new Crud();
+
+
+
+
+if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
+    $roomID = $_POST['roomID'];
+    $dayOfWeek = $_POST['dayOfWeek'] ?? null;
+    $weekType = 'Odd'; // force week type to Odd
+
+    try {
+        $schedules = $crud->getSchedulesByRoom($roomID, $dayOfWeek, $weekType);
+        echo json_encode($schedules);
+    } catch (PDOException $e) {
+        echo json_encode(['error' => $e->getMessage()]);
+    }
+    exit;
+}
 
 $buildings = $crud->getBuildings();
 $floors = $crud->getFloors();
@@ -544,6 +561,12 @@ $rooms = $crud->getRooms();
     font-size: 12px;
     color: green;
     margin-top: 4px;
+      background-color: #28a745;
+       color: white;
+        font-weight: bold;
+    padding: 4px 8px;
+     border-radius: 4px;
+     margin-top: 3px;
 }
 
 /* ---------------- MOBILE RESPONSIVE ---------------- */
@@ -810,6 +833,212 @@ $rooms = $crud->getRooms();
                 font-size: 3em;
             }
         }
+
+        
+
+/* ======== Modal overlay ======== */
+.custom-modal {
+    display: none;            /* hidden by default */
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+     pointer-events: none;           /* prevents clicks when hidden */
+    z-index: 3000;
+    transition: opacity 0.3s ease; /* smooth fade */
+}
+
+/* When modal is shown */
+.custom-modal.show {
+    display: flex;
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ======== Modal box ======== */
+.custom-modal-dialog {
+    background: white;
+     z-index: 1001;
+    padding: 20px;
+    border-radius: 8px;
+    width: 600px;
+    max-width: 90%;
+    animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Close button */
+.custom-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.btn-close-modal {
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.custom-modal-header {
+    position: relative;           /* make button absolute relative to header */
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.custom-modal-title {
+    margin: 0;
+    font-size: 18px;
+}
+
+.custom-close {
+    position: absolute;           /* float above title */
+    top: 10px;                    /* adjust vertical position */
+    right: 15px;                  /* adjust horizontal position */
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    color: #8B1717;
+}
+
+
+.custom-modal-body p {
+    margin: 0 0 15px 0; /* remove top margin, small bottom margin */
+    font-weight: 600;
+    font-size: 16px;   /* optional: adjust size */
+}
+
+/* ============================
+   TABLE STYLING
+============================ */
+.classSchedTable {
+    width: 100%;
+    border-collapse: separate;
+    font-size: 14px;
+}
+
+.classSchedTable thead {
+    background: #f1f1f1;
+    
+}
+
+.classSchedTable thead th {
+  position: sticky;
+    background: #f1f1f1;
+    top: 0;
+    z-index: 2;
+}
+.classSchedTable th,
+.classSchedTable td {
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Bold header text */
+.classSchedTable th {
+    font-weight: 600;
+    
+}
+
+/* Row hover effect */
+.classSchedTable tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.Sched-table-wrapper {
+    max-height: 300px;        /* adjust as needed */
+    max-width: 100%;
+    overflow-y: auto;         /* vertical scrollbar if needed */
+    border-radius: 10px;      /* rounded corners for the container */
+    border: 1px solid #ddd;   /* optional border around table */
+}
+/* ============================
+   SEPARATOR LINE
+============================ */
+.table-separator {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 15px 0;
+}
+
+/* ============================
+   FOOTER BUTTONS
+============================ */
+.custom-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.custom-modal-footer button {
+    padding: 8px 14px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.btn-close-modal {
+    background: #ccc;
+}
+
+#addBtn {
+    background: #2b67f0;
+    color: white;
+}
+
+/* ============================
+   MODAL WIDTH / BODY SPACING
+============================ */
+.custom-modal-dialog {
+    width: 650px;
+    max-width: 95%;
+}
+
+.custom-modal-body {
+    padding: 15px 20px;
+}
+
+/* Reservation fields modal */
+
+/* Form fields styling */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Reuse existing modal footer buttons */
+#confirmReserve {
+    background: #2b67f0;
+    color: white;
+    border-radius: 5px;
+    padding: 8px 14px;
+    border: none;
+    cursor: pointer;
+}
     </style>
 </head>
 
@@ -894,8 +1123,8 @@ $rooms = $crud->getRooms();
 
                 <div class="feature-card" role="listitem" tabindex="0" aria-label="Mobile Notifications">
                     <i class="bi bi-phone"></i>
-                    <h3>Mobile Notifications</h3>
-                    <p>Receive updates anytime, anywhere through push or email notifications.</p>
+                    <h3>Live chat</h3>
+                    <p>Receive updates anytime</p>
                 </div>
             </div>
         </section>
@@ -953,7 +1182,7 @@ $rooms = $crud->getRooms();
                                                                     </div>
                                                                     <hr>
                                                                     <div class="room-status">
-                                                                        <?= htmlspecialchars($room['Status'] ?? 'Secret') ?></div>
+                                                                        <?= htmlspecialchars($room['Status'] ?? 'Available') ?></div>
                                                                 </div>
                                                             <?php endif; ?>
                                                         <?php endforeach; ?>
@@ -1006,6 +1235,58 @@ $rooms = $crud->getRooms();
                 </div>
             </div>
         </section>
+
+                  <!-- class sched modal -->
+                <div class="custom-modal" id="classroomModal">
+                    <div class="custom-modal-dialog">
+                        <div class="custom-modal-content">
+                            <div class="custom-modal-header">
+                                <h5 class="custom-modal-title">Classroom Schedule</h5>
+                                <button type="button" class="custom-close" id="closeclassroomModal">&times;</button>
+                            </div>
+
+                            <div class="custom-modal-body">
+                                <form method="post" id="classSchedForm">
+
+                                    <p>Building Name Room No</p>
+                                    <select id="dayFilter" class="day-dropdown">
+                                        <option>Monday</option>
+                                        <option>Tuesday</option>
+                                        <option>Wednesday</option>
+                                        <option>Thursday</option>
+                                        <option>Friday</option>
+                                        <option>Saturday</option>
+                                        <option>Sunday</option>
+                                    </select>
+
+                                    <div class="Sched-table-wrapper">
+                                        <table class="classSchedTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Instructor</th>
+                                                    <th>Subject</th>
+                                                    <th>Time</th>
+                                                    <th>Section</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <hr class="table-separator">
+
+                                    <div class="custom-modal-footer">
+                                        <button type="button" class="btn-close-modal" id="closeAddUserFooter">Close</button>
+                                        
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
 
 
     </main>
@@ -1083,6 +1364,143 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+  // =========================
+                // 1. Get modal element
+                // =========================
+                const classroomModal = document.getElementById("classroomModal");
+
+                // Close buttons inside the modal
+                const closeModalBtn = document.getElementById("closeclassroomModal");
+                const closeFooterBtn = document.getElementById("closeAddUserFooter");
+
+                // =========================
+                // 2. Function to open modal
+                // =========================
+                function openClassroomModal() {
+                    classroomModal.classList.add("show"); // makes modal visible
+                }
+
+                // =========================
+                // 3. Function to close modal
+                // =========================
+                function closeClassroomModal() {
+                    classroomModal.classList.remove("show"); // hides modal
+                }
+
+                // =========================
+                // 4. Attach click event to all .room-card items
+                //    THIS IS THE TRIGGER
+                // =========================
+                    // document.querySelectorAll(".room-card").forEach(card => {
+                    //     card.addEventListener("click", () => {
+                    //         openClassroomModal(); // show modal when clicking any room
+                    //     });
+                    // });
+
+                // =========================
+                // 5. Close modal using the "X" button
+                // =========================
+                closeModalBtn.addEventListener("click", closeClassroomModal);
+
+                // =========================
+                // 6. Close modal using footer Close button
+                // =========================
+                closeFooterBtn.addEventListener("click", closeClassroomModal);
+
+                // =========================
+                // 7. Close modal when clicking outside content
+                // =========================
+                window.addEventListener("click", (e) => {
+                    if (e.target === classroomModal) {
+                        closeClassroomModal();
+                    }
+                });
+
+                  document.querySelectorAll(".room-card").forEach(card => {
+        card.addEventListener("click", () => {
+            const roomID = card.getAttribute("data-room-id"); // make sure to set this in PHP
+            const roomNumber = card.querySelector(".room-number").innerText;
+            window.currentRoomID = roomID;
+
+              const roomInput = document.getElementById("roomID");
+        if (roomInput) roomInput.value = roomID;
+        
+            // DEBUG: check if roomID is correctly set
+            console.log("Clicked roomID:", roomID);
+            console.log("window.currentRoomID:", window.currentRoomID);
+
+            // Set currentDay to today's day automatically
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const today = days[new Date().getDay()];
+            window.currentDay = today;
+
+            // Also update the dayFilter dropdown to match today
+            const daySelect = document.getElementById("dayFilter");
+            if (daySelect) daySelect.value = today;
+
+            // Open modal
+            const classroomModal = document.getElementById("classroomModal");
+            classroomModal.classList.add("show");
+
+            // Update modal title with room number
+            document.querySelector("#classroomModal .custom-modal-title").innerText = `Classroom Schedule - Room ${roomNumber}`;
+
+            // Load today's schedules
+            loadSchedules(today);
+        });
+    });
+
+    function loadRoomStatuses() {
+    const weekType = "Odd"; // force week type to Odd
+
+    document.querySelectorAll(".clickable-room").forEach(roomCard => {
+        const roomID = roomCard.dataset.room;
+
+        fetch("faculty-reservation.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                action: "getSchedules",
+                roomID: roomID,
+                dayOfWeek: new Date().toLocaleString("en-US", { weekday: "long" }),
+                weekType: weekType
+            })
+        })
+        .then(res => res.json())
+        .then(schedules => {
+            let status = "Available";
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, "0") + ":" +
+                                now.getMinutes().toString().padStart(2, "0");
+
+            // Build schedule list
+            let scheduleHTML = "<ul>";
+            schedules.forEach(sch => {
+                scheduleHTML += `<li>${sch.Subject || "Class"}: ${sch.TimeFrom} - ${sch.TimeTo}</li>`;
+                if (currentTime >= sch.TimeFrom && currentTime <= sch.TimeTo) {
+                    status = "Occupied";
+                }
+            });
+            scheduleHTML += "</ul>";
+
+            // Update status
+            const statusDiv = roomCard.querySelector(".room-status");
+            statusDiv.textContent = status;
+            statusDiv.className = "room-status " + status.toLowerCase();
+
+            // Update schedules
+            const schedDiv = roomCard.querySelector(".room-schedules");
+            if (schedDiv) {
+                schedDiv.innerHTML = schedules.length > 0 ? scheduleHTML : "No schedules today";
+            }
+        })
+        .catch(err => console.error(err));
+    });
+}
+
+
+
 </script>
 
 

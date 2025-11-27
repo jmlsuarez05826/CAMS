@@ -114,12 +114,19 @@ header {
   color: #666;
 }
 
-#time {
-  font-size: 20px;
-  font-weight: bold;
-  color: #000000;
-  gap: 25px;
-  padding-right: 50px;
+.profile-time {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #666;
+    margin-top: 2px;
+}
+.colon {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
 }
 
 
@@ -300,17 +307,21 @@ header {
 }
 
 .room-status {
-  font-size: 12px;
-  color: green; /* or red if occupied */
-  margin-top: 5px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    width: fit-content;
 }
+
+
 
 /* Add Room card special styling */
 .room-card.add-room-btn {
 height: 70px;
-  border: 2px dotted #8b1717;
+  border: 2px dotted #000000;
   color: #333;
-  background-color: transparent; 
+  background-color: rgba(255, 255, 255, 0.692); 
 }
 
 /* Icon inside add room */
@@ -335,10 +346,30 @@ height: 70px;
 
   /* background */
   background-image: url("../../images/bsu_front.webp");
+  background: rgba(0, 0, 0, 0.212); /* or rgba(0,0,0,0.4) for dark */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   min-height: 300px; 
+}
+
+
+.room-status.available {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.room-status.occupied {
+    background-color: #dc3545;
+    color: white;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 
@@ -391,4 +422,71 @@ height: 70px;
     font-weight: bold;
 }
 
+/* Css for the schedule modal*/
+#scheduleTable td{
+  text-align: center;
+  padding: 5px;
+}
+#scheduleTable td, #scheduleTable th {
+    border-bottom: 1px solid #ccc;
+  }
 
+  .delete-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Trash icon styling */
+.delete-icon {
+  color: #b22222;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+
+/* Optional hover effect */
+.delete-icon:hover {
+  color: darkred;
+}
+
+
+/* Target the entire new schedule row */
+.new-schedule {
+  background-color: #f9f9f9;  /* light background for new rows */
+  font-weight: normal;
+}
+
+/* Optional: give padding to each cell in the new row */
+.new-schedule td {
+  padding: 5px 8px;
+  text-align: center;
+}
+
+/* Trash / X button for new rows */
+.deleteRowBtn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+/* Icon inside the button */
+.deleteRowBtn i {
+  color: red;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+
+/* Hover effect */
+.deleteRowBtn:hover i {
+  color: darkred;
+}
+
+.editable:empty:before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;  /* allows typing over it */
+}

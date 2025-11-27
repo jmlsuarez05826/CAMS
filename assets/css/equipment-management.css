@@ -103,12 +103,19 @@ header {
   color: #666;
 }
 
-#time {
-  font-size: 20px;
-  font-weight: bold;
-  color: #000000;
-  gap: 25px;
-  padding-right: 50px;
+.profile-time {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #666;
+    margin-top: 2px;
+}
+.colon {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
 }
 
 .table-container {

@@ -1,3 +1,39 @@
+<?php
+session_start();
+require_once '../pages/camsdatabase.php';
+require_once '../pages/cams-sp.php';
+
+$crud = new Crud();
+
+// Return all equipment requests as JSON
+if (isset($_GET['getRequests'])) {
+    $requests = $crud->getEquipmentRequests(); // You create this function
+    header('Content-Type: application/json');
+    echo json_encode($requests);
+    exit;
+}
+
+// PROCESS APPROVE / REJECT USING SP
+if (isset($_POST['action']) && isset($_POST['ids'])) {
+
+    $ids = $_POST['ids'];
+
+    foreach ($ids as $id) {
+        if ($_POST['action'] === "approve") {
+            $crud->approveEquipmentRequest($id);
+        } 
+        else if ($_POST['action'] === "reject") {
+            $crud->rejectEquipmentRequest($id);
+        }
+    }
+
+    echo json_encode(["success" => true]);
+    exit;
+}
+
+require_once '../includes/admin-sidebar.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,65 +44,47 @@
 
 
     <link rel="stylesheet" href="../assets/css/room-req.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <?php
-    session_start();
-    require_once '../includes/admin-sidebar.php';
-        require_once '../pages/camsdatabase.php';
-    require_once '../pages/cams-sp.php';
 
-    if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
-    header("Location: ../pages/login.php");
-    exit();
-}
-
-// Optional: Check if user has admin role
-if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
-    // Not an admin, redirect or show error
-    header("Location: ../pages/login.php");
-    exit();
-}
-    ?>
 
 </head>
 
 <body>
 
-    <header>
+ <header>
 
         <div class="topbar">
             <h2 class="system-title">Welcome Admin!</h2>
 
-                   <div class="search-field">
-                    <i class="bi bi-search search-icon"></i>
-                    <input type="text" placeholder="Search">
+            <div class="search-field">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" placeholder="Search">
+            </div>
+
+            <div class="topbar-right">
+                <div class="notification-icon">
+                    <i class="bi bi-bell-fill notification-icon"></i>
                 </div>
 
-                          <div class="topbar-right">
-                    <div class="notification-icon">
-                        <i class="bi bi-bell-fill notification-icon"></i>
+                <div class="profile-info">
+                    <i class="bi bi-person-circle profile-icon"></i>
+                    <div class="profile-text">
+                        <p class="profile-name">
+                            <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
+                        </p>
+                        <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
+                        <p class="profile-time" id="time"></p>
                     </div>
-
-                       <div class="profile-info">
-                        <i class="bi bi-person-circle profile-icon"></i>
-                        <div class="profile-text">
-                            <p class="profile-name">Mark Cristopher</p>
-                            <p class="profile-number">093480324</p>
-                            <div id="time"></div>
-                        </div>
-                    </div>
-
                 </div>
-      
 
             </div>
+
+
+        </div>
         </div>
     </header>
-
-    </div>
-
     <!--Table goes here -->
-    <div class="content">
     <div class="table-container">
         <table class="requests-table">
             <thead>
@@ -75,33 +93,15 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
                     <th>ID</th>
                     <th>Equipment</th>
                     <th>Requester</th>
-                    <th>Req. Time</th>
+                    <th>Req Date</th>
+                    <th>Time</th>
                     <th>Submitted</th>
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>1</td>
-                    <td>Projector</td>
-                    <td>John Doe</td>
-                    <td>Nov 5, 10:00 AM</td>
-                    <td>Nov 2, 2:30 PM</td>
-                    <td><span class="badge bg-success">Approved</span></td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>2</td>
-                    <td>Vieboard</td>
-                    <td>Jane Smith</td>
-                    <td>Nov 6, 1:00 PM</td>
-                    <td>Nov 3, 11:00 AM</td>
-                    <td><span class="badge bg-warning text-dark">Pending</span></td>
-                </tr>
-            </tbody>
+           <tbody id="requestTableBody"></tbody>
+
         </table>
-    </div>
     </div>
 
 
@@ -120,11 +120,19 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
 
 
     <script>
-  // Script for the time in 12-hour format with AM/PM
-        function updateTime() {
+      
+        // Script for real-time day & 12-hour format time
+        function updateTimeDay() {
             const now = new Date();
+
+            // Get day
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const day = days[now.getDay()];
+
+            // Get hours and minutes
             let hours = now.getHours();
             const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
             const ampm = hours >= 12 ? 'PM' : 'AM';
 
             // Convert 24-hour to 12-hour format
@@ -132,51 +140,163 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
             hours = hours ? hours : 12; // the hour '0' should be '12'
             hours = String(hours).padStart(2, '0');
 
-            document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
+            // Set the text content
+            document.getElementById('time').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
         }
 
         // Update every second
-        setInterval(updateTime, 1000);
+        setInterval(updateTimeDay, 1000);
 
         // Initial call
-        updateTime();
+        updateTimeDay();
 
 
-        //script for a smooth popup of the action bar/footer
-        const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-        const footer = document.getElementById("actionFooter");
-        const countText = document.getElementById("selectedCount");
+   function loadRequests() {
+    fetch("equipment-req.php?getRequests=1")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("requestTableBody");
+            tbody.innerHTML = "";
 
-        // Count total number of rows once
-        const totalRows = document.querySelectorAll('tbody tr').length;
+            data.forEach(req => {
+                const statusClass = 
+                    req.Status === "Approved" ? "badge bg-success" :
+                    req.Status === "Rejected" ? "badge bg-danger" :
+                    "badge bg-warning text-dark";
 
-        function updateFooter() {
-            const selected = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
+                const row = `
+                <tr>
+                    <td><input type="checkbox" class="rowCheck"></td>
+                    <td>${req.ReservationID}</td>
+                    <td>${req.EquipmentName}</td>
+                    <td>${req.Requester}</td>
+                    <td>${req.ReservationDate}</td>
+                    <td>${req.Time}</td>
+                    <td>${req.CreatedAt}</td>
+                    <td><span class="${statusClass}">${req.Status}</span></td>
+                </tr>`;
 
-            if (selected > 0) {
-                countText.textContent = `${selected} selected out of ${totalRows}`;
-                footer.classList.add("show"); // show footer
-            } else {
-                footer.classList.remove("show"); // hide footer
-            }
-        }
+                tbody.innerHTML += row;
+            });
 
-        // Add event listeners to all checkboxes
-        checkboxes.forEach(cb => {
-            cb.addEventListener("change", updateFooter);
+            refreshCheckboxLogic();
         });
+}
 
-        // Optional: handle "Select All" checkbox if exists
-        const selectAll = document.getElementById("selectAll");
-        if (selectAll) {
-            selectAll.addEventListener("change", () => {
-                checkboxes.forEach(cb => cb.checked = selectAll.checked);
-                updateFooter();
+document.addEventListener("DOMContentLoaded", loadRequests);
+
+       function refreshCheckboxLogic() {
+    const checkboxes = document.querySelectorAll('.rowCheck');
+    const footer = document.getElementById("actionFooter");
+    const countText = document.getElementById("selectedCount");
+
+    const totalRows = checkboxes.length;
+
+    function updateFooter() {
+        const selected = document.querySelectorAll('.rowCheck:checked').length;
+
+        if (selected > 0) {
+            countText.textContent = `${selected} selected out of ${totalRows}`;
+            footer.classList.add("show");
+        } else {
+            footer.classList.remove("show");
+        }
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", updateFooter);
+    });
+
+    updateFooter();
+}
+
+
+     
+function getSelectedRows() {
+    const ids = [];
+    document.querySelectorAll("#requestTableBody tr").forEach(row => {
+        if (row.querySelector(".rowCheck").checked) {
+            ids.push(row.children[1].textContent);
+        }
+    });
+    return ids;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.querySelector(".btn-success").addEventListener("click", () => {
+        processAction("approve");
+    });
+
+    document.querySelector(".btn-danger").addEventListener("click", () => {
+        processAction("reject");
+    });
+
+});
+
+function processAction(action) {
+    const ids = getSelectedRows();
+
+    if (ids.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No selection',
+            text: 'Please select at least one request.'
+        });
+        return;
+    }
+
+    // Confirmation popup
+    Swal.fire({
+        title: `Are you sure you want to ${action} ${ids.length} request(s)?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: action === 'approve' ? 'Yes, Approve' : 'Yes, Reject',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with action
+            const formData = new FormData();
+            formData.append('action', action);
+            ids.forEach(id => formData.append('ids[]', id));
+
+            fetch("equipment-req.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadRequests(); // refresh table
+                    Swal.fire({
+                        icon: 'success',
+                        title: action === 'approve' ? 'Approved!' : 'Rejected!',
+                        text: `${ids.length} request(s) ${action === 'approve' ? 'approved' : 'rejected'} successfully!`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.'
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Cannot connect to server.'
+                });
             });
         }
+    });
+}
 
-        // Initialize footer on page load
-        updateFooter();
+
+
     </script>
 
 </body>

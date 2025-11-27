@@ -194,9 +194,11 @@ $rooms = $crud->getRooms();
                 <div class="profile-info">
                     <i class="bi bi-person-circle profile-icon"></i>
                     <div class="profile-text">
-                        <p class="profile-name">Mark Cristopher</p>
-                        <p class="profile-number">093480324</p>
-                        <div id="time"></div>
+                        <p class="profile-name">
+                            <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
+                        </p>
+                        <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
+                        <p class="profile-time" id="time"></p>
                     </div>
                 </div>
 
@@ -269,11 +271,14 @@ $rooms = $crud->getRooms();
 
                         <?php foreach ($rooms as $room): ?>
                             <?php if ($room['FloorID'] == $floor['FloorID']): ?>
+
                                 <div class="room-card clickable-room" data-room="<?= $room['RoomID'] ?>">
                                     <div class="room-label">Room no</div>
                                     <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
                                     <hr>
-                                    <div class="room-status">Available</div>
+                                    <div class="room-status">
+                                        Loading...
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         <?php endforeach; ?>
@@ -285,20 +290,56 @@ $rooms = $crud->getRooms();
     <?php endforeach; ?>
 
 
-    <script>
-        
-       const weekBtn = document.querySelector(".oddWeek-btn");
 
-// --- Add this right after defining weekBtn ---
-const savedWeek = localStorage.getItem("selectedWeek");
-if (savedWeek) {
-    weekBtn.textContent = `${savedWeek} Week`;
-} else {
-    weekBtn.textContent = "Odd Week"; // default
+    
+
+    <script>
+
+        function loadRoomStatuses() {
+    const weekType = localStorage.getItem("selectedWeek") || "Odd"; // Get current week
+
+    document.querySelectorAll(".clickable-room").forEach(roomCard => {
+        const roomID = roomCard.dataset.room;
+
+        fetch("class-management.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                action: "getSchedules",
+                roomID: roomID,
+                dayOfWeek: new Date().toLocaleString("en-US", { weekday: "long" }),
+                weekType: weekType
+            })
+        })
+        .then(res => res.json())
+        .then(schedules => {
+            let status = "Available";
+
+            if (schedules.length > 0) {
+                const now = new Date();
+                const currentTime = now.getHours() + ":" + now.getMinutes();
+
+                schedules.forEach(sch => {
+                    if (currentTime >= sch.TimeFrom && currentTime <= sch.TimeTo) {
+                        status = "Occupied";
+                    }
+                });
+            }
+
+            const statusDiv = roomCard.querySelector(".room-status");
+            statusDiv.textContent = status;
+            statusDiv.className = "room-status " + status.toLowerCase();
+        })
+        .catch(err => console.error(err));
+    });
 }
 
-// Now your existing event listener
-weekBtn.addEventListener("click", function() {
+// Initial load
+loadRoomStatuses();
+
+// Reload when week changes with SweetAlert confirmation
+const weekBtn = document.querySelector(".oddWeek-btn");
+weekBtn.addEventListener("click", () => {
     const currentWeek = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
     const nextWeek = currentWeek === "Odd" ? "Even" : "Odd";
 
@@ -311,10 +352,12 @@ weekBtn.addEventListener("click", function() {
         cancelButtonText: "Cancel"
     }).then((result) => {
         if (result.isConfirmed) {
-            weekBtn.textContent = `${nextWeek} Week`;
-
-            // Save to localStorage
+            // Update week in button and localStorage
+            weekBtn.textContent = nextWeek + " Week";
             localStorage.setItem("selectedWeek", nextWeek);
+
+            // Reload room statuses
+            loadRoomStatuses();
 
             Swal.fire({
                 title: "Week Changed!",
@@ -322,16 +365,14 @@ weekBtn.addEventListener("click", function() {
                 icon: "success",
                 confirmButtonText: "OK"
             });
-
-            if (window.currentRoomID && window.currentDay) {
-                loadSchedules(window.currentDay);
-            }
         }
     });
 });
 
 
 
+
+        //Script for the room schedule modal
 
         document.querySelectorAll(".room-card.clickable-room").forEach(roomCard => {
             roomCard.addEventListener("click", () => {
@@ -343,27 +384,37 @@ weekBtn.addEventListener("click", function() {
                     html: `
   <div style="text-align:left; font-size:14px;">
     <div style="font-size:18px; font-weight:bold; margin-bottom:5px;">
-      Room ID: ${roomID}
+      Room: ${roomID}
       <hr style="margin:0 0 5px 0;">
     </div>
 
+    <br>
+
     <!-- Day of the week dropdown -->
-    <div style="margin-bottom:10px;">
-      <label for="daySelect" style="font-weight:bold;">Select Day:</label>
-      <select id="daySelect" style="margin-left:5px; padding:3px;">
-        <option value="">--Choose Day--</option>
-        <option value="Monday">Monday</option>
-        <option value="Tuesday">Tuesday</option>
-        <option value="Wednesday">Wednesday</option>
-        <option value="Thursday">Thursday</option>
-        <option value="Friday">Friday</option>
-        <option value="Saturday">Saturday</option>
-        <option value="Sunday">Sunday</option>
-      </select>
-    </div>
+   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+  
+  <!-- LEFT SIDE (Day dropdown) -->
+  <div>
+    <label for="daySelect" style="font-weight:bold;">Select Day:</label>
+    <select id="daySelect" style="margin-left:5px; padding:3px; border-radius:5px;">
+      <option value="">--Choose Day--</option>
+      <option value="Monday">Monday</option>
+      <option value="Tuesday">Tuesday</option>
+      <option value="Wednesday">Wednesday</option>
+      <option value="Thursday">Thursday</option>
+      <option value="Friday">Friday</option>
+      <option value="Saturday">Saturday</option>
+      <option value="Sunday">Sunday</option>
+    </select>
+  </div>
+
+  <!-- RIGHT SIDE (Button) -->
+  <button id="addScheduleBtn" style="padding:5px 10px; border-radius:10px">+ Add Schedule</button>
+</div>
+
 
     <div style="max-height:250px; overflow-y:auto; border:1px solid #ccc; border-radius:5px; padding:5px;">
-      <table id="scheduleTable" style="width:100%; border-collapse:collapse; font-size:16px;">
+      <table id="scheduleTable" style="width:100%; border-collapse:collapse; align-items:center; font-size:16px;">
         <thead>
           <tr style="background:#eee; font-weight:bold;">
             <th>Subject</th>
@@ -376,7 +427,6 @@ weekBtn.addEventListener("click", function() {
         </thead>
         <tbody></tbody>
       </table>
-      <button id="addScheduleBtn" style="margin-top:5px;">+ Add Schedule</button>
     </div>
   </div>
 `,
@@ -384,56 +434,61 @@ weekBtn.addEventListener("click", function() {
                     confirmButtonText: "Save",
                     cancelButtonText: "Cancel",
                     didOpen: () => {
-                       const daySelect = Swal.getPopup().querySelector('#daySelect');
-const table = Swal.getPopup().querySelector("#scheduleTable tbody");
+                        const daySelect = Swal.getPopup().querySelector('#daySelect');
+                        const table = Swal.getPopup().querySelector("#scheduleTable tbody");
 
-function loadSchedules(selectedDay) {
-    table.innerHTML = ""; // Clear table
-const weekType = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
+                        function loadSchedules(selectedDay) {
+                            table.innerHTML = ""; // Clear table
+                            const weekType = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
 
-fetch("", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: `action=getSchedules&roomID=${roomID}&dayOfWeek=${encodeURIComponent(selectedDay)}&weekType=${weekType}`
-})
+                            fetch("", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: `action=getSchedules&roomID=${roomID}&dayOfWeek=${encodeURIComponent(selectedDay)}&weekType=${weekType}`
+                            })
 
-    .then(res => res.json())
-    .then(schedules => {
-        if (schedules.length === 0) {
-            const emptyRow = document.createElement("tr");
-            emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">No schedules available</td>`;
-            table.appendChild(emptyRow);
-        } else {
-            schedules.forEach(s => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
+                                .then(res => res.json())
+                                .then(schedules => {
+                                    if (schedules.length === 0) {
+                                        const emptyRow = document.createElement("tr");
+                                        emptyRow.innerHTML = `<td colspan="6" style="text-align:center;">No schedules available</td>`;
+                                        table.appendChild(emptyRow);
+                                    } else {
+                                        schedules.forEach(s => {
+                                            const row = document.createElement("tr");
+                                            row.innerHTML = `
                     <td>${s.Subject}</td>
                     <td>${s.Instructor}</td>
                     <td>${s.TimeFrom}</td>
                     <td>${s.TimeTo}</td>
                     <td>${s.Section}</td>
-                    <td>—</td>
+                    <td class="text-center cell-padding">
+                        <button class="delete-btn" data-id="${s.UserID}">
+                            <i class="bi bi-trash-fill delete-icon"></i>
+                        </button>
+                    </td>
+
                 `;
-                table.appendChild(row);
-            });
-        }
-    });
-}
+                                            table.appendChild(row);
+                                        });
+                                    }
+                                });
+                        }
 
-// Set current day as default
-const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const today = new Date();
-daySelect.value = days[today.getDay()];
+                        // Set current day as default
+                        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                        const today = new Date();
+                        daySelect.value = days[today.getDay()];
 
-// Load schedules for the default day
-loadSchedules(daySelect.value);
+                        // Load schedules for the default day
+                        loadSchedules(daySelect.value);
 
-// Reload schedules whenever day changes
-daySelect.addEventListener('change', function() {
-    loadSchedules(this.value);
-});
+                        // Reload schedules whenever day changes
+                        daySelect.addEventListener('change', function () {
+                            loadSchedules(this.value);
+                        });
 
 
 
@@ -451,12 +506,12 @@ daySelect.addEventListener('change', function() {
                             const newRow = document.createElement("tr");
                             newRow.classList.add("new-schedule"); // mark it as new
                             newRow.innerHTML = `
-    <td contenteditable="true"></td>
-    <td contenteditable="true"></td>
-    <td><input type="time" style="width:100%;"></td>
-    <td><input type="time" style="width:100%;"></td>
-    <td contenteditable="true"></td>
-    <td><button class="deleteRowBtn">X</button></td>
+    <td contenteditable="true" class="editable" data-placeholder="Enter Subject"></td>
+    <td contenteditable="true" class="editable" data-placeholder="Enter Instructor"></td>
+    <td><input type="time" style="width:80%;"></td>
+    <td><input type="time" style="width:80%;"></td>
+    <td contenteditable="true" class="editable" data-placeholder="Enter Section"></td>
+    <td><button class="deleteRowBtn"><i class="bi bi-x"></i></button></td>
 `;
                             table.appendChild(newRow);
 
@@ -518,31 +573,31 @@ daySelect.addEventListener('change', function() {
                     if (result.isConfirmed) {
                         const schedules = result.value;
 
-                       schedules.forEach(s => {
-    const formData = new URLSearchParams();
-    formData.append("action", "addSchedule");
-    formData.append("roomID", roomID);
-    formData.append("subject", s.subject);
-    formData.append("instructor", s.instructor);
-    formData.append("timeFrom", s.timeFrom);
-    formData.append("timeTo", s.timeTo);
-    formData.append("section", s.section);
-    formData.append("weekType", weekBtn.textContent.includes("Odd") ? "Odd" : "Even");
-    formData.append("dayOfWeek", daySelect.value);
+                        schedules.forEach(s => {
+                            const formData = new URLSearchParams();
+                            formData.append("action", "addSchedule");
+                            formData.append("roomID", roomID);
+                            formData.append("subject", s.subject);
+                            formData.append("instructor", s.instructor);
+                            formData.append("timeFrom", s.timeFrom);
+                            formData.append("timeTo", s.timeTo);
+                            formData.append("section", s.section);
+                            formData.append("weekType", weekBtn.textContent.includes("Odd") ? "Odd" : "Even");
+                            formData.append("dayOfWeek", daySelect.value);
 
-    fetch("", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: formData.toString()
-    })
-    .then(res => res.text())
-    .then(res => {
-        if (res.trim() !== "success") console.error("Failed to add schedule:", res);
-    })
-    .catch(err => console.error("Error:", err));
-});
+                            fetch("", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: formData.toString()
+                            })
+                                .then(res => res.text())
+                                .then(res => {
+                                    if (res.trim() !== "success") console.error("Failed to add schedule:", res);
+                                })
+                                .catch(err => console.error("Error:", err));
+                        });
 
                         Swal.fire({
                             icon: "success",
@@ -586,12 +641,12 @@ daySelect.addEventListener('change', function() {
 
                         // AJAX request to same file
                         fetch("", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                },
-                                body: `action=addRoom&floorID=${encodeURIComponent(data.floorID)}&roomNumber=${encodeURIComponent(data.roomNumber)}`
-                            })
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: `action=addRoom&floorID=${encodeURIComponent(data.floorID)}&roomNumber=${encodeURIComponent(data.roomNumber)}`
+                        })
                             .then(response => response.text())
                             .then(res => {
                                 if (res.trim() === "success") {
@@ -685,9 +740,9 @@ daySelect.addEventListener('change', function() {
                         if (file) formData.append("buildingImage", file);
 
                         fetch("", {
-                                method: "POST",
-                                body: formData
-                            })
+                            method: "POST",
+                            body: formData
+                        })
                             .then(response => response.json()) // parse JSON
                             .then(res => {
                                 if (res.status === "success") {
@@ -720,11 +775,18 @@ daySelect.addEventListener('change', function() {
 
 
 
-        // Script for the time in 12-hour format with AM/PM
-        function updateTime() {
+        // Script for real-time day & 12-hour format time
+        function updateTimeDay() {
             const now = new Date();
+
+            // Get day
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const day = days[now.getDay()];
+
+            // Get hours and minutes
             let hours = now.getHours();
             const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
             const ampm = hours >= 12 ? 'PM' : 'AM';
 
             // Convert 24-hour to 12-hour format
@@ -732,14 +794,15 @@ daySelect.addEventListener('change', function() {
             hours = hours ? hours : 12; // the hour '0' should be '12'
             hours = String(hours).padStart(2, '0');
 
-            document.getElementById('time').textContent = `${hours}:${minutes} ${ampm}`;
+            // Set the text content
+            document.getElementById('time').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
         }
 
         // Update every second
-        setInterval(updateTime, 1000);
+        setInterval(updateTimeDay, 1000);
 
         // Initial call
-        updateTime();
+        updateTimeDay();
 
         // SWAL for the Add Floor button
         document.querySelectorAll(".add-floor").forEach(button => {
@@ -762,12 +825,12 @@ daySelect.addEventListener('change', function() {
                         const data = result.value;
 
                         fetch("", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/x-www-form-urlencoded"
-                                },
-                                body: `action=addFloor&buildingID=${encodeURIComponent(data.buildingID)}`
-                            })
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: `action=addFloor&buildingID=${encodeURIComponent(data.buildingID)}`
+                        })
                             .then(response => response.text())
                             .then(res => {
                                 if (res.trim() === "success") {
@@ -859,9 +922,9 @@ daySelect.addEventListener('change', function() {
                         if (file) formData.append("buildingImage", file);
 
                         fetch("", {
-                                method: "POST",
-                                body: formData
-                            })
+                            method: "POST",
+                            body: formData
+                        })
                             .then(response => response.json())
                             .then(res => {
                                 if (res.status === "success") {
@@ -889,6 +952,8 @@ daySelect.addEventListener('change', function() {
                 });
             });
         });
+
+
     </script>
 </body>
 
