@@ -40,7 +40,7 @@
         if ($user) {
             $_SESSION['UserID'] = $user['UserID'];
             $_SESSION['FirstName'] = $user['FirstName'];
-               $_SESSION['PhoneNumber'] = $user['PhoneNumber'];
+            $_SESSION['PhoneNumber'] = $user['PhoneNumber'];
             $_SESSION['LastName'] = $user['LastName'];
             $_SESSION['Role'] = $user['Role'];
             $_SESSION['AdminType'] = $user['AdminType'];

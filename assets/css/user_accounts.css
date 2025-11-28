@@ -1,67 +1,492 @@
-body{
-height: 100vh;
-background: linear-gradient(to bottom, white 12%, #D9D9D9 12%);
-}
-header{
-    display: flex;
-    align-items: center;
-     justify-content: space-between; /* push h2 to left, header-right to right */
-    margin-top: 10px;  
-   }
-
-header h2 {
-    color: black;
-    margin-left: 300px;
-    font-size: 32px;
-    gap: 300px
+body {
+  margin: 0;
+  background: white;
+  overflow: hidden;
+  
 }
 
-.header-right {
-    display: flex;
-    align-items: center;  /* vertically center search + button */
-    gap: 25px       /* space between search and button */
+.main-content {
+  margin-left: 250px; /* keep sidebar spacing if any */
+}
+/* ======== HEADER + TOPBAR ======== */
+header {
+  background-color: #ffffff;
+  position: sticky;
+  margin-left: 70px;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 2px solid #d9d9d9;
 }
 
-.search-container {
-    position: relative; /* needed for absolute positioning of the icon */
-    display: inline-block;
+main {
+    position: relative;      /* allow absolute/fixed children to position correctly */
+    overflow: visible;       /* ensure modals aren’t clipped */
+    z-index: 1;              /* lower than modal z-index */
 }
 
+
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  height: 75px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* reduce space between notif and profile */
+}
+
+/* ======== TITLE ======== */
+.system-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  font-size: 30px;
+  color: #8b1717;
+  margin-left: 50px;
+}
+
+/* ======== SEARCH FIELD ======== */
 .search-field {
-    padding: 8px 40px 8px 35px; /* add right padding for icon space */
-    font-size: 16px;
-    border-radius: 25px;
-    border:none;
-    background-color: #D9D9D9;
-    outline:none;
+  display: flex;
+  align-items: center;
+  background-color: #d9d9d9;
+  padding: 6px 10px;
+  border-radius: 10px;
+  width: 280px;
 }
 
-.search-icon {
-    position: absolute;
-    left: 10px;          /* inside input */
-    top: 50%;
-    transform: translateY(-50%);
-    color: #333;
-    font-size: 16px;
+.search-field i {
+  color: #666;
+  margin-right: 8px;
 }
 
-.notification-icon {
-    position: absolute;
-    right: 10px;  /* inside the input, adjust distance from right */
-    top: 50%;
-    transform: translateY(-50%); /* vertically center */
+.search-field input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+/* ======== NOTIFICATION ICON ======== */
+.notification-icon i {
+  font-size: 1.4rem;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.notification-icon i:hover {
+  color: #007bff;
+}
+
+/* ======== PROFILE INFO ======== */
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 50px;
+  position: relative;
+}
+
+.profile-icon {
+  font-size: 1.6rem;
+  color: #333;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.profile-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+.profile-number {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.profile-time {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #666;
+    margin-top: 2px;
+}
+.colon {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
+}
+
+.add-user-btn {
+  margin-top: 45px;
+}
+
+/* ======== Users tables ======== */
+
+/* optional: keep table width consistent */
+.table-wrapper {
+  width: 70%;
+  max-height: 100%;
+  overflow-y: auto;
+  border: 2px solid #d9d9d9;
+  border-radius: 10px;
+  margin: 30px ;
+  padding: 0;
+  background-color: white;
+    display: block;
+  justify-content: center; 
+  align-items: center;
+  overflow: hidden;
+
+
+}
+.table-wrapper table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: separate; /* ← THIS is key difference */
+  border-spacing: 0; /* remove gaps */
+  background-color: white;
+}
+
+/* HEADER */
+.users-table th {
+  padding: 20px 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  border-bottom: 2px solid #8b1717;
+}
+.users-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 2;
+  padding: 12px 10px;
+}
+
+/* CELLS */
+.users-table td {
+  text-align: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+/* ROW HOVER */
+.users-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.users-table thead tr {
+  border-bottom: 2px solid #8b1717;
+}
+
+/* Optional row hover effect */
+.users-table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.users-table {
+  background-color: white;
+}
+
+.users-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* ======== Action Buttons ======== */
+.action-buttons button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.edit-btn {
+  color: #007bff;
+}
+
+.delete-btn {
+  color: #dc3545;
+}
+
+.action-buttons button:hover {
+  background: #f0f0f0;
+}
+
+.table-container {
+    width: 100%;
+  margin-left: 420px; 
+  margin-top: 50px; 
+}
+
+/* ======== Pagination ======== */
+.custom-pagination {
+  text-align: left;
+  font-family: Arial, sans-serif;
+}
+
+.custom-pagination ul {
+  list-style: none;
+  padding: 0;
+  display: inline-flex;
+  gap: 5px;
+}
+
+.custom-pagination li {
+  border: 1px solid #d9d9d9;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.custom-pagination li a {
+  text-decoration: none;
+  color: #333;
+}
+
+.custom-pagination li.active {
+  background-color: #8b1717;
+  color: white;
+  font-weight: bold;
+}
+
+.custom-pagination li.active a {
+  color: white;
+}
+
+.custom-pagination li.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.custom-pagination li:hover:not(.active):not(.disabled) {
+  background-color: #f0f0f0;
+}
+
+/* ======== Add account buttons ======== */
+.add-user-btn {
+    width: 70%;
+  display: flex;
+  justify-content: flex-end; /* align buttons to the right */
+  gap: 10px; /* space between buttons */
+  /* optional spacing above table */
+}
+
+.add-user-btn .btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.add-user-btn .add-user {
+  background-color: #007bff; /* blue */
+}
+
+.add-user-btn .add-user:hover {
+  background-color: #0069d9; /* darker blue on hover */
+}
+
+.add-user-btn .add-admin {
+  background-color: #28a745; /* green */
+}
+
+.add-user-btn .add-admin:hover {
+  background-color: #218838; /* darker green on hover */
+}
+
+/* ======== Add account modal ======== */
+
+/* ======== MODAL OVERLAY ======== */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    display: none; /* hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+/* ======== MODAL BOX ======== */
+.custom-modal-dialog {
+    width: 450px;
+    max-width: 95%;
+}
+
+.custom-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+
+    animation: fadeIn 0.25s ease;
+}
+
+/* ======== HEADER ======== */
+.custom-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #8b1717;
+    padding-bottom: 10px;
+}
+
+.custom-modal-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #8b1717;
+}
+
+.custom-close {
+    background: none;
+    border: none;
+    font-size: 28px;
     cursor: pointer;
+    font-weight: bold;
     color: #333;
-    font-size: 18px;
-    padding-left: 10px;       /* space for the line */
-    border-left: 1px solid black;
 }
 
-main{
-    margin-top: 7px;
-    margin-left: 300px;
+/* ======== FORM BODY ======== */
+.custom-modal-body {
+    margin-top: 20px;
 }
 
-.add-user-btn{
-    margin-top: 45px;
+.form-group {
+    margin-bottom: 15px;
+    width: 100%;
 }
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    border-color: #8b1717;
+    box-shadow: 0 0 5px rgba(139, 23, 23, 0.3);
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+}
+
+.form-group select:focus {
+    border-color: #8b1717;
+    box-shadow: 0 0 5px rgba(139, 23, 23, 0.3);
+}
+
+/* ======== PHONE FIELD WITH BUTTON ======== */
+.phone-group {
+    display: flex;
+    width: 100%;
+}
+
+.phone-group input {
+    flex: 1;
+    border-radius: 8px 0 0 8px;
+    height: 45px;
+}
+
+.phone-group button {
+    width: 130px;
+    border-radius: 0 8px 8px 0;
+    height: 45px;
+    background-color: #8b1717;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.phone-group button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Error text */
+.text-danger {
+    display: block;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* ======== FOOTER ======== */
+.custom-modal-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-close-modal {
+    background: #d9d9d9;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#addBtn {
+    background: #8b1717;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+}
+
+#addBtn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* ======== ANIMATION ======== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
+

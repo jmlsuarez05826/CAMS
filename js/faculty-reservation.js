@@ -1,15 +1,4 @@
 
-            function getTodayDay() {
-        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        const now = new Date();
-        return days[now.getDay()];
-    }
-
-    function getCurrentWeekType() {
-        const weekBtn = document.querySelector(".oddWeek-btn");
-        return weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
-    }
-
             
             
             window.onload = function() {
@@ -200,47 +189,7 @@
                 updateTimeDay();
 
 
-                //odd week btn script
-                const weekBtn = document.querySelector(".oddWeek-btn");
-                const savedWeek = localStorage.getItem("selectedWeek");
-                if (savedWeek) {
-                    weekBtn.textContent = `${savedWeek} Week`;
-                } else {
-                    weekBtn.textContent = "Odd Week"; // default
-                }
 
-                // Now your existing event listener
-                weekBtn.addEventListener("click", function() {
-                    const currentWeek = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
-                    const nextWeek = currentWeek === "Odd" ? "Even" : "Odd";
-
-                    Swal.fire({
-                        title: "Change Week?",
-                        text: `Are you sure you want to change the week to ${nextWeek}?`,
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonText: `Yes, change to ${nextWeek}`,
-                        cancelButtonText: "Cancel"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            weekBtn.textContent = `${nextWeek} Week`;
-
-                            // Save to localStorage
-                            localStorage.setItem("selectedWeek", nextWeek);
-
-                            Swal.fire({
-                                title: "Week Changed!",
-                                text: `The week has been updated to ${nextWeek}.`,
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            });
-
-                            if (window.currentRoomID && window.currentDay) {
-                                loadSchedules(window.currentDay);
-                            }
-                        }
-                    });
-                });
 
 
                 document.getElementById('logout-btn').addEventListener('click', function(e) {
@@ -465,6 +414,9 @@
 
 
 
+// ======================
+// EQUIPMENT SIDEBAR
+// ======================
 
                 document.addEventListener('DOMContentLoaded', () => {
                     const rows = document.querySelectorAll('.equipment-row');
@@ -691,103 +643,7 @@
                     });
                 });
 
-                document.querySelectorAll('.building-block').forEach(building => {
-                    const floors = building.querySelectorAll('.floor');
-                    const indicator = building.querySelector('.floor-indicator');
-
-                    // Function to update indicator
-                    const updateIndicator = (floor) => {
-                        const position = floor.offsetLeft;
-                        const width = floor.offsetWidth;
-
-                        indicator.style.left = position + "px";
-                        indicator.style.width = width + "px";
-                    }
-
-                    // Default active floor
-                    if (floors.length > 0) {
-                        const defaultFloor = floors[0];
-                        defaultFloor.classList.add('active');
-                        updateIndicator(defaultFloor);
-                    }
-
-                    // Handle clicks
-                    floors.forEach((floor) => {
-                        floor.addEventListener('click', () => {
-                            floors.forEach(f => f.classList.remove('active'));
-                            floor.classList.add('active');
-                            updateIndicator(floor);
-                        });
-                    });
-
-                    // Update indicator on window resize
-                    window.addEventListener('resize', () => {
-                        const activeFloor = building.querySelector('.floor.active');
-                        if (activeFloor) updateIndicator(activeFloor);
-                    });
-                });
-
-
-                //script for the rooms
-                document.querySelectorAll('.building-block').forEach(buildingBlock => {
-                    const floors = buildingBlock.querySelectorAll('.floor');
-                    const roomContainers = buildingBlock.querySelectorAll('.room-container');
-
-                    floors.forEach(floor => {
-                        floor.addEventListener('click', () => {
-                            const floorID = floor.getAttribute('data-floor');
-
-                            // Hide all room containers in this building
-                            roomContainers.forEach(container => container.style.display = 'none');
-
-                            // Show the selected floor's room container
-                            const target = buildingBlock.querySelector(`.room-container[data-floor="${floorID}"]`);
-                            if (target) target.style.display = 'flex'; // or 'block' depending on your layout
-                        });
-                    });
-
-                    // Optionally show the first floor by default
-                    if (floors.length > 0) {
-                        const firstFloorID = floors[0].getAttribute('data-floor');
-                        const firstContainer = buildingBlock.querySelector(`.room-container[data-floor="${firstFloorID}"]`);
-                        if (firstContainer) firstContainer.style.display = 'flex';
-                        floors[0].classList.add('active');
-                    }
-                });
-
-                document.querySelectorAll(".room-card").forEach(card => {
-        card.addEventListener("click", () => {
-            const roomID = card.getAttribute("data-room-id"); // make sure to set this in PHP
-            const roomNumber = card.querySelector(".room-number").innerText;
-            window.currentRoomID = roomID;
-
-              const roomInput = document.getElementById("roomID");
-        if (roomInput) roomInput.value = roomID;
         
-            // DEBUG: check if roomID is correctly set
-            console.log("Clicked roomID:", roomID);
-            console.log("window.currentRoomID:", window.currentRoomID);
-
-            // Set currentDay to today's day automatically
-            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            const today = days[new Date().getDay()];
-            window.currentDay = today;
-
-            // Also update the dayFilter dropdown to match today
-            const daySelect = document.getElementById("dayFilter");
-            if (daySelect) daySelect.value = today;
-
-            // Open modal
-            const classroomModal = document.getElementById("classroomModal");
-            classroomModal.classList.add("show");
-
-            // Update modal title with room number
-            document.querySelector("#classroomModal .custom-modal-title").innerText = `Classroom Schedule - Room ${roomNumber}`;
-
-            // Load today's schedules
-            loadSchedules(today);
-        });
-    });
 
     // Updated equipment reservation modal with date/time + confirmation
     document.addEventListener("click", function(e) {
@@ -873,7 +729,108 @@
         }
     });
 
-                
+// =====================   
+// //CLASSROOM SIDEBAR
+// =====================
+
+     document.querySelectorAll('.building-block').forEach(building => {
+                    const floors = building.querySelectorAll('.floor');
+                    const indicator = building.querySelector('.floor-indicator');
+
+                    // Function to update indicator
+                    const updateIndicator = (floor) => {
+                        const position = floor.offsetLeft;
+                        const width = floor.offsetWidth;
+
+                        indicator.style.left = position + "px";
+                        indicator.style.width = width + "px";
+                    }
+
+                    // Default active floor
+                    if (floors.length > 0) {
+                        const defaultFloor = floors[0];
+                        defaultFloor.classList.add('active');
+                        updateIndicator(defaultFloor);
+                    }
+
+                    // Handle clicks
+                    floors.forEach((floor) => {
+                        floor.addEventListener('click', () => {
+                            floors.forEach(f => f.classList.remove('active'));
+                            floor.classList.add('active');
+                            updateIndicator(floor);
+                        });
+                    });
+
+                    // Update indicator on window resize
+                    window.addEventListener('resize', () => {
+                        const activeFloor = building.querySelector('.floor.active');
+                        if (activeFloor) updateIndicator(activeFloor);
+                    });
+                });
+
+
+                //script for the rooms
+                document.querySelectorAll('.building-block').forEach(buildingBlock => {
+                    const floors = buildingBlock.querySelectorAll('.floor');
+                    const roomContainers = buildingBlock.querySelectorAll('.room-container');
+
+                    floors.forEach(floor => {
+                        floor.addEventListener('click', () => {
+                            const floorID = floor.getAttribute('data-floor');
+
+                            // Hide all room containers in this building
+                            roomContainers.forEach(container => container.style.display = 'none');
+
+                            // Show the selected floor's room container
+                            const target = buildingBlock.querySelector(`.room-container[data-floor="${floorID}"]`);
+                            if (target) target.style.display = 'flex'; // or 'block' depending on your layout
+                        });
+                    });
+
+                    // Optionally show the first floor by default
+                    if (floors.length > 0) {
+                        const firstFloorID = floors[0].getAttribute('data-floor');
+                        const firstContainer = buildingBlock.querySelector(`.room-container[data-floor="${firstFloorID}"]`);
+                        if (firstContainer) firstContainer.style.display = 'flex';
+                        floors[0].classList.add('active');
+                    }
+                });
+
+
+                document.querySelectorAll(".room-card.clickable-room").forEach(card => {
+        card.addEventListener("click", () => {
+            const roomID = card.getAttribute("data-room"); // make sure to set this in PHP
+            const roomNumber = card.querySelector(".room-number").innerText;
+            window.currentRoomID = roomID;
+
+              const roomInput = document.getElementById("roomID");
+        if (roomInput) roomInput.value = roomID;
+        
+            // DEBUG: check if roomID is correctly set
+            console.log("Clicked roomID:", roomID);
+            console.log("window.currentRoomID:", window.currentRoomID);
+
+            // Set currentDay to today's day automatically
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const today = days[new Date().getDay()];
+            window.currentDay = today;
+
+            // Also update the dayFilter dropdown to match today
+            const daySelect = document.getElementById("dayFilter");
+            if (daySelect) daySelect.value = today;
+
+            // Open modal
+            const classroomModal = document.getElementById("classroomModal");
+            classroomModal.classList.add("show");
+
+            // Update modal title with room number
+            document.querySelector("#classroomModal .custom-modal-title").innerText = `Classroom Schedule - Room ${roomNumber}`;
+
+            // Load today's schedules
+            loadSchedules(today);
+        });
+    });
 
                 document.addEventListener("click", function(e) {
                     const btn = e.target.closest(".cancelBtn"); // button or child icon
@@ -951,3 +908,91 @@
         .catch(err => console.error("Failed to fetch schedules:", err));
     }
 
+                   
+// --------------------------
+// //Room Status Logic
+// --------------------------
+        function toMinutes(timeString) {
+    const [hours, minutes, seconds] = timeString.split(':');
+    return parseInt(hours) * 60 + parseInt(minutes);
+}
+
+function loadRoomStatuses() {
+    const weekType = localStorage.getItem("selectedWeek") || "Odd";
+
+    document.querySelectorAll(".clickable-room").forEach(roomCard => {
+        const roomID = roomCard.dataset.room;
+
+        fetch("../pages/faculty-reservation.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                action: "getSchedules",
+                roomID: roomID,
+                dayOfWeek: new Date().toLocaleString("en-US", { weekday: "long" }),
+                weekType: weekType
+            })
+        })
+        .then(res => res.json())
+        .then(schedules => {
+            console.log("Schedules for room:", roomID, schedules);
+
+            let status = "Available";
+
+            if (schedules.length > 0) {
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+                schedules.forEach(sch => {
+                    const start = toMinutes(sch.TimeFrom);
+                    const end = toMinutes(sch.TimeTo);
+
+                    if (currentMinutes >= start && currentMinutes <= end) {
+                        status = "Occupied";
+                    }
+                });
+            }
+
+            const statusDiv = roomCard.querySelector(".room-status");
+            statusDiv.textContent = status;
+            statusDiv.className = "room-status " + status.toLowerCase();
+        })
+        .catch(err => console.error(err));
+    });
+}
+
+
+        // Initial load
+        loadRoomStatuses();
+
+        // Reload when week changes with SweetAlert confirmation
+        const weekBtn = document.querySelector(".oddWeek-btn");
+        weekBtn.addEventListener("click", () => {
+            const currentWeek = weekBtn.textContent.includes("Odd") ? "Odd" : "Even";
+            const nextWeek = currentWeek === "Odd" ? "Even" : "Odd";
+
+            Swal.fire({
+                title: "Change Week?",
+                text: `Are you sure you want to change the week to ${nextWeek}?`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: `Yes, change to ${nextWeek}`,
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Update week in button and localStorage
+                    weekBtn.textContent = nextWeek + " Week";
+                    localStorage.setItem("selectedWeek", nextWeek);
+
+                    // Reload room statuses
+                    loadRoomStatuses();
+
+                    Swal.fire({
+                        title: "Week Changed!",
+                        text: `The week has been updated to ${nextWeek}.`,
+                        icon: "success",
+                        confirmButtonText: "OK"
+                    });
+                }
+            });
+        });

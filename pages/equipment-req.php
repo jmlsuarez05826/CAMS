@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once '../pages/camsdatabase.php';
 require_once '../pages/cams-sp.php';
 
@@ -51,24 +52,38 @@ require_once '../includes/admin-sidebar.php';
 
 <body>
 
+ <header>
 
+        <div class="topbar">
+            <h2 class="system-title">Welcome Admin!</h2>
 
-    <div class="topbar">
-        <h2>Welcome Admin!</h2>
-
-        <div class="topbar-right">
-            <div class="search-container">
+            <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" placeholder="Search" class="search-field">
-                <div class="notification-wrapper">
+                <input type="text" placeholder="Search">
+            </div>
+
+            <div class="topbar-right">
+                <div class="notification-icon">
                     <i class="bi bi-bell-fill notification-icon"></i>
                 </div>
+
+                <div class="profile-info">
+                    <i class="bi bi-person-circle profile-icon"></i>
+                    <div class="profile-text">
+                        <p class="profile-name">
+                            <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
+                        </p>
+                        <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
+                        <p class="profile-time" id="time"></p>
+                    </div>
+                </div>
+
             </div>
-            <div id="time"></div>
+
+
         </div>
-
-    </div>
-
+        </div>
+    </header>
     <!--Table goes here -->
     <div class="table-container">
         <table class="requests-table">
@@ -105,20 +120,36 @@ require_once '../includes/admin-sidebar.php';
 
 
     <script>
-        //script for the time
-        function updateTime() {
+      
+        // Script for real-time day & 12-hour format time
+        function updateTimeDay() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
+
+            // Get day
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const day = days[now.getDay()];
+
+            // Get hours and minutes
+            let hours = now.getHours();
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('time').textContent = `${hours}:${minutes}:${seconds}`;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            // Convert 24-hour to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = String(hours).padStart(2, '0');
+
+            // Set the text content
+            document.getElementById('time').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
         }
 
         // Update every second
-        setInterval(updateTime, 1000);
+        setInterval(updateTimeDay, 1000);
 
         // Initial call
-        updateTime();
+        updateTimeDay();
+
 
    function loadRequests() {
     fetch("equipment-req.php?getRequests=1")

@@ -1,477 +1,308 @@
+<?php
+session_start();
+require_once '../pages/camsdatabase.php';
+require_once '../pages/cams-sp.php';
+
+$database = new Database();
+$pdo = $database->getConnection();
+
+$session_id = session_id();
+$ip = $_SERVER['REMOTE_ADDR'];
+
+// CALL the stored procedure
+$stmt = $pdo->prepare("CALL GetDailyVisit(?, ?)");
+$stmt->execute([$session_id, $ip]);
+
+$stmt->closeCursor();
+
+
+$crud = new Crud();
+
+
+
+
+if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
+    $roomID = $_POST['roomID'];
+    $dayOfWeek = $_POST['dayOfWeek'] ?? null;
+    $weekType = 'Odd'; // force week type to Odd
+
+    try {
+        $schedules = $crud->getSchedulesByRoom($roomID, $dayOfWeek, $weekType);
+        echo json_encode($schedules);
+    } catch (PDOException $e) {
+        echo json_encode(['error' => $e->getMessage()]);
+    }
+    exit;
+}
+
+$buildings = $crud->getBuildings();
+$floors = $crud->getFloors();
+$rooms = $crud->getRooms();
+?>
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing Page</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CAMS — Classroom Availability Management System</title>
+
+    <!-- Bootstrap icons (used for small icons) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <link rel="stylesheet" href="../assets/css/landing.css">
+
 </head>
 
 <body>
-    <style>
-        * {
-            scrollbar-width: none;
-            scroll-behavior: smooth;
-        }
 
-        body {
-            background-color: whitesmoke;
-            margin: 0;
-        }
-
-
-        /*header designs  */
-        header {
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: whitesmoke;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-        }
-
-        header.scrolled {
-            background-color: rgba(245, 245, 245, 0.6);
-            backdrop-filter: blur(6px);
-        }
-
-        main {
-            padding-top: 70px;
-        }
-
-
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0 30px;
-        }
-
-        .logo h2 {
-            font-size: 20px;
-            font-weight: lighter;
-            color: black;
-
-        }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            padding: 0 30px;
-            color: white;
-
-        }
-
-        nav li a {
-            text-decoration: none;
-            color: black;
-        }
-
-        nav button {
-            color: black;
-            background-color: rgba(184, 13, 13, 1);
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            border: none;
-            transition: 0.3s;
-        }
-
-        .btn {
-            color: white;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        nav button:hover{
-            transform: scale(1.03);
-            background-color: rgba(184, 13, 13, 0.69)
-        }
-
-
-        /*front page design*/
-        .bsu-front {
-            position: relative;
-            text-align: center;
-            height: 50em;
-            color: white;
-        }
-
-        .bsu-front img {
-            width: 100%;
-            opacity: 0.5;
-            object-fit: cover
-        }
-
-        .red-filter {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60em;
-            background-color: rgba(184, 13, 13, 0.67);
-            pointer-events: none;
-        }
-
-        .quote {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-
-        }
-
-        .quote h1 {
-            font-size: 6em;
-            font-weight: bold;
-            color: white;
-            flex-wrap: wrap;
-            font-family: monospace;
-            margin: 0;
-        }
-
-        .quote P {
-            font-size: 25px;
-            font-weight: bold;
-            color: white;
-            font-family: unset;
-            margin: 0;
-        }
-
-        .lrn {
-            padding: 15px;
-            background-color: whitesmoke;
-            margin-top: 4em;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .lrnmr {
-            color: red;
-            font-size: 20px;
-            text-decoration: none;
-            font-family: monospace;
-            transition: 0.3s;
-        }
-
-        .lrnmr i {
-            font-size: 15px;
-        }
-
-        .lrn:hover {
-            transform: scale(1.05);
-
-        }
-
-        .lrnmr:hover {
-            transform: scale(1.05);
-
-        }
-
-
-        /*Features*/
-        .title-f {
-            background-color: #e7e7e7ff;
-            padding: 50px;
-            margin-top: 8em;
-            height: 55em;
-            font-size: 14px;
-            font-weight: lighter;
-            font-family: monospace;
-        }
-
-        .feature {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-        }
-
-        .feature-1,
-        .feature-2,
-        .feature-3 {
-            height: 25em;
-            color: black;
-            background-color: #ffffffff;
-            border: 2px solid black;
-            border-radius: 20px;
-            flex-direction: column;
-            justify-content: left;
-            display: flex;
-            flex-wrap: wrap;
-            padding: 20px;
-            width: 25%;
-            cursor: pointer;
-            color: black;
-            transition: 0.3s;
-        }
-
-        .feature-1:hover,
-        .feature-2:hover,
-        .feature-3:hover {
-            transform: scale(1.005);
-            border: 2px solid #e60a0ace;
-            background-color: ;
-
-        }
-
-        /*Classroom Availbility Design*/
-        .view {
-            margin-top: 10em;
-            height: 60em;
-        }
-
-        /* .search-bar {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .view input[type="text"] {
-            float: none;
-            padding: 5px;
-            border: none;
-            margin-bottom: 20px;
-            height: 30px;
-            font-size: 20px;
-            width: 50em;
-        } */
-
-        .container {
-            position: absolute;
-            height: 50em;
-        }
-
-        .box {
-            background-color: white;
-            height: 50em;
-            margin: 0 250px;
-            margin-bottom: 100px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 0 15em;
-
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .building-1,
-        .building-2,
-        .building-3,
-        .building-4 {
-            border: solid black 2px;
-            height: 18em;
-            width: 25em;
-            background-color: aliceblue;
-            border-radius: 20px;
-
-        }
-
-        .building-1 p,
-        .building-2 p,
-        .building-3 p,
-        .building-4 p {
-            font-size: 24px;
-            text-transform: capitalize;
-            padding-left: 20px;
-            padding-bottom: 10px;
-
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        footer {
-            background-color: #13132c;
-            width: 100%;
-            padding: 25px 0;
-            color: white;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-    </style>
-
+    <!-- HEADER / NAV -->
     <header>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
-        <!--- NAVIGATION BAR -->
         <div class="logo">
-            <img src="../images/BSU_logo (3).webp" alt="bsu logo"
-                style="height: 40px; max-width: 100%; background-repeat: no-repeat;">
-            <h2>CAMS</h2>
+            <img src="../images/BSU_logo (3).webp" alt="logo">
+            CAMS
         </div>
 
-        <nav>
-            <ul>
-                <li><a href="#">About</a></li>
-                <li><a href="#search">Search</a></li>
-                <li><button><a class="btn" href="#">Log In</a></button></li>
+
+        <nav aria-label="Main navigation">
+            <ul id="main-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#buildings">Buildings</a></li>
+                <li><a href="#faqs">FAQs</a></li>
+                <li><a href="../pages/aboutus.php">About</a></li>
             </ul>
         </nav>
+
+        <div>
+            <a class="login-btn" href="../pages/login.php">LOGIN</a>
+            <button class="menu-toggle" aria-label="Open menu" onclick="toggleMobileMenu()">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+
     </header>
 
 
+
+    <!-- MAIN -->
     <main>
-        <!-- Home Page -->
-        <div class="land" id="home">
-            <div class="bsu-front">
-                <img src="../images/bsu_front.webp" alt="building"
-                    style="height: 60em; width: 100%; background-repeat: no-repeat; opacity: 0.7; ">
-                <div class="red-filter"></div>
-                <div class="quote">
-                    <h1>CLASSROOM AVAILABILITY <span style="color: bisque;">MANAGEMENT SYSTEM</span></h1>
-                    <P>"Find Available Classrooms in Seconds"</P>
-                    <button class="lrn"><a class="lrnmr" href="#feature">Learn More <i
-                                class="bi bi-arrow-down-right"></i></a></button>
-                </div>
 
-            </div>
-        </div>
+        <!-- HERO -->
+        <section class="hero" id="home" aria-label="Hero">
+            <div class="hero-left">
+                <h1>Classroom Availability <br /><span style="color:var(--primary)">Management System</span></h1>
+                <p>
+                    Find available classrooms instantly. CAMS gives students and faculty a clear, minimal, and fast
+                    interface for searching rooms, checking live availability, and submitting requests — all in one
+                    place.
+                </p>
 
-
-        <!-- features of the system -->
-        <div class="title-f" id="feature">
-            <div
-                style="justify-content: center; align-items: center; display: flex; text-align: center; flex-direction: column; margin-top: 2em;">
-                <h1
-                    style="background-color: #cecdcd94; width: 80 autopx; padding: 15px; border-radius: 20px; font-size: 20px; opacity: 0.5;">
-                    Feature</h1>
-                <p
-                    style="font-weight: bold; font-size: 3.5em; flex-wrap: wrap; width: 30%; margin:0; margin-bottom: 2em; font-family: 'Trebuchet MS', Grande', 'Lucida Sans', Arial, sans-serif;">
-                    Everyrhing that our system can do.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-1">
-                    <i class="bi bi-geo-alt" alt="bootsrap" style="font-size: 30px;"></i>
-                    <h2 style="font-size: 25px; font-weight: bold; font-family: Arial, Helvetica, sans-serif;">VISUAL
-                        MAP & SEARCH</h2>
-                    <p style="font-size: 20px; opacity: 0.7;font-family: Arial, Helvetica, sans-serif;">Easily Locates
-                        available classroom across campus. </p>
-                </div>
-                <div class="feature-2">
-                    <i class="bi bi-clock-history" alt="bootsrap" style="font-size: 30px;"></i>
-                    <h2 style="font-size: 25px; font-weight: bold; font-family: Arial, Helvetica, sans-serif;">REAL-TIME
-                        AVAILABILITY & REQUEST</h2>
-                    <p style="font-size: 20px; opacity: 0.7;font-family: Arial, Helvetica, sans-serif;">Instantly check
-                        which room are free or occupied and send request in one click.</p>
-                </div>
-                <div class="feature-3">
-                    <i class="bi bi-phone" alt="bootsrap" style="font-size: 30px;"></i>
-                    <h2 style="font-size: 25px; font-weight: bold; font-family: Arial, Helvetica, sans-serif;">MOBILE &
-                        NOTIFICATION</h2>
-                    <p style="font-size: 20px; opacity: 0.7;font-family: Arial, Helvetica, sans-serif;">Get update and
-                        manage classroom anytime anywhere</p>
+                <div class="cta-row">
+                    <a class="btn-ghost" href="#features">Learn More</a>
                 </div>
             </div>
 
-        </div>
-
-        <!-- Searching for available classroom -->
-        <div class="view" id="search">
-
-            <div class="container">
-                <div id="building" class="box">
-                    <a href="#">
-                        <div class="building-1">
-                            <img src="building1.jpg" alt="BUILDING 1"
-                                style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                            <p>Building 1</p>
+            <div class="hero-right">
+                <div class="hero-card" id="heroCard">
+                    <img src="../images/bsu_front.webp" alt="Campus building">
+                    <div class="hero-meta">
+                        <div>
+                            <div class="meta-title">Classroom Availability Checker</div>
+                            <div class="meta-sub"></div>
                         </div>
-                    </a>
-                    <a href="#">
-                        <div class="building-2">
-                            <img src="building2.jpg" alt="BUILDING 2"
-                                style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                            <p>Building 2</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES (old card style) -->
+        <section class="features" id="features" aria-labelledby="featuresTitle">
+            <h2 id="featuresTitle">Our Features</h2>
+
+            <div class="feature-grid" role="list">
+                <div class="feature-card" role="listitem" tabindex="0" aria-label="Visual Map & Search">
+                    <i class="bi bi-geo-alt"></i>
+                    <h3>Search & Filter</h3>
+                    <p>Easily locate available classrooms across campus.</p>
+                </div>
+
+                <div class="feature-card" role="listitem" tabindex="0" aria-label="Real-Time Availability">
+                    <i class="bi bi-clock-history"></i>
+                    <h3>Real-Time Availability & Requests</h3>
+                    <p>Check which rooms are free or occupied instantly, and send requests quickly.</p>
+                </div>
+
+                <div class="feature-card" role="listitem" tabindex="0" aria-label="Mobile Notifications">
+                    <i class="bi bi-phone"></i>
+                    <h3>Live chat</h3>
+                    <p>Receive updates anytime</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- BUILDINGS -->
+        <section class="buildings" id="buildings">
+            <div id="timeDay"></div>
+            <div class="table-contents">
+                <div id="classrooms" class="tab-content active">
+                    <div class="tab-scroll">
+                        <div id="all-buildings">
+                            <div class="building-grid">
+                                <?php foreach ($buildings as $building): ?>
+                                    <div class="building-card" data-building="<?= $building['BuildingID'] ?>">
+                                        <div class="building">
+                                            <?php
+                                            $serverPath = __DIR__ . "/../uploads/" . $building['BuildingIMG'];
+                                            $bgImage = (!empty($building['BuildingIMG']) && file_exists($serverPath))
+                                                ? "../uploads/" . $building['BuildingIMG']
+                                                : "../images/bsu_front.webp";
+                                            ?>
+                                            <img src="<?= $bgImage ?>"
+                                                alt="<?= htmlspecialchars($building['BuildingName']) ?>">
+                                            <p><?= htmlspecialchars($building['BuildingName']) ?></p>
+                                        </div>
+
+                                        <div class="building-block" style="display:none;">
+                                            <button class="back-btn" style="display:none;">
+                                                <i class="bi bi-arrow-left-short"></i>Back
+                                            </button>
+                                            <h3><?= htmlspecialchars($building['BuildingName']) ?></h3>
+
+                                            <!-- Floor Container -->
+                                            <div class="floor-container">
+                                                <?php foreach ($floors as $floor): ?>
+                                                    <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
+                                                        <div class="floor" data-floor="<?= $floor['FloorID'] ?>">
+                                                            Floor <?= htmlspecialchars($floor['FloorNumber']) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                                <div class="floor-indicator"></div>
+                                            </div>
+
+                                            <!-- Room Containers -->
+                                            <?php foreach ($floors as $floor): ?>
+                                                <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
+                                                    <div class="room-container" data-floor="<?= $floor['FloorID'] ?>"
+                                                        style="background-image: url('<?= $bgImage ?>');">
+                                                         <?php foreach ($rooms as $room): ?>
+                                                        <?php if ($room['FloorID'] == $floor['FloorID']): ?>
+                                                           <div class="room-card clickable-room" data-room="<?= $room['RoomID'] ?>">
+                                                                <div class="room-label">Room no</div>
+                                                                <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
+                                                                <hr>
+                                                                <div class="room-status">Loading... </div>
+                                                            </div>
+
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
-                    </a>
-                    <a href="#">
-                        <div class="building-3">
-                            <img src="building3.jpg" alt="BUILDING 3"
-                                style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                            <p>Building 3</p>
-                        </div>
-                    </a>
-                    <a href="#">
-                        <div class="building-4">
-                            <img src="building4.jpg" alt="BUILDING 4"
-                                style="height: 80%; width: 100%; border-radius: 20px 20px 0 0; ">
-                            <p>Building 4</p>
-                        </div>
-                    </a>
+                    </div>
                 </div>
             </div>
 
-            <div id="classroom" class="box hidden">
-                <p>Hello World</p>
-            </div>
 
-        </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq" id="faqs" aria-labelledby="faqTitle">
+            <h2 id="faqTitle">Frequently Asked Questions</h2>
+
+            <div class="faq-grid" role="list">
+                <div class="faq-item" role="listitem">
+                    <div class="faq-q">How does CAMS detect room availability?<span class="faq-toggle-icon"><i
+                                class="bi bi-chevron-down"></i></span></div>
+                    <div class="faq-a">CAMS integrates with the university scheduling system and sensors (if available)
+                        to present near real-time availability status.</div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <div class="faq-q">Do I need to log in to view rooms?<span class="faq-toggle-icon"><i
+                                class="bi bi-chevron-down"></i></span></div>
+                    <div class="faq-a">Basic search is available publicly, but requesting and booking may require
+                        authentication for security and tracking.</div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <div class="faq-q">Can I request a classroom through CAMS?<span class="faq-toggle-icon"><i
+                                class="bi bi-chevron-down"></i></span></div>
+                    <div class="faq-a">Yes — after login, users can send booking requests which admins can approve or
+                        deny through the system.</div>
+                </div>
+
+                <div class="faq-item" role="listitem">
+                    <div class="faq-q">Is the system mobile friendly?<span class="faq-toggle-icon"><i
+                                class="bi bi-chevron-down"></i></span></div>
+                    <div class="faq-a">Yes. CAMS is designed to be responsive and works across phones, tablets, and
+                        desktops.</div>
+                </div>
+            </div>
+        </section>
+
+                  <!-- class sched modal -->
+                <div class="custom-modal" id="classroomModal">
+                    <div class="custom-modal-dialog">
+                        <div class="custom-modal-content">
+                            <div class="custom-modal-header">
+                                <h5 class="custom-modal-title">Classroom Schedule</h5>
+                                <button type="button" class="custom-close" id="closeclassroomModal">&times;</button>
+                            </div>
+
+                            <div class="custom-modal-body">
+                                <form method="post" id="classSchedForm">
+
+                                    <p>Building Name Room No</p>
+                                    <div class="Sched-table-wrapper">
+                                        <table class="classSchedTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Instructor</th>
+                                                    <th>Subject</th>
+                                                    <th>Time</th>
+                                                    <th>Section</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <hr class="table-separator">
+
+                                    <div class="custom-modal-footer">
+                                        <button type="button" class="btn-close-modal" id="closeAddUserFooter">Close</button>
+                                        
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
 
     </main>
 
-
- <footer>
-
-
-    <div style="display: flex; justify-content: center; align-items: center; width: 100%; gap: 10px;">
-        <img src="../images/BSU_logo (3).webp" alt="BSU Logo" style="height: 50px;">
-
-        <div style="display: flex; flex-direction: column; align-items: flex-start;">
-            <h1 style="margin: 0; font-size: 1.4rem;">CAMS</h1>
-            <p style="margin: 0; font-size: 0.9rem; opacity: 0.85;">Classroom Availability Management System</p>
-        </div>
-    </div>
-
-    <!-- Decorative Line -->
-    <div class="line" style=" height: 1px; width: 60%; background-color: rgba(255, 255, 255, 0.3); margin: 5px auto;"></div>
-
-    <!-- Bottom Text -->
-    <div style="display: flex; justify-content: center; align-items: center; width: 100%; margin-top: 10px;">
-        <p style="font-size: 0.8rem; opacity: 0.7;">© 2025 Classroom Management System. All rights reserved.</p>
-    </div>
-
-</footer>
-
-
-
-    <script>
-        const building = document.getElementById('building');
-        const classroom = document.getElementById('classroom');
-
-        building.addEventListener('click', () => {
-            building.classList.add('hidden');
-            classroom.classList.remove('hidden');
-        });
-
-        window.addEventListener('scroll', function () {
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
-
-    </script>
-
-
-
-
-
+    <footer>
+        <div>© 2025 Classroom Availability Management System — All rights reserved.</div>
+    </footer>
+      <script src="../js/landing.js"></script>
 
 </body>
 
