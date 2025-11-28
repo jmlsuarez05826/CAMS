@@ -10,9 +10,9 @@ if (isset($_GET['getRequests'])) {
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
     $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 
-    $requests = $crud->getEquipmentRequests($limit, $offset);
+    $requests = $crud->getClassroomRequests($limit, $offset);
 
-    $totalRequests = $crud->getEquipmentRequestsCount();
+    $totalRequests = $crud->getClassroomRequestsCount();
     $totalPages = ceil($totalRequests / $limit);
 
     echo json_encode([
@@ -21,8 +21,6 @@ if (isset($_GET['getRequests'])) {
     ]);
     exit;
 }
-
-
 // PROCESS APPROVE / REJECT USING SP
 if (isset($_POST['action']) && isset($_POST['ids'])) {
 
@@ -30,9 +28,9 @@ if (isset($_POST['action']) && isset($_POST['ids'])) {
 
     foreach ($ids as $id) {
         if ($_POST['action'] === "approve") {
-            $crud->approveEquipmentRequest($id);
+            $crud->approveClassroomRequest($id);
         } else if ($_POST['action'] === "reject") {
-            $crud->rejectEquipmentRequest($id);
+            $crud->rejectClassroomRequest($id);
         }
     }
 
@@ -40,8 +38,7 @@ if (isset($_POST['action']) && isset($_POST['ids'])) {
     exit;
 }
 
-
-require_once '../includes/admin-sidebar.php';
+require_once '../includes/sadmin-sidebar.php';
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +58,6 @@ require_once '../includes/admin-sidebar.php';
 </head>
 
 <body>
-
     <header>
 
         <div class="topbar">
@@ -94,19 +90,20 @@ require_once '../includes/admin-sidebar.php';
         </div>
         </div>
     </header>
+
+    <!-- Pagination Setup -->
     <?php
     $rowsPerPage = 10;
     $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     $offset = ($currentPage - 1) * $rowsPerPage;
 
     // Fetch only the equipment requests for this page
-    $requests = $crud->getEquipmentRequests($rowsPerPage, $offset);
+    $requests = $crud->getClassroomRequests($rowsPerPage, $offset);
 
     // Total requests for pagination
-    $totalRequests = $crud->getEquipmentRequestsCount();
+    $totalRequests = $crud->getClassroomRequestsCount();
     $totalPages = ceil($totalRequests / $rowsPerPage);
     ?>
-
 
     <!--Table goes here -->
     <div class="table-container">
@@ -115,7 +112,7 @@ require_once '../includes/admin-sidebar.php';
                 <tr>
                     <th><input type="checkbox" id="selectAll"></th>
                     <th>ID</th>
-                    <th>Equipment</th>
+                    <th>Room Number</th>
                     <th>Requester</th>
                     <th>Req Date</th>
                     <th>Time</th>
@@ -124,16 +121,18 @@ require_once '../includes/admin-sidebar.php';
                         Status
                         <span id="statusSortIcon">↕</span>
                     </th>
-
                 </tr>
             </thead>
             <tbody id="requestTableBody">
-               <?php foreach ($requests as $r): ?>
-                    <?php $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : ''; ?>
+                <?php foreach ($requests as $r): ?>
+                    <?php 
+                        // Determine if the checkbox should be disabled
+                        $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : ''; 
+                    ?>
                     <tr>
-                        <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td>
+                        <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td> 
                         <td><?= $r['ReservationID'] ?></td>
-                        <td><?= $r['EquipmentName'] ?></td>
+                        <td><?= $r['Subject'] ?></td>
                         <td><?= $r['Requester'] ?></td>
                         <td><?= $r['ReservationDate'] ?></td>
                         <td><?= ($r['TimeFrom'] && $r['TimeTo']) ? $r['TimeFrom'] . ' - ' . $r['TimeTo'] : '' ?></td>
@@ -149,6 +148,8 @@ require_once '../includes/admin-sidebar.php';
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <!-- Pagination Setup as html -->
         <nav class="custom-pagination">
             <ul>
                 <!-- Previous -->
@@ -169,11 +170,10 @@ require_once '../includes/admin-sidebar.php';
                 </li>
             </ul>
         </nav>
-
-
     </div>
 
-    <!-- Footer Action Bar -->
+
+    <!-- Footer Action Bar for bulk approve/reject -->
     <div id="actionFooter" class="action-footer hidden">
         <div class="footer-content">
             <span id="selectedCount">0 selected out of 0</span>
@@ -188,6 +188,7 @@ require_once '../includes/admin-sidebar.php';
 
 
     <script>
+        // Status Sorting Logic
         const sortStatusHeader = document.getElementById("sortStatus");
         const statusSortIcon = document.getElementById("statusSortIcon");
 
@@ -241,7 +242,7 @@ require_once '../includes/admin-sidebar.php';
             rows.forEach(row => tbody.appendChild(row));
         });
 
-        // Helper priority function
+        // Helper: Status priority for sorting
         function statusPriority(status) {
             switch (status) {
                 case "Approved":
@@ -255,6 +256,55 @@ require_once '../includes/admin-sidebar.php';
             }
         }
 
+        // Select the "selectAll" checkbox
+        // Grab important DOM elements
+        const selectAllCheckbox = document.getElementById("selectAll"); // The checkbox in the table header
+        const tbody = document.getElementById("requestTableBody"); // Table body containing all rows
+        const footer = document.getElementById("actionFooter"); // Footer action bar for bulk actions
+        const countText = document.getElementById("selectedCount"); // Text showing number of selected rows
+
+
+        // Event listener for "Select All" checkbox
+        selectAllCheckbox.addEventListener("change", () => {
+            let selectedCount = 0; // Track how many rows are selected
+
+            // Loop through each row in the table body
+            tbody.querySelectorAll("tr").forEach(row => {
+                const checkbox = row.querySelector(".rowCheck");
+
+                // ONLY change the state if the checkbox is NOT disabled
+                if (!checkbox.disabled) {
+                    checkbox.checked = selectAllCheckbox.checked;
+                }
+                
+                // Increment counter if row is checked
+                if (checkbox.checked) selectedCount++;
+            });
+
+            // Update footer visibility and selection count
+            if (selectedCount > 0) {
+                footer.classList.add("show"); // Show footer if at least 1 selected
+                countText.textContent = `${selectedCount} selected`; // Update count text
+            } else {
+                footer.classList.remove("show"); // Hide footer if none selected
+            }
+        });
+
+
+        // Footer & Checkbox logic for single checkbox
+        document.querySelector("#requestTableBody").addEventListener("change", (e) => {
+            if (e.target.classList.contains("rowCheck")) {
+                // Check how many are selected
+                const selected = document.querySelectorAll(".rowCheck:checked").length;
+
+                if (selected > 0) {
+                    countText.textContent = `${selected} selected`;
+                    footer.classList.add("show");
+                } else {
+                    footer.classList.remove("show");
+                }
+            }
+        });
 
         // Script for real-time day & 12-hour format time
         function updateTimeDay() {
@@ -286,60 +336,26 @@ require_once '../includes/admin-sidebar.php';
         updateTimeDay();
 
 
-        // Select the "selectAll" checkbox
-
-
-        const selectAllCheckbox = document.getElementById("selectAll");
-        const tbody = document.getElementById("requestTableBody");
-
-
-
-        selectAllCheckbox.addEventListener("change", () => {
-            let selectedCount = 0;
-
-            tbody.querySelectorAll("tr").forEach(row => {
-                const statusSpan = row.querySelector("td:last-child span");
-                const checkbox = row.querySelector(".rowCheck");
-
-                // Only select rows with Pending status
-                if (statusSpan.textContent.trim() === "Pending") {
-                    checkbox.checked = selectAllCheckbox.checked;
-                }
-
-                if (checkbox.checked) selectedCount++;
-            });
-
-            // Update footer visibility and count
-            if (selectedCount > 0) {
-                footer.classList.add("show");
-                countText.textContent = `${selectedCount} selected`;
-            } else {
-                footer.classList.remove("show");
-            }
-        });
-
-
+        // Load Requests from Server (AJAX)
         function loadRequests() {
-            fetch("equipment-req.php?getRequests=1")
+            fetch("sroom-req.php?getRequests=1") // Call PHP to get request data as JSON
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById("requestTableBody");
-                    tbody.innerHTML = "";
+                    tbody.innerHTML = ""; // Clear existing rows
 
-                    data.forEach(req => {
+                    data.data.forEach(req => {
                         const statusClass =
                             req.Status === "Approved" ? "badge bg-success" :
                             req.Status === "Rejected" ? "badge bg-danger" :
                             "badge bg-warning text-dark";
-                        
-                        // New: Determine if checkbox should be disabled
-                        const isDisabled = (req.Status === "Approved" || req.Status === "Rejected") ? 'disabled' : '';
 
+                        // Create table row HTML
                         const row = `
                 <tr>
-                    <td><input type="checkbox" class="rowCheck" ${isDisabled}></td> 
+                    <td><input type="checkbox" class="rowCheck"></td>
                     <td>${req.ReservationID}</td>
-                    <td>${req.EquipmentName}</td>
+                    <td>${req.RoomNumber}</td>
                     <td>${req.Requester}</td>
                     <td>${req.ReservationDate}</td>
                     <td>${req.Time}</td>
@@ -347,6 +363,7 @@ require_once '../includes/admin-sidebar.php';
                     <td><span class="${statusClass}">${req.Status}</span></td>
                 </tr>`;
 
+                        // Append row to table
                         tbody.innerHTML += row;
                     });
 
@@ -355,30 +372,11 @@ require_once '../includes/admin-sidebar.php';
         }
 
 
-
-        // Get footer and count text
-        const footer = document.getElementById("actionFooter");
-        const countText = document.getElementById("selectedCount");
-
-        // Add event listener to the table body
-        document.querySelector("#requestTableBody").addEventListener("change", (e) => {
-            if (e.target.classList.contains("rowCheck")) {
-                // Check how many are selected
-                const selected = document.querySelectorAll(".rowCheck:checked").length;
-
-                if (selected > 0) {
-                    countText.textContent = `${selected} selected`;
-                    footer.classList.add("show");
-                } else {
-                    footer.classList.remove("show");
-                }
-            }
-        });
-
-
-
+        // Get Selected Rows
         function getSelectedRows() {
-            const ids = [];
+            const ids = []; // Array to store selected row IDs
+
+            // Loop through all table rows
             document.querySelectorAll("#requestTableBody tr").forEach(row => {
                 if (row.querySelector(".rowCheck").checked) {
                     ids.push(row.children[1].textContent);
@@ -426,7 +424,7 @@ require_once '../includes/admin-sidebar.php';
                     formData.append('action', action);
                     ids.forEach(id => formData.append('ids[]', id));
 
-                    fetch("equipment-req.php", {
+                    fetch("sroom-req.php", {
                             method: "POST",
                             body: formData
                         })

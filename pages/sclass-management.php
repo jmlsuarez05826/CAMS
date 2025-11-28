@@ -18,6 +18,66 @@ require_once '../pages/cams-sp.php';
 
 $crud = new Crud();
 
+if (isset($_POST['action']) && $_POST['action'] === 'addRoom') {
+    $floorID = $_POST['floorID'];
+    $roomnumber = $_POST['roomNumber'];
+
+    try {
+        if ($crud->addRoom($floorID, $roomnumber)) {
+            echo "success";
+        }
+    } catch (PDOException $e) {
+        echo "error: " . $e->getMessage();
+    }
+    exit;
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'addFloor') {
+    $buildingID = $_POST['buildingID'];
+
+    try {
+        if ($crud->addFloor($buildingID)) {
+            echo "success";
+        }
+    } catch (PDOException $e) {
+        echo "error: " . $e->getMessage();
+    }
+    exit;
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'addBuilding') {
+    $buildingName = $_POST['buildingName'];
+    $buildingImage = null;
+
+    if (isset($_FILES['buildingImage']) && $_FILES['buildingImage']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../uploads/';
+        if (!is_dir($uploadDir))
+            mkdir($uploadDir, 0777, true);
+
+        $fileName = uniqid() . '_' . basename($_FILES['buildingImage']['name']);
+        $targetPath = $uploadDir . $fileName;
+
+        if (move_uploaded_file($_FILES['buildingImage']['tmp_name'], $targetPath)) {
+            $buildingImage = $fileName;
+        }
+    }
+
+    try {
+        if ($crud->addBuilding($buildingName, $buildingImage)) {
+            // Return JSON instead of plain text
+            echo json_encode([
+                'status' => 'success',
+                'buildingName' => $buildingName,
+                'buildingIMG' => $buildingImage // filename only
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to add building']);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
 
 if (isset($_POST['action']) && $_POST['action'] === 'editBuilding') {
     $buildingID = $_POST['buildingID'];
@@ -92,7 +152,24 @@ if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
 }
 
 
+// 🎯 NEW: Handle Schedule Deletion
+if (isset($_POST['action']) && $_POST['action'] === 'deleteSchedule') {
+    // The ID of the schedule record to delete
+    $scheduleID = $_POST['scheduleID'];
 
+    try {
+        if ($crud->deleteSchedule($scheduleID)) {
+            echo json_encode(['status' => 'success', 'message' => 'Schedule deleted successfully.']);
+        } else {
+            // This case might mean the ID didn't match any record
+            echo json_encode(['status' => 'error', 'message' => 'Failed to delete schedule. Record not found or database error.']);
+        }
+    } catch (PDOException $e) {
+        // Output detailed error for debugging, but consider logging this in production
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
 
 $buildings = $crud->getBuildings();
 $floors = $crud->getFloors();
@@ -116,7 +193,7 @@ $rooms = $crud->getRooms();
 </head>
 
 <body>
-    <?php require_once '../includes/admin-sidebar.php'; ?>
+    <?php require_once '../includes/sadmin-sidebar.php'; ?>
     <header>
 
         <div class="topbar">
@@ -165,7 +242,10 @@ $rooms = $crud->getRooms();
                 <i class="bi bi-pencil"></i> <!-- Edit Icon -->
             </button>
 
-            
+            <!-- Only show Add Building button on the first building -->
+            <?php if ($index === 0): ?>
+                <button class="addBuilding-btn">+ Add Building</button>
+            <?php endif; ?>
         </div>
 
         <div class="building-block">
@@ -181,7 +261,7 @@ $rooms = $crud->getRooms();
                     <?php endif; ?>
                 <?php endforeach; ?>
 
-                
+                <button class="add-floor" data-building="<?= $building['BuildingID'] ?>">+ Add Floor</button>
                 <div class="floor-indicator"></div>
             </div>
 
@@ -200,7 +280,11 @@ $rooms = $crud->getRooms();
 
 
 
-                        
+                        <!-- Add Room button -->
+                        <div class="room-card add-room-btn" data-floor="<?= $floor['FloorID'] ?>">
+                            <i class="bi bi-door-open" style="color: #8b1717;"></i>
+                            <span style="color: black;">Add Room (Floor <?= htmlspecialchars($floor['FloorNumber']) ?>)</span>
+                        </div>
 
                         <?php foreach ($rooms as $room): ?>
                             <?php if ($room['FloorID'] == $floor['FloorID']): ?>
@@ -220,7 +304,7 @@ $rooms = $crud->getRooms();
     <?php endforeach; ?>
 
 
-    <script src="../js/sclass-management.js"></script>
+    <script src="../js/class-management.js"></script>
 </body>
 
 </html>

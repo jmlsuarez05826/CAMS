@@ -41,7 +41,7 @@ if (isset($_POST['action']) && isset($_POST['ids'])) {
 }
 
 
-require_once '../includes/admin-sidebar.php';
+require_once '../includes/sadmin-sidebar.php';
 ?>
 
 <!DOCTYPE html>
@@ -320,7 +320,7 @@ require_once '../includes/admin-sidebar.php';
 
 
         function loadRequests() {
-            fetch("equipment-req.php?getRequests=1")
+            fetch("sequipment-req.php?getRequests=1")
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById("requestTableBody");
@@ -426,7 +426,7 @@ require_once '../includes/admin-sidebar.php';
                     formData.append('action', action);
                     ids.forEach(id => formData.append('ids[]', id));
 
-                    fetch("equipment-req.php", {
+                    fetch("sequipment-req.php", {
                             method: "POST",
                             body: formData
                         })

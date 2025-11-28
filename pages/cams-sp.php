@@ -388,24 +388,6 @@ public function reserveClassroom($roomID, $userID, $subject, $section, $date, $d
         }
     }
 
-    public function getEquipmentRequests()
-    {
-        $stmt = $this->conn->prepare("
-        SELECT 
-            er.*,
-            e.EquipmentName,
-            CONCAT(u.FirstName, ' ', u.LastName) AS Requester
-        FROM equipment_reservations er
-        JOIN equipment_units eu ON er.UnitID = eu.UnitID
-        JOIN equipments e ON eu.EquipmentID = e.EquipmentID
-        JOIN users u ON er.UserID = u.UserID
-        WHERE er.Status IN ('Pending', 'Approved', 'Rejected')
-    ");
-
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
 
     public function approveEquipmentRequest($id)
     {
@@ -468,23 +450,6 @@ public function getUserClassroomReservations($userID) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-public function getClassroomRequests() {
-    $stmt = $this->conn->prepare("
-        SELECT 
-            cr.*,
-            r.RoomNumber,
-            CONCAT(u.FirstName, ' ', u.LastName) AS Requester,
-            CONCAT(cr.TimeFrom, '-', cr.TimeTo) AS Time
-        FROM classroom_reservations cr
-        JOIN rooms r ON cr.RoomID = r.RoomID
-        JOIN users u ON cr.UserID = u.UserID
-        WHERE cr.Status IN ('Pending', 'Approved', 'Rejected')
-        ORDER BY cr.CreatedAt DESC
-    ");
-
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
 
 public function approveClassroomRequest($id) {
     $stmt = $this->conn->prepare("CALL approveClassroomReq(?)");
@@ -498,10 +463,96 @@ public function rejectClassroomRequest($id) {
     return true;
 }
 
-       
+       public function getAllFaculty(
+       )
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM users WHERE Role = 'Faculty'");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
+    public function getFacultyPaginated($limit, $offset)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM users WHERE status = 'active' AND Role = 'Faculty' ORDER BY UserID LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
+    // Inside your Crud class in cams-sp.php
+public function deleteSchedule($scheduleID)
+{
+    try {
+        $stmt = $this->conn->prepare("DELETE FROM schedules WHERE ScheduleID = ?");
+        $stmt->execute([$scheduleID]);
+        
+        // Check if a row was actually deleted
+        return $stmt->rowCount() > 0;
+    } catch (PDOException $e) {
+        // In a real application, log the error and rethrow or return false
+        // For debugging: echo "Error: " . $e->getMessage();
+        return false;
+    }
+}
 
+public function getClassroomRequests($limit, $offset)
+    {
+        $stmt = $this->conn->prepare("
+        SELECT 
+            cr.*,
+            r.RoomNumber,
+            CONCAT(u.FirstName, ' ', u.LastName) AS Requester,
+            CONCAT(cr.TimeFrom, '-', cr.TimeTo) AS Time
+        FROM classroom_reservations cr
+        JOIN rooms r ON cr.RoomID = r.RoomID
+        JOIN users u ON cr.UserID = u.UserID
+        WHERE cr.Status != 'Rejected'
+        ORDER BY cr.CreatedAt DESC
+        LIMIT :limit OFFSET :offset
+    ");
+
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getClassroomRequestsCount()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) as total FROM classroom_reservations WHERE Status != 'Rejected'");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
+    public function getEquipmentRequestsCount()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) as total FROM equipment_reservations WHERE Status != 'Cancelled'");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
+    public function getEquipmentRequests($limit, $offset)
+    {
+        $stmt = $this->conn->prepare("
+        SELECT 
+            er.*,
+            e.EquipmentName,
+            CONCAT(u.FirstName, ' ', u.LastName) AS Requester
+        FROM equipment_reservations er
+        JOIN equipment_units eu ON er.UnitID = eu.UnitID
+        JOIN equipments e ON eu.EquipmentID = e.EquipmentID
+        JOIN users u ON er.UserID = u.UserID
+        WHERE er.Status IN ('Pending', 'Approved', 'Rejected')
+        ORDER BY er.ReservationID DESC
+        LIMIT :limit OFFSET :offset
+    ");
+
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
 

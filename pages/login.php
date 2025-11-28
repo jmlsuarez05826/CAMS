@@ -66,7 +66,7 @@
 
             if ($user['Role'] === 'Admin') {
                 if ($user['AdminType'] === 'Superadmin') {
-                    echo "window.location.href = '../pages/user_accounts.php';";
+                    echo "window.location.href = '../pages/sadmin-dash.php';";
                 } else {
                     echo "window.location.href = '../pages/admin-dash.php';";
                 }
