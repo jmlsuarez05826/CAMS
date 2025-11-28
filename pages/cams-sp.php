@@ -27,7 +27,6 @@ class Crud
             return true;
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
-
         }
     }
 
@@ -159,6 +158,16 @@ class Crud
         return true;
     }
 
+
+    public function getEquipmentRequestsCount()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) as total FROM equipment_reservations WHERE Status != 'Cancelled'");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
+
+
     public function addAdmin($firstname, $lastname, $phonenumber, $email, $password, $admintype)
     {
         try {
@@ -176,7 +185,6 @@ class Crud
             return true;
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
-
         }
     }
 
@@ -284,24 +292,22 @@ class Crud
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             return $user;
-
-
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
         }
     }
 
-public function reserveEquipment($unitID, $userID, $date, $timeFrom, $timeTo)
-{
-    $stmt = $this->conn->prepare("CALL reserveEquipment(?, ?, ?, ?, ?)");
-    return $stmt->execute([$unitID, $userID, $date, $timeFrom, $timeTo]);
-}
+    public function reserveEquipment($unitID, $userID, $date, $timeFrom, $timeTo)
+    {
+        $stmt = $this->conn->prepare("CALL reserveEquipment(?, ?, ?, ?, ?)");
+        return $stmt->execute([$unitID, $userID, $date, $timeFrom, $timeTo]);
+    }
 
-public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $timeTo)
-{
-    $stmt = $this->conn->prepare("CALL reserveClassroom(?, ?, ?, ?, ?, ?)");
-    return $stmt->execute([$roomID, $userID, $subject, $date, $timeFrom, $timeTo]);
-}
+    public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $timeTo)
+    {
+        $stmt = $this->conn->prepare("CALL reserveClassroom(?, ?, ?, ?, ?, ?)");
+        return $stmt->execute([$roomID, $userID, $subject, $date, $timeFrom, $timeTo]);
+    }
 
     function getUserReservations($userID)
     {
@@ -344,7 +350,6 @@ public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $
 
             // For soft delete, no row is returned, but you can check affected rows
             return $stmt->rowCount() > 0;
-
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
             return false;
@@ -363,14 +368,13 @@ public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $
             ]);
 
             return $stmt->rowCount() > 0;
-
         } catch (PDOException $e) {
             echo "Database Error: " . $e->getMessage();
             return false;
         }
     }
 
-    public function getEquipmentRequests()
+    public function getEquipmentRequests($limit, $offset)
     {
         $stmt = $this->conn->prepare("
         SELECT 
@@ -382,8 +386,12 @@ public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $
         JOIN equipments e ON eu.EquipmentID = e.EquipmentID
         JOIN users u ON er.UserID = u.UserID
         WHERE er.Status IN ('Pending', 'Approved', 'Rejected')
+        ORDER BY er.ReservationID DESC
+        LIMIT :limit OFFSET :offset
     ");
 
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -403,8 +411,9 @@ public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $
         return true;
     }
 
-    public function getRoomStatusCounts($weekType = 'Odd') {
-    $stmt = $this->conn->prepare("
+    public function getRoomStatusCounts($weekType = 'Odd')
+    {
+        $stmt = $this->conn->prepare("
         SELECT RoomStatus, COUNT(*) AS count
         FROM (
             SELECT r.RoomID,
@@ -424,34 +433,35 @@ public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $
         ) AS room_statuses
         GROUP BY RoomStatus
     ");
-    $stmt->execute([$weekType]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute([$weekType]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-    
-}
-
-public function getEquipmentStatusCounts() {
-    $stmt = $this->conn->query("
+    public function getEquipmentStatusCounts()
+    {
+        $stmt = $this->conn->query("
         SELECT Status, COUNT(*) AS count
         FROM equipment_units
         GROUP BY Status
     ");
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-public function getUserClassroomReservations($userID) {
-    $stmt = $this->conn->prepare("
+    public function getUserClassroomReservations($userID)
+    {
+        $stmt = $this->conn->prepare("
         SELECT cr.*, r.RoomNumber, cr.Subject
         FROM classroom_reservations cr
         JOIN rooms r ON cr.RoomID = r.RoomID
         WHERE cr.UserID = ?
     ");
-    $stmt->execute([$userID]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+        $stmt->execute([$userID]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-public function getClassroomRequests() {
-    $stmt = $this->conn->prepare("
+    public function getClassroomRequests($limit, $offset)
+    {
+        $stmt = $this->conn->prepare("
         SELECT 
             cr.*,
             r.RoomNumber,
@@ -460,30 +470,35 @@ public function getClassroomRequests() {
         FROM classroom_reservations cr
         JOIN rooms r ON cr.RoomID = r.RoomID
         JOIN users u ON cr.UserID = u.UserID
-        WHERE cr.Status IN ('Pending', 'Approved', 'Rejected')
+        WHERE cr.Status != 'Rejected'
         ORDER BY cr.CreatedAt DESC
+        LIMIT :limit OFFSET :offset
     ");
 
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getClassroomRequestsCount()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) as total FROM classroom_reservations WHERE Status != 'Rejected'");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
+    public function approveClassroomRequest($id)
+    {
+        $stmt = $this->conn->prepare("CALL approveClassroomReq(?)");
+        $stmt->execute([$id]);
+        return true;
+    }
+
+    public function rejectClassroomRequest($id)
+    {
+        $stmt = $this->conn->prepare("CALL rejectClassroomReq(?)");
+        $stmt->execute([$id]);
+        return true;
+    }
 }
-
-public function approveClassroomRequest($id) {
-    $stmt = $this->conn->prepare("CALL approveClassroomReq(?)");
-    $stmt->execute([$id]);
-    return true;
-}
-
-public function rejectClassroomRequest($id) {
-    $stmt = $this->conn->prepare("CALL rejectClassroomReq(?)");
-    $stmt->execute([$id]);
-    return true;
-}
-
-       
-
-
-
-}
-
-
