@@ -52,41 +52,70 @@ function toMinutes(timeString) {
  * Loads the schedule for the given room and day, using the currently selected week type 
  * (from localStorage, which is typically set by the user or defaults to Odd).
  * This function is used when opening the modal.
+/**
+ * Loads the schedule for the given room and day, using the currently selected week type 
+ * (from localStorage, which is typically set by the user or defaults to Odd).
+ * This function is used when opening the modal.
  * @param {string} day - e.g., "Monday"
  */
 function loadSchedules(day) {
-    if (!window.currentRoomID) return;
+    if (!window.currentRoomID) return;
 
-    // Use the week type stored in localStorage (which can be changed by the user)
-    // Fallback to the dynamically calculated current week if localStorage is empty
-    const weekType = localStorage.getItem("selectedWeek") || getCurrentWeekType();
+    const weekType = localStorage.getItem("selectedWeek") || getCurrentWeekType();
 
-    fetch("../pages/landingpage.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `action=getSchedules&roomID=${window.currentRoomID}&dayOfWeek=${day}&weekType=${weekType}`
-    })
-    .then(res => res.json())
-    .then(schedules => {
-        const tbody = document.querySelector(".classSchedTable tbody");
-        tbody.innerHTML = "";
+    // Calculate today's date string in YYYY-MM-DD format for comparison
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayDateString = `${yyyy}-${mm}-${dd}`;
+    // console.log("Current Date for Filtering:", todayDateString); // Add this for debugging
 
- if (schedules.length === 0) {
- tbody.innerHTML = `<tr><td colspan="4" class="text-center">No schedule found</td></tr>`;
- } else {
- schedules.forEach(s => {
- tbody.innerHTML += `
- <tr>
- <td>${s.Instructor}</td>
-                            <td>${s.Subject}</td>
-                            <td>${s.TimeFrom} - ${s.TimeTo}</td>
-                            <td>${s.Section}</td>
-                            <td>${s.ReserveDate}</td>
- </tr>`;
- });
- }
- })
- .catch(err => console.error("Failed to fetch schedules:", err));
+    fetch("../pages/landingpage.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `action=getSchedules&roomID=${window.currentRoomID}&dayOfWeek=${day}&weekType=${weekType}`
+    })
+    .then(res => res.json())
+    .then(schedules => {
+        const tbody = document.querySelector(".classSchedTable tbody");
+        tbody.innerHTML = "";
+
+        // 🌟 REFINED FILTER LOGIC:
+        const filteredSchedules = schedules.filter(s => {
+            const reserveDate = s.ReserveDate ? s.ReserveDate.trim() : '';
+
+            // This condition checks for a valid, non-placeholder date string
+            const isOneTimeReservation = reserveDate.length > 5 && // ensure it's longer than a placeholder like '-'
+                                         !reserveDate.startsWith('0000') &&
+                                         reserveDate !== '-'; // Check for your specific '-' placeholder
+
+            if (isOneTimeReservation) {
+                // Show reserved schedules ONLY if the date matches today
+                return reserveDate === todayDateString;
+            }
+
+            // Otherwise, treat it as a regular (non-date-specific) schedule and always show it
+            return true;
+        });
+
+
+        if (filteredSchedules.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center">No schedule found</td></tr>`;
+        } else {
+            filteredSchedules.forEach(s => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${s.Instructor}</td>
+                        <td>${s.Subject}</td>
+                        <td>${s.TimeFrom} - ${s.TimeTo}</td>
+                        <td>${s.Section}</td>
+                        <td>${s.ReserveDate || 'N/A'}</td>
+                    </tr>`;
+            });
+        }
+    })
+    .catch(err => console.error("Failed to fetch schedules:", err));
 }
 
 /**
@@ -102,8 +131,17 @@ function toMinutes(timeString) {
 }
 
 function loadRoomStatuses() {
-    const weekType = localStorage.getItem("selectedWeek") || "Odd";  
+    // Determine the week type and current day, as before
+    const weekType = localStorage.getItem("selectedWeek") || "Odd";  
     const dayOfWeek = new Date().toLocaleString("en-US", { weekday: "long" });
+
+    // 🌟 NEW: Calculate today's date string in YYYY-MM-DD format for comparison
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayDateString = `${yyyy}-${mm}-${dd}`;
+    // --------------------------------------------------------------------------
 
     document.querySelectorAll(".clickable-room").forEach(roomCard => {
         const roomID = roomCard.dataset.room;
@@ -114,20 +152,40 @@ function loadRoomStatuses() {
             body: new URLSearchParams({
                 action: "getSchedules",
                 roomID: roomID,
-                dayOfWeek: dayOfWeek,   // 👈 Based on TODAY
+                dayOfWeek: dayOfWeek,   // 👈 Based on TODAY
                 weekType: weekType
             })
         })
         .then((res) => res.json())
         .then((schedules) => {
 
+            // 🌟 NEW: Filter the incoming schedules to remove future reservations
+            const currentDaySchedules = schedules.filter((s) => {
+                const reserveDate = s.ReserveDate ? s.ReserveDate.trim() : '';
+                
+                // Identify if it's a one-time reservation based on your criteria
+                const isOneTimeReservation = reserveDate.length > 5 &&
+                                             !reserveDate.startsWith('0000') &&
+                                             reserveDate !== '-';
+                
+                if (isOneTimeReservation) {
+                    // Include reserved schedules ONLY if the date matches today
+                    return reserveDate === todayDateString;
+                }
+
+                // Include regular schedules (where ReserveDate is not a specific future date)
+                return true;
+            });
+            // --------------------------------------------------------------------------
+
             let status = "Available";
 
-            if (schedules.length > 0) {
+            // Loop through the filtered list: currentDaySchedules
+            if (currentDaySchedules.length > 0) {
                 const now = new Date();
                 const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-                schedules.forEach((sch) => {
+                currentDaySchedules.forEach((sch) => { // NOTE: Changed from 'schedules' to 'currentDaySchedules'
                     const start = toMinutes(sch.TimeFrom);
                     const end = toMinutes(sch.TimeTo);
 

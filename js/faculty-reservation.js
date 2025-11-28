@@ -960,53 +960,84 @@ const section = document.getElementById("section").value;
 // --------------------------
 // //Room Status Logic
 // --------------------------
-        function toMinutes(timeString) {
-    const [hours, minutes, seconds] = timeString.split(':');
-    return parseInt(hours) * 60 + parseInt(minutes);
+function toMinutes(timeString) {
+    // Ensure timeString has the full format (HH:MM:SS) before splitting
+    const parts = timeString.split(':');
+    const hours = parseInt(parts[0]) || 0;
+    const minutes = parseInt(parts[1]) || 0;
+    return hours * 60 + minutes;
 }
 
 function loadRoomStatuses() {
-    const weekType = localStorage.getItem("selectedWeek") || "Odd";
+    const weekType = localStorage.getItem("selectedWeek") || "Odd";
+    
+    // 1. Calculate today's date string in YYYY-MM-DD format for comparison
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayDateString = `${yyyy}-${mm}-${dd}`;
+    const dayOfWeek = today.toLocaleString("en-US", { weekday: "long" });
 
-    document.querySelectorAll(".clickable-room").forEach(roomCard => {
-        const roomID = roomCard.dataset.room;
+    document.querySelectorAll(".clickable-room").forEach(roomCard => {
+        const roomID = roomCard.dataset.room;
 
-        fetch("../pages/faculty-reservation.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                action: "getSchedules",
-                roomID: roomID,
-                dayOfWeek: new Date().toLocaleString("en-US", { weekday: "long" }),
-                weekType: weekType
-            })
-        })
-        .then(res => res.json())
-        .then(schedules => {
-            console.log("Schedules for room:", roomID, schedules);
+        // NOTE: Using "../pages/class-management.php" endpoint as provided in your code
+        fetch("../pages/faculty-reservation.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                action: "getSchedules",
+                roomID: roomID,
+                // Pass today's day of week to get recurring schedules for today
+                dayOfWeek: dayOfWeek, 
+                weekType: weekType
+            })
+        })
+        .then(res => res.json())
+        .then(schedules => {
+            // console.log(`[Raw] Schedules for room ${roomID}:`, schedules);
 
-            let status = "Available";
+            // 2. Filter the schedules on the client-side to exclude future one-time reservations
+            const currentDaySchedules = schedules.filter(s => {
+                const reserveDate = s.ReserveDate ? s.ReserveDate.trim() : '';
+                
+                // Identify a Recurring Schedule (ReserveDate is empty/placeholder like '0000-00-00' or '-')
+                const isRecurring = reserveDate.length <= 5 || reserveDate.startsWith('0000') || reserveDate === '-';
+                
+                // Identify a One-time Reservation for TODAY
+                const isTodayReservation = !isRecurring && reserveDate === todayDateString;
 
-            if (schedules.length > 0) {
-                const now = new Date();
-                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                // Include the schedule if it is EITHER recurring OR a reservation for today.
+                return isRecurring || isTodayReservation;
+            });
 
-                schedules.forEach(sch => {
-                    const start = toMinutes(sch.TimeFrom);
-                    const end = toMinutes(sch.TimeTo);
+            // console.log(`[Filtered] Schedules for room ${roomID}:`, currentDaySchedules);
 
-                    if (currentMinutes >= start && currentMinutes <= end) {
-                        status = "Occupied";
-                    }
-                });
-            }
+            let status = "Available";
 
-            const statusDiv = roomCard.querySelector(".room-status");
-            statusDiv.textContent = status;
-            statusDiv.className = "room-status " + status.toLowerCase();
-        })
-        .catch(err => console.error(err));
-    });
+            // 3. Check for occupancy only against the filtered, current day schedules
+            if (currentDaySchedules.length > 0) {
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+                currentDaySchedules.forEach(sch => {
+                    const start = toMinutes(sch.TimeFrom);
+                    const end = toMinutes(sch.TimeTo);
+
+                    // Occupied if current time falls within the schedule's time frame
+                    if (currentMinutes >= start && currentMinutes < end) { // Use < end to prevent occupancy right at end time
+                        status = "Occupied";
+                    }
+                });
+            }
+
+            const statusDiv = roomCard.querySelector(".room-status");
+            statusDiv.textContent = status;
+            statusDiv.className = "room-status " + status.toLowerCase();
+        })
+        .catch(err => console.error("Error loading room status:", err));
+    });
 }
 
 
