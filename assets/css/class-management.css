@@ -219,7 +219,8 @@ header {
   margin: 7px 50px 0px 350px; /* space from building title and sides */
   background-color: white; /* white rectangular container */
   border-radius: 10px 10px 0px 0px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* subtle shadow */
+    border: 2px solid rgba(0, 0, 0, 0.438);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.39); /* subtle shadow */
 }
 
 .floor {
@@ -342,11 +343,12 @@ height: 70px;
   padding: 2em;
   overflow: hidden;
   margin: 0px 50px 0px 350px; /* leave space for sidebar */
+  border: 2px solid rgba(0, 0, 0, 0.219);
   border-radius: 0 0 10px 10px;
 
   /* background */
   background-image: url("../../images/bsu_front.webp");
-  background: rgba(0, 0, 0, 0.212); /* or rgba(0,0,0,0.4) for dark */
+  background: rgba(0, 0, 0, 0.555); /* or rgba(0,0,0,0.4) for dark */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

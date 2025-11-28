@@ -523,6 +523,7 @@ header {
   overflow: hidden;
   margin: 0 0 2em 0px; /* leave space for sidebar */
   border-radius: 0 0 10px 10px;
+    background: rgba(0, 0, 0, 0.555); /* or rgba(0,0,0,0.4) for dark */
 
   /* background */
   background-image: url("../../images/bsu_front.webp");
@@ -668,6 +669,7 @@ header {
     flex-direction: column;  /* stack units vertically */
     max-height: 250px;
     overflow-y: auto;
+       overflow-x: hidden;
     margin-top: 8px;
     padding-right: 5px;
 }
@@ -1130,7 +1132,8 @@ header {
   margin: 7px 0 0 0;
   background-color: white;
   border-radius: 10px 10px 0 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(0, 0, 0, 0.438);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.39); /* subtle shadow */
 }
 
 /* Shrink individual floor blocks */
@@ -1707,4 +1710,10 @@ header {
         right: 5%;
         bottom: 70px;
     }
+}
+
+/* Approved - green */
+.reservation-table .badge.approved {
+    background-color: #28a745; /* same green as available */
+    color: #fff;
 }

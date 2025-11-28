@@ -40,6 +40,13 @@ if (isset($_POST['action']) && isset($_POST['ids'])) {
     exit;
 }
 
+$firstname = $_SESSION['FirstName'] ?? null;
+$lastname = $_SESSION['LastName'] ?? null;
+$number = $_SESSION['PhoneNumber'] ?? null;
+$user_id = $_SESSION['UserID'] ?? null;
+$role = $_SESSION['Role'] ?? null;
+
+
 
 require_once '../includes/admin-sidebar.php';
 ?>
@@ -65,7 +72,7 @@ require_once '../includes/admin-sidebar.php';
     <header>
 
         <div class="topbar">
-            <h2 class="system-title">Welcome Admin!</h2>
+          <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
 
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
@@ -128,9 +135,10 @@ require_once '../includes/admin-sidebar.php';
                 </tr>
             </thead>
             <tbody id="requestTableBody">
-                <?php foreach ($requests as $r): ?>
+               <?php foreach ($requests as $r): ?>
+                    <?php $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : ''; ?>
                     <tr>
-                        <td><input type="checkbox" class="rowCheck"></td>
+                        <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td>
                         <td><?= $r['ReservationID'] ?></td>
                         <td><?= $r['EquipmentName'] ?></td>
                         <td><?= $r['Requester'] ?></td>
@@ -330,10 +338,13 @@ require_once '../includes/admin-sidebar.php';
                             req.Status === "Approved" ? "badge bg-success" :
                             req.Status === "Rejected" ? "badge bg-danger" :
                             "badge bg-warning text-dark";
+                        
+                        // New: Determine if checkbox should be disabled
+                        const isDisabled = (req.Status === "Approved" || req.Status === "Rejected") ? 'disabled' : '';
 
                         const row = `
                 <tr>
-                    <td><input type="checkbox" class="rowCheck"></td>
+                    <td><input type="checkbox" class="rowCheck" ${isDisabled}></td> 
                     <td>${req.ReservationID}</td>
                     <td>${req.EquipmentName}</td>
                     <td>${req.Requester}</td>

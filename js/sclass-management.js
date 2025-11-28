@@ -49,7 +49,6 @@
             <th>To</th>
             <th>Section</th>
             <th>Reserve Date</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -92,11 +91,6 @@
                     <td>${s.TimeTo}</td>
                     <td>${s.Section}</td>
                     <td>${s.ReserveDate}</td>
-                    <td class="text-center cell-padding">
-                        <button class="delete-schedule-btn" data-schedule-id="${s.ScheduleID}">
-    <i class="bi bi-trash-fill delete-icon"></i>
-</button>
-                    </td>
 
                 `;
                                             table.appendChild(row);
@@ -692,84 +686,3 @@ function loadRoomStatuses() {
             });
         });
 
-        // DELETE SCHEDULE using Vanilla JS and Fetch API (CORRECTED for dynamic content)
-document.addEventListener('click', function (e) {
-    // 1. Check if the clicked element (e.target) matches the selector
-    // We use .closest() to check if the element OR any of its ancestors match.
-    const btn = e.target.closest('.delete-schedule-btn');
-
-    // If the click didn't originate from a delete schedule button, do nothing
-    if (!btn) return;
-    
-    e.preventDefault(); // Prevent default link/button action
-    // e.stopPropagation(); // Only stop propagation if needed for other nested clicks
-
-    // Get the schedule ID from the button's dataset
-    const scheduleID = btn.dataset.scheduleId; 
-    
-    console.log("Delete button clicked (Vanilla JS - Delegated).");
-    console.log("Schedule ID captured:", scheduleID); 
-
-    if (scheduleID) {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then(result => {
-            if (result.isConfirmed) {
-
-                // Use Fetch API for POST request
-                fetch('sclass-management.php', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/x-www-form-urlencoded' 
-                    },
-                    body: new URLSearchParams({
-                        action: 'deleteSchedule',
-                        scheduleID: scheduleID
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json(); 
-                })
-                .then(response => {
-                    if (response.status === 'success') {
-                        Swal.fire("Deleted!", response.message, "success")
-                            .then(() => {
-                                // Find the row using the original button reference (btn)
-                                const row = btn.closest('tr');
-                                if (row) {
-                                    row.remove(); // Remove the row
-                                }
-
-                                // Reload schedules (essential for updating the modal content)
-                                const daySelectElement = Swal.getPopup().querySelector('#daySelect');
-                                const currentDay = daySelectElement ? daySelectElement.value : null;
-
-                                if (currentDay && typeof loadSchedules === 'function') {
-                                    loadSchedules(currentDay);
-                                }
-                            });
-                    } else {
-                        Swal.fire("Error!", response.message, "error");
-                    }
-                })
-                .catch(error => {
-                    console.error("Fetch Error: ", error);
-                    Swal.fire(
-                        'Error!',
-                        'An error occurred while communicating with the server: ' + error.message,
-                        'error'
-                    );
-                });
-            }
-        });
-    }
-});

@@ -44,8 +44,7 @@ $number = $_SESSION['PhoneNumber'] ?? null;
 $user_id = $_SESSION['UserID'] ?? null;
 $role = $_SESSION['Role'] ?? null;
 
-
-require_once '../includes/admin-sidebar.php';
+require_once '../includes/sadmin-sidebar.php';
 ?>
 
 <!DOCTYPE html>
@@ -68,7 +67,7 @@ require_once '../includes/admin-sidebar.php';
     <header>
 
         <div class="topbar">
-           <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
+            <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
 
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
@@ -345,7 +344,7 @@ require_once '../includes/admin-sidebar.php';
 
         // Load Requests from Server (AJAX)
         function loadRequests() {
-            fetch("room-req.php?getRequests=1") // Call PHP to get request data as JSON
+            fetch("sroom-req.php?getRequests=1") // Call PHP to get request data as JSON
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById("requestTableBody");
@@ -431,7 +430,7 @@ require_once '../includes/admin-sidebar.php';
                     formData.append('action', action);
                     ids.forEach(id => formData.append('ids[]', id));
 
-                    fetch("room-req.php", {
+                    fetch("sroom-req.php", {
                             method: "POST",
                             body: formData
                         })

@@ -13,7 +13,7 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
 
 require_once '../pages/camsdatabase.php';
 require_once '../pages/cams-sp.php';
-require_once '../includes/admin-sidebar.php';
+require_once '../includes/sadmin-sidebar.php';
 require_once '../pages/sms-otp.php';
 
 $crud = new Crud();
@@ -37,8 +37,26 @@ if (isset($_POST["add"])) {
 }
 
 
+// Handle form submission first
+if (isset($_POST["addAdmin"])) {
+    $firstname = $_POST["fname"];
+    $lastname = $_POST["lname"];
+    $phonenumber = $_POST["phone"];
+    $email = $_POST["email"];
+    $password = $_POST["password"];
+    $admintype = $_POST["admintype"];
+
+    try {
+        if ($crud->addAdmin($firstname, $lastname, $phonenumber, $email, $password, $admintype)) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?added=1");
+            exit();
+        }
+    } catch (PDOException $e) {
+        $errorMessage = $e->getMessage();
+    }
+}
 // Fetch users for table
-$users = $crud->getAllFaculty();
+$users = $crud->getAllUsers();
 
 // Handle delete request
 if (isset($_POST["deleteUser"])) {
@@ -66,10 +84,6 @@ $lastname = $_SESSION['LastName'] ?? null;
 $number = $_SESSION['PhoneNumber'] ?? null;
 $user_id = $_SESSION['UserID'] ?? null;
 $role = $_SESSION['Role'] ?? null;
-
-
-
-
 
 ?>
 
@@ -132,7 +146,7 @@ $role = $_SESSION['Role'] ?? null;
         $offset = ($currentPage - 1) * $rowsPerPage;
 
         // Fetch only the users for this page
-        $users = $crud->getFacultyPaginated($rowsPerPage, $offset);
+        $users = $crud->getUsersPaginated($rowsPerPage, $offset);
 
         // Get total user count for calculating total pages
         $totalUsers = $crud->getUsersCount();
@@ -144,6 +158,9 @@ $role = $_SESSION['Role'] ?? null;
             <div class="add-user-btn">
                 <button class="btn add-user" data-bs-toggle="modal" data-bs-target="#addUserModal">
                     Add User
+                </button>
+                <button class="btn add-admin" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+                    Add Admin
                 </button>
             </div>
 

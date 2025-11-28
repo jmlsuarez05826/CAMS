@@ -2,7 +2,7 @@
 session_start();
 require_once '../pages/camsdatabase.php';
 require_once '../pages/cams-sp.php';
-require_once '../includes/admin-sidebar.php';
+require_once '../includes/sadmin-sidebar.php';
 
 if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
     header("Location: ../pages/login.php");
@@ -104,7 +104,10 @@ $role = $_SESSION['Role'] ?? null;
     <header>
         <div class="topbar">
             <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
-
+            <div class="search-field">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" placeholder="Search">
+            </div>
             <div class="topbar-right">
           
                 <div class="profile-info">

@@ -84,8 +84,7 @@ $number = $_SESSION['PhoneNumber'] ?? null;
 $user_id = $_SESSION['UserID'] ?? null;
 $role = $_SESSION['Role'] ?? null;
 
-
-require_once '../includes/admin-sidebar.php';
+require_once '../includes/sadmin-sidebar.php';
 $equipments = $crud->getEquipments();
 ?>
 
@@ -248,7 +247,7 @@ $equipments = $crud->getEquipments();
                 const totalQty = row.cells[1].innerText;
 
                 // Fetch units from backend
-                fetch(`equipment-management.php?equipmentID=${id}`)
+                fetch(`sequipment-management.php?equipmentID=${id}`)
                     .then(res => res.json())
                     .then(units => {
 

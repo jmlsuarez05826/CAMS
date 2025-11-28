@@ -280,7 +280,11 @@ $allReservations = array_merge(
                                         <!-- Room Containers for each floor -->
                                         <?php foreach ($floors as $floor): ?>
                                             <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
-                                                <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none;">
+                                                 <?php
+                    $bgImage = !empty($building['BuildingIMG']) ? "../uploads/" . htmlspecialchars($building['BuildingIMG']) : "../../images/bsu_front.webp";
+                    ?>
+                    <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>"
+                        style="display:none; background-image: url('<?= $bgImage ?>');">
                                                     <?php foreach ($rooms as $room): ?>
                                                         <?php if ($room['FloorID'] == $floor['FloorID']): ?>
                                                            <div class="room-card clickable-room" data-room="<?= $room['RoomID'] ?>">
@@ -357,16 +361,19 @@ $allReservations = array_merge(
                         <div class="table-wrapper">
                             <div class="table-scroll">
                                 <table class="reservation-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Reservation </th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                   <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Reservation </th>
+                                    <th id="sortStatus" style="cursor: pointer;">
+                                        Status
+                                        <span id="statusSortIcon">↕</span>
+                                    </th>
+                                    <th>Action</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestTableBody">
                                         <?php if (!empty($allReservations)): ?>
     <?php foreach ($allReservations as $res): ?>
         <tr>
