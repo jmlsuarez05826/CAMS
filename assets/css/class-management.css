@@ -354,25 +354,6 @@ height: 70px;
 }
 
 
-.room-status.available {
-    background-color: #28a745;
-    color: white;
-    font-weight: bold;
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.room-status.occupied {
-    background-color: #dc3545;
-    color: white;
-    font-weight: bold;
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-
 
 /* Optional soft overlay for better readability */
 .room-container::before {
@@ -489,4 +470,22 @@ height: 70px;
   content: attr(data-placeholder);
   color: #aaa;
   pointer-events: none;  /* allows typing over it */
+}
+
+.room-status.available {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.room-status.occupied {
+    background-color: #dc3545;
+    color: white;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
 }

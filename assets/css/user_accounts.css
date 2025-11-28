@@ -2,6 +2,7 @@ body {
   margin: 0;
   background: white;
   overflow: hidden;
+  
 }
 
 .main-content {
@@ -20,7 +21,7 @@ header {
 main {
     position: relative;      /* allow absolute/fixed children to position correctly */
     overflow: visible;       /* ensure modals aren’t clipped */
-    z-index: 1000;              /* lower than modal z-index */
+    z-index: 1;              /* lower than modal z-index */
 }
 
 
@@ -343,6 +344,7 @@ main {
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+
     animation: fadeIn 0.25s ease;
 }
 

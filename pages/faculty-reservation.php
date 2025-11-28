@@ -1,6 +1,15 @@
-        <?php
-
+<?php
         session_start();
+        if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
+    header("Location: ../pages/login.php");
+    exit();
+}
+
+if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Faculty') {
+    // Not an admin, redirect or show error
+    header("Location: ../pages/login.php");
+    exit();
+}
 
         require_once '../pages/camsdatabase.php';
         require_once '../pages/cams-sp.php';
@@ -226,7 +235,7 @@ $allReservations = array_merge(
 
                     <div class="table-contents">
                         <div id="classrooms" class="tab-content active">
-                 
+                            
                                 <!-- Classroom table here -->
 
                                 <?php foreach ($buildings as $index => $building): ?>
@@ -255,18 +264,14 @@ $allReservations = array_merge(
                                         <!-- Room Containers for each floor -->
                                         <?php foreach ($floors as $floor): ?>
                                             <?php if ($floor['BuildingID'] == $building['BuildingID']): ?>
-                                                  <?php
-                    $bgImage = !empty($building['BuildingIMG']) ? "../uploads/" . htmlspecialchars($building['BuildingIMG']) : "../../images/bsu_front.webp";
-                    ?>
-                                                <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>"
-                                              style="display:none; background-image: url('<?= $bgImage ?>');">
+                                                <div class="room-container" data-floor="<?= htmlspecialchars($floor['FloorID']) ?>" style="display:none;">
                                                     <?php foreach ($rooms as $room): ?>
                                                         <?php if ($room['FloorID'] == $floor['FloorID']): ?>
-                                                            <div class="room-card" data-room-id="<?= $room['RoomID'] ?>">
+                                                           <div class="room-card clickable-room" data-room="<?= $room['RoomID'] ?>">
                                                                 <div class="room-label">Room no</div>
                                                                 <div class="room-number"><?= htmlspecialchars($room['RoomNumber']) ?></div>
                                                                 <hr>
-                                                                 <div class="room-status">Available</div>
+                                                                <div class="room-status">Loading... </div>
                                                             </div>
 
                                                         <?php endif; ?>
@@ -276,7 +281,7 @@ $allReservations = array_merge(
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endforeach; ?>
-                        
+                           
                         </div>
 
                         <!-- The Equipment data content starts here -->
@@ -508,21 +513,12 @@ $allReservations = array_merge(
 
             </main>
 
-        
-
-    
-
             <script>
         // Pass PHP session variable to JS
         const facultyReservationUserID = <?= json_encode($_SESSION['UserID'] ?? null) ?>;
     </script>
 
-        <script src="../js/faculty-reservation.js">
-
-            
-</script>
-
-
+        <script src="../js/faculty-reservation.js"></script>
         </body>
 
 

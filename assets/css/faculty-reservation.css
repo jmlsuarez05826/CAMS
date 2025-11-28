@@ -489,8 +489,6 @@ header {
     border-radius: 4px;
     text-align: center;
     width: fit-content;
-    background-color: #28a745;
-    color: white;
 }
 
 .room-status.available {
