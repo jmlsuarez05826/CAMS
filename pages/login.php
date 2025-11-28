@@ -137,7 +137,7 @@
             const eyeIcon = document.getElementById("eyeIcon");
             const password = document.getElementById("password");
 
-            eyeIcon.onclick = function() {
+            eyeIcon.onclick = function () {
                 if (password.type === "password") {
                     password.type = "text";
                     eyeIcon.classList.replace("bi-eye-slash", "bi-eye");
@@ -153,7 +153,6 @@
                 btn.classList.remove("disabled");
                 btn.classList.add("enabled");
             }
-
             function disableLoginBtn() {
                 const btn = document.getElementById("loginbtn");
                 btn.disabled = true;
@@ -164,10 +163,10 @@
 
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const forgotLink = document.querySelector('.forgot-password');
 
-                forgotLink.addEventListener('click', function(event) {
+                forgotLink.addEventListener('click', function (event) {
                     event.preventDefault(); // prevent navigation
 
                     // Step 1: Confirmation

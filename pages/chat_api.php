@@ -130,6 +130,7 @@ try {
 
     echo json_encode(['error' => 'Invalid request']);
     exit;
+
 } catch (PDOException $e) {
     // Catch any database errors
     echo json_encode(['error' => 'Database error']);
@@ -138,3 +139,4 @@ try {
     echo json_encode(['error' => 'Server error']);
     exit;
 }
+?>

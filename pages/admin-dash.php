@@ -27,6 +27,7 @@ $totalUsers = $crud->getUsersCount();
 $totalRooms = $crud->getRoomsCount();
 $totalEquipment = $crud->getEquipmentCount();
 $equipmentStatus = $crud->getEquipmentStatus();
+$totalPendingRequests = $crud->getPendingRoomRequests();
 
 $roomStatusCounts = $crud->getRoomStatusCounts($weekType);
 $equipmentStatusCounts = $crud->getEquipmentStatusCounts();
@@ -157,7 +158,7 @@ $role = $_SESSION['Role'] ?? null;
                 <div class="circle"><i class="bi bi-card-list chart-icon"></i></div>
                 <div class="chart-info">
                     <h1>Total Room Requests</h1>
-                    <span class="chart-number">78</span>
+                    <span class="chart-number"><?= $totalPendingRequests ?></span>
                 </div>
             </div>
         </div>

@@ -181,7 +181,7 @@ $rooms = $crud->getRooms();
 
         <div class="topbar">
             <h2 class="system-title">Welcome Admin!</h2>
-            <div class="search-field">
+        <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
                 <input type="text" placeholder="Search">
             </div>
@@ -279,6 +279,7 @@ $rooms = $crud->getRooms();
                                 </div>
                             <?php endif; ?>
                         <?php endforeach; ?>
+
                     </div>
                 <?php endif; ?>
             <?php endforeach; ?>

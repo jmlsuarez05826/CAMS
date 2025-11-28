@@ -60,6 +60,7 @@ if (isset($_POST['action'])) {
                     // Browser-accessible path
                     $imagePath = $fileName; // just filename
                 }
+
             }
 
             // Only update image if a new file was uploaded
@@ -83,7 +84,6 @@ $equipments = $crud->getEquipments();
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -91,7 +91,6 @@ $equipments = $crud->getEquipments();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../assets/css/equipment-management.css">
 </head>
-
 <body>
     <header>
 
@@ -202,24 +201,19 @@ $equipments = $crud->getEquipments();
                     const name = Swal.getPopup().querySelector('#equipmentname').value;
                     const qty = Swal.getPopup().querySelector('#equipmentQty').value;
                     if (!name || !qty) Swal.showValidationMessage('Please enter both fields');
-                    return {
-                        name,
-                        qty
-                    };
+                    return { name, qty };
                 }
             }).then(result => {
                 if (result.isConfirmed) {
                     fetch('', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: new URLSearchParams({
-                                action: 'addEquipment',
-                                equipmentname: result.value.name,
-                                quantity: result.value.qty
-                            })
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'addEquipment',
+                            equipmentname: result.value.name,
+                            quantity: result.value.qty
                         })
+                    })
                         .then(res => res.text())
                         .then(data => {
                             if (data.trim() === 'success') {
@@ -270,9 +264,7 @@ $equipments = $crud->getEquipments();
                             showConfirmButton: true,
                             showCloseButton: true,
                             closeButtonHtml: '&times;',
-                            customClass: {
-                                popup: "equip-modal"
-                            },
+                            customClass: { popup: "equip-modal" },
 
                             html: `
 <div class="equip-header"> 
@@ -367,9 +359,9 @@ $equipments = $crud->getEquipments();
                                 }
 
                                 fetch('', {
-                                        method: 'POST',
-                                        body: formData
-                                    })
+                                    method: 'POST',
+                                    body: formData
+                                })
 
                                     .then(res => res.text())
                                     .then(data => {
@@ -390,7 +382,7 @@ $equipments = $crud->getEquipments();
 
         // DELETE EQUIPMENT
         document.querySelectorAll('.bg-delete').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function (e) {
                 e.stopPropagation(); // prevent row click from opening modal
 
                 const row = this.closest('.equipment-row');
@@ -407,15 +399,13 @@ $equipments = $crud->getEquipments();
                     if (result.isConfirmed) {
 
                         fetch('', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
-                                body: new URLSearchParams({
-                                    action: 'deleteEquipment',
-                                    equipmentID: id
-                                })
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: new URLSearchParams({
+                                action: 'deleteEquipment',
+                                equipmentID: id
                             })
+                        })
                             .then(res => res.text())
                             .then(data => {
                                 if (data.trim() === 'success') {
@@ -429,6 +419,7 @@ $equipments = $crud->getEquipments();
                 });
             });
         });
+
     </script>
 </body>
 

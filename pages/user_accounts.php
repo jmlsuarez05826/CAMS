@@ -91,7 +91,7 @@ if (isset($_POST["updateUser"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php $pageTitle = "Dashboard Home";
-            echo $pageTitle; ?></title>
+    echo $pageTitle; ?></title>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../assets/css/user_accounts.css">
@@ -299,88 +299,88 @@ if (isset($_POST["updateUser"])) {
             </div>
         </div>
 
-
+    
 
 
 
     </main>
 
+    
+          <!-- Add Admin Modal (Custom) -->
+        <div class="custom-modal" id="addAdminModal">
+            <div class="custom-modal-dialog">
+                <div class="custom-modal-content">
+                    <div class="custom-modal-header">
+                        <h5 class="custom-modal-title">Add Admin</h5>
+                        <button type="button" class="custom-close" id="closeAddAdminModal">&times;</button>
+                    </div>
 
-    <!-- Add Admin Modal (Custom) -->
-    <div class="custom-modal" id="addAdminModal">
-        <div class="custom-modal-dialog">
-            <div class="custom-modal-content">
-                <div class="custom-modal-header">
-                    <h5 class="custom-modal-title">Add Admin</h5>
-                    <button type="button" class="custom-close" id="closeAddAdminModal">&times;</button>
-                </div>
+                    <div class="custom-modal-body">
+                        <form method="post" id="addAdminForm">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" name="fname" required>
+                            </div>
 
-                <div class="custom-modal-body">
-                    <form method="post" id="addAdminForm">
-                        <div class="form-group">
-                            <label>First Name</label>
-                            <input type="text" name="fname" required>
-                        </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" name="lname" required>
+                            </div>
 
-                        <div class="form-group">
-                            <label>Last Name</label>
-                            <input type="text" name="lname" required>
-                        </div>
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <div class="input-group">
 
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <div class="input-group">
-
-                                <div class="input-group phone-group">
-                                    <input ttype="text" id="phoneAdmin" name="phone"
-                                        placeholder="09xxxxxxxxx or 639xxxxxxxxx" placeholder="Enter phone number">
-                                    <button type="button" id="getCodeBtnAdmin" class="btn btn-danger" disabled>Get
-                                        Code</button>
+                                    <div class="input-group phone-group">
+                                        <input ttype="text" id="phoneAdmin" name="phone"
+                                            placeholder="09xxxxxxxxx or 639xxxxxxxxx" placeholder="Enter phone number">
+                                        <button type="button" id="getCodeBtnAdmin" class="btn btn-danger" disabled>Get
+                                            Code</button>
+                                    </div>
+                                    <small id="phoneError" class="text-danger">
+                                        Phone must start with 09 (11 digits) or 639 (12 digits).
+                                    </small>
                                 </div>
-                                <small id="phoneError" class="text-danger">
-                                    Phone must start with 09 (11 digits) or 639 (12 digits).
-                                </small>
-                            </div>
 
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" name="email" required>
-                            </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" name="email" required>
+                                </div>
 
-                            <div class="form-group">
-                                <label>Password</label>
-                                <input type="text" name="password" required>
-                            </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="text" name="password" required>
+                                </div>
 
-                            <div class="form-group">
-                                <label>Confirm Password</label>
-                                <input type="text" name="cpassword" required>
-                            </div>
+                                <div class="form-group">
+                                    <label>Confirm Password</label>
+                                    <input type="text" name="cpassword" required>
+                                </div>
 
-                            <div class="form-group">
-                                <label>Admin Type</label>
-                                <select name="admintype" required>
-                                    <option value="" selected disabled>Select Type</option>
-                                    <option value="Admin">Admin</option>
-                                    <option value="Superadmin">Superadmin</option>
-                                </select>
-                            </div>
+                                <div class="form-group">
+                                    <label>Admin Type</label>
+                                    <select name="admintype" required>
+                                        <option value="" selected disabled>Select Type</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Superadmin">Superadmin</option>
+                                    </select>
+                                </div>
 
-                            <div class="custom-modal-footer">
-                                <button type="button" class="btn-close-modal"
-                                    id="closeAddAdminFooter">Close</button>
-                                <button type="submit" name="addAdmin" id="addAdminBtn" disabled>Add Admin</button>
-                            </div>
-                    </form>
+                                <div class="custom-modal-footer">
+                                    <button type="button" class="btn-close-modal"
+                                        id="closeAddAdminFooter">Close</button>
+                                    <button type="submit" name="addAdmin" id="addAdminBtn" disabled>Add Admin</button>
+                                </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
+    
 
-
-
+       
 
     <?php if (!empty($errorMessage) || (isset($_GET['added']) && $_GET['added'] == 1)): ?>
         <script>
@@ -402,7 +402,7 @@ if (isset($_POST["updateUser"])) {
         </script>
     <?php endif; ?>
 
-    <script src="../js/user_accounts.js"></script>
+            <script src="../js/user_accounts.js"></script>
 
 </body>
 
