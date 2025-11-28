@@ -1,5 +1,24 @@
 
-            
+            // --- Place this code at the top level of your script ---
+
+// Function to calculate the ISO week number (1 to 52/53)
+function getWeekNumber(d) {
+    // Copy date so don't modify original
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // Set to nearest Thursday: current date + 4 - current day number (adjusting for Sunday=0, Monday=1, etc.)
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    // Get first day of year
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    // Calculate full weeks to the nearest Thursday
+    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return weekNo;
+}
+
+// Function to determine if the week number is Odd or Even
+function getCurrentWeekType(date) {
+    const weekNumber = getWeekNumber(date);
+    return (weekNumber % 2 !== 0) ? "Odd" : "Even";
+}
             
             window.onload = function() {
                     const chatContainer = document.getElementById('chat-container');
@@ -357,7 +376,7 @@
                 });
 
 
-        document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
         const reserveForm = document.getElementById("reserveForm");
 
         reserveForm.addEventListener("submit", function(e) {
@@ -368,15 +387,40 @@
             const subject = document.getElementById("subject").value;
             const timeFrom = document.getElementById("fromTime").value;
             const timeTo = document.getElementById("toTime").value;
-            const date = document.getElementById("date").value;
+            const date = document.getElementById("date").value; // e.g., "2025-11-28"
+const section = document.getElementById("section").value;
+            // 🌟 1. CALCULATE DAY OF WEEK AND WEEK TYPE 🌟
+            const reservationDate = new Date(date);
+            
+            // Calculate DayOfWeek (e.g., "Friday")
+            const dayOfWeek = reservationDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+            // Function to determine if the date falls on an Odd or Even week
+            function getWeekType(d) {
+                const day = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                day.setUTCDate(day.getUTCDate() + 4 - (day.getUTCDay() || 7));
+                const yearStart = new Date(Date.UTC(day.getUTCFullYear(), 0, 1));
+                const weekNo = Math.ceil((((day - yearStart) / 86400000) + 1) / 7);
+                return weekNo % 2 !== 0 ? 'Even' : 'Odd';
+            }
+
+            const weekType = getWeekType(reservationDate);
+            // 🌟 END CALCULATION 🌟
+
 
             const formData = new FormData();
             formData.append("p_RoomID", roomID);
             formData.append("p_UserID", facultyReservationUserID);
             formData.append("p_Subject", subject);
+            formData.append("p_Section", section);
             formData.append("p_ReservationDate", date);
             formData.append("p_TimeFrom", timeFrom);
             formData.append("p_TimeTo", timeTo);
+            
+            // 🌟 2. APPEND THE NOW-DEFINED VARIABLES 🌟
+            formData.append("p_DayOfWeek", dayOfWeek);
+            formData.append("p_WeekType", weekType);
+            
             formData.append("reserveClassroom", 1);
 
             fetch("faculty-reservation.php", {
@@ -385,12 +429,12 @@
             })
             .then(res => res.text())
             .then(resp => {
+                // ... (rest of your success/error handling)
                 if (resp.trim() === "success") {
                     Swal.fire("Success", "Classroom reserved!", "success");
-                    // Optionally, close modal
                     document.getElementById("reserveModal").style.display = "none";
                     reserveForm.reset();
-                    // refresh schedule or reservations table if needed
+                    // You might want to reload your schedule display here
                 } else {
                     Swal.fire("Error", resp, "error");
                 }
@@ -401,14 +445,17 @@
             });
         });
 
+        // Close modal buttons... (rest of the script)
         // Close modal buttons
         document.getElementById("closeReserveModal").addEventListener("click", () => {
             document.getElementById("reserveModal").style.display = "none";
         });
-        document.getElementById("closeReserveFooter").addEventListener("click", () => {
-            document.getElementById("reserveModal").style.display = "none";
-        });
+        // document.getElementById("closeReserveFooter").addEventListener("click", () => {
+        //     document.getElementById("reserveModal").style.display = "none";
+        // });
     });
+
+        
 
 
 
@@ -901,6 +948,7 @@
                             <td>${s.Subject}</td>
                             <td>${s.TimeFrom} - ${s.TimeTo}</td>
                             <td>${s.Section}</td>
+                            <td>${s.ReserveDate}</td>
                         </tr>`;
                 });
             }

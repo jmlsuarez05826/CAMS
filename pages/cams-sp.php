@@ -301,10 +301,24 @@ public function reserveEquipment($unitID, $userID, $date, $timeFrom, $timeTo)
     return $stmt->execute([$unitID, $userID, $date, $timeFrom, $timeTo]);
 }
 
-public function reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $timeTo)
+
+public function reserveClassroom($roomID, $userID, $subject, $section, $date, $dayOfWeek, $weekType, $timeFrom, $timeTo)
 {
-    $stmt = $this->conn->prepare("CALL reserveClassroom(?, ?, ?, ?, ?, ?)");
-    return $stmt->execute([$roomID, $userID, $subject, $date, $timeFrom, $timeTo]);
+    // The CALL statement must have 8 placeholders (?)
+    $stmt = $this->conn->prepare("CALL reserveClassroom(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    
+    // The execute array must pass all 8 variables in the exact order of the SP
+    return $stmt->execute([
+        $roomID, 
+        $userID, 
+        $subject, 
+        $section,
+        $date,
+        $dayOfWeek, // 5th in line for SP
+        $weekType,  // 6th in line for SP
+        $timeFrom,  // 7th in line for SP
+        $timeTo     // 8th in line for SP
+    ]);
 }
 
     function getUserReservations($userID)

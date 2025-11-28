@@ -24,7 +24,7 @@ $crud = new Crud();
 if (isset($_POST['action']) && $_POST['action'] === 'getSchedules') {
     $roomID = $_POST['roomID'];
     $dayOfWeek = $_POST['dayOfWeek'] ?? null;
-    $weekType = 'Odd'; // force week type to Odd
+    $weekType = $_POST['weekType'];
 
     try {
         $schedules = $crud->getSchedulesByRoom($roomID, $dayOfWeek, $weekType);
@@ -275,6 +275,7 @@ $rooms = $crud->getRooms();
                                                     <th>Subject</th>
                                                     <th>Time</th>
                                                     <th>Section</th>
+                                                    <th>Date</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

@@ -88,11 +88,28 @@ if (isset($_POST['reserveClassroom'])) {
     $roomID = $_POST['p_RoomID'];
     $userID = $_POST['p_UserID'];
     $subject = $_POST['p_Subject'];
+    $section = $_POST['p_Section'];
     $date = $_POST['p_ReservationDate'];
+    
+    // 🌟 1. Retrieve the new parameters from the POST data
+    $dayOfWeek = $_POST['p_DayOfWeek'];
+    $weekType = $_POST['p_WeekType'];
+    
     $timeFrom = $_POST['p_TimeFrom'];
     $timeTo = $_POST['p_TimeTo'];
 
-    $success = $crud->reserveClassroom($roomID, $userID, $subject, $date, $timeFrom, $timeTo);
+    // 🌟 2. Pass ALL EIGHT parameters to the reserveClassroom function
+    $success = $crud->reserveClassroom(
+        $roomID, 
+        $userID, 
+        $subject, 
+        $section,
+        $date, 
+        $dayOfWeek, // Must be included
+        $weekType,  // Must be included
+        $timeFrom, 
+        $timeTo
+    );
 
     if ($success) {
         echo "success";
@@ -101,7 +118,6 @@ if (isset($_POST['reserveClassroom'])) {
     }
     exit;
 }
-
       
 
     
@@ -422,6 +438,7 @@ $allReservations = array_merge(
                                                     <th>Subject</th>
                                                     <th>Time</th>
                                                     <th>Section</th>
+                                                    <th>Date</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -457,6 +474,10 @@ $allReservations = array_merge(
                                         <label for="subject">Subject</label>
                                         <input type="text" id="subject" name="subject" required>
                                     </div>
+                                    <div class="form-group">
+            <label for="section">Section</label>
+            <input type="text" id="section" name="section" required> 
+        </div>
                                     <div class="form-group">
                                         <label for="fromTime">From</label>
                                         <input type="time" id="fromTime" name="fromTime" required>
