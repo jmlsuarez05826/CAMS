@@ -560,5 +560,6 @@ $role = $_SESSION['Role'] ?? null;
 
 
 </body>
+<script src="../js/notify.js"></script>
 
 </html>
