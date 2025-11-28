@@ -1,19 +1,30 @@
-body{
-height: 100vh;
-background: white;
+body {
+  margin: 0;
+  background: white;
+  overflow: hidden;
+  
 }
-.main-content{
-    margin-left: 250px;
+
+.main-content {
+  margin-left: 250px; /* keep sidebar spacing if any */
 }
 /* ======== HEADER + TOPBAR ======== */
 header {
   background-color: #ffffff;
   position: sticky;
-  margin-left: 70px ;
+  margin-left: 70px;
   top: 0;
   z-index: 1000;
   border-bottom: 2px solid #d9d9d9;
 }
+
+main {
+    position: relative;      /* allow absolute/fixed children to position correctly */
+    overflow: visible;       /* ensure modals aren’t clipped */
+    z-index: 1;              /* lower than modal z-index */
+}
+
+
 
 .topbar {
   display: flex;
@@ -29,13 +40,12 @@ header {
   gap: 20px; /* reduce space between notif and profile */
 }
 
-
 /* ======== TITLE ======== */
 .system-title {
   font-size: 1.4rem;
   font-weight: 600;
   font-size: 30px;
-  color: #8B1717;
+  color: #8b1717;
   margin-left: 50px;
 }
 
@@ -68,7 +78,6 @@ header {
   color: #333;
   cursor: pointer;
   transition: color 0.2s ease;
-  
 }
 
 .notification-icon i:hover {
@@ -106,53 +115,66 @@ header {
   color: #666;
 }
 
-#time {
-  font-size: 20px;
-  font-weight: bold;
-  color: #000000;
-  gap: 25px;
-  padding-right: 50px;
+.profile-time {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #666;
+    margin-top: 2px;
 }
-.add-user-btn{
-    margin-top: 45px;
+.colon {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
+}
+
+.add-user-btn {
+  margin-top: 45px;
 }
 
 /* ======== Users tables ======== */
 
+/* optional: keep table width consistent */
 .table-wrapper {
-    margin: 10px auto;
-    width: 900px;
-    max-height: 400px;
-    overflow-y: auto;
-    border: 2px solid #d9d9d9;   /* visible border */
-    border-radius: 10px;
-    background-color: white;
-    overflow: hidden;            /* round corners effect */
-    padding: 0;
-}
+  width: 70%;
+  max-height: 100%;
+  overflow-y: auto;
+  border: 2px solid #d9d9d9;
+  border-radius: 10px;
+  margin: 30px ;
+  padding: 0;
+  background-color: white;
+    display: block;
+  justify-content: center; 
+  align-items: center;
+  overflow: hidden;
 
+
+}
 .table-wrapper table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .users-table {
-    width: 100%;
-    border-collapse: separate;   /* ← THIS is key difference */
-    border-spacing: 0;           /* remove gaps */
-    background-color: white;
+  width: 100%;
+  border-collapse: separate; /* ← THIS is key difference */
+  border-spacing: 0; /* remove gaps */
+  background-color: white;
 }
 
 /* HEADER */
 .users-table th {
-    padding: 20px 10px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 16px;
-    border-bottom: 2px solid #8B1717;
+  padding: 20px 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  border-bottom: 2px solid #8b1717;
 }
-.users-table thead th{
+.users-table thead th {
   position: sticky;
   top: 0;
   background-color: white;
@@ -162,240 +184,309 @@ header {
 
 /* CELLS */
 .users-table td {
-    text-align: center;
-    padding: 12px 10px;
-    border-bottom: 1px solid #d9d9d9;
+  text-align: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #d9d9d9;
 }
 
 /* ROW HOVER */
 .users-table tbody tr:hover {
-    background-color: #f9f9f9;
+  background-color: #f9f9f9;
 }
 
 .users-table thead tr {
-    border-bottom: 2px solid #8B1717; 
+  border-bottom: 2px solid #8b1717;
 }
 
 /* Optional row hover effect */
 .users-table tbody tr:hover {
-    background-color: #f5f5f5;
+  background-color: #f5f5f5;
 }
 
 .users-table {
-    background-color: white;
+  background-color: white;
 }
 
 .users-table tbody tr:hover {
-    background-color: #f9f9f9;
+  background-color: #f9f9f9;
 }
 
 /* ======== Action Buttons ======== */
 .action-buttons button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 .edit-btn {
-    color: #007bff;
+  color: #007bff;
 }
 
 .delete-btn {
-    color: #dc3545;
+  color: #dc3545;
 }
 
 .action-buttons button:hover {
-    background: #f0f0f0;
+  background: #f0f0f0;
 }
 
 .table-container {
-    width: 900px;        /* same as .table-wrapper */
-    margin: 10px auto;   /* center the whole block */
+    width: 100%;
+  margin-left: 420px; 
+  margin-top: 50px; 
 }
 
 /* ======== Pagination ======== */
 .custom-pagination {
-    text-align: left;
-    font-family: Arial, sans-serif;
+  text-align: left;
+  font-family: Arial, sans-serif;
 }
 
 .custom-pagination ul {
-    list-style: none;
-    padding: 0;
-    display: inline-flex;
-    gap: 5px;
+  list-style: none;
+  padding: 0;
+  display: inline-flex;
+  gap: 5px;
 }
 
 .custom-pagination li {
-    border: 1px solid #d9d9d9;
-    padding: 6px 12px;
-    border-radius: 4px;
+  border: 1px solid #d9d9d9;
+  padding: 6px 12px;
+  border-radius: 4px;
 }
 
 .custom-pagination li a {
-    text-decoration: none;
-    color: #333;
+  text-decoration: none;
+  color: #333;
 }
 
 .custom-pagination li.active {
-    background-color: #8B1717;
-    color: white;
-    font-weight: bold;
+  background-color: #8b1717;
+  color: white;
+  font-weight: bold;
 }
 
 .custom-pagination li.active a {
-    color: white;
+  color: white;
 }
 
 .custom-pagination li.disabled {
-    opacity: 0.5;
-    pointer-events: none;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .custom-pagination li:hover:not(.active):not(.disabled) {
-    background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 
 /* ======== Add account buttons ======== */
 .add-user-btn {
-    display: flex;
-    justify-content: flex-end; /* align buttons to the right */
-    gap: 10px;                 /* space between buttons */
-           /* optional spacing above table */
+    width: 70%;
+  display: flex;
+  justify-content: flex-end; /* align buttons to the right */
+  gap: 10px; /* space between buttons */
+  /* optional spacing above table */
 }
 
 .add-user-btn .btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    transition: background-color 0.3s ease;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.3s ease;
 }
 
 .add-user-btn .add-user {
-    background-color: #007bff; /* blue */
+  background-color: #007bff; /* blue */
 }
 
 .add-user-btn .add-user:hover {
-    background-color: #0069d9; /* darker blue on hover */
+  background-color: #0069d9; /* darker blue on hover */
 }
 
 .add-user-btn .add-admin {
-    background-color: #28a745; /* green */
+  background-color: #28a745; /* green */
 }
 
 .add-user-btn .add-admin:hover {
-    background-color: #218838; /* darker green on hover */
+  background-color: #218838; /* darker green on hover */
 }
 
 /* ======== Add account modal ======== */
 
-/* Modal overlay */
+/* ======== MODAL OVERLAY ======== */
 .custom-modal {
-    display: none; /* hidden by default */
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center; /* flex centering */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    display: none; /* hidden by default */
+    justify-content: center;
     align-items: center;
-    z-index: 999;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-.custom-modal.show {
-    opacity: 1;
-    visibility: visible;
+    z-index: 2000;
 }
 
-.custom-modal.show .custom-modal-dialog {
-    transform: translateY(0);
-}
-
-/* Modal dialog */
+/* ======== MODAL BOX ======== */
 .custom-modal-dialog {
-    max-width: 500px;
-    width: 90%;
-    margin: auto;
+    width: 450px;
+    max-width: 95%;
 }
 
-/* Modal content */
 .custom-modal-content {
-    background-color: #fff;
+    background: #fff;
     border-radius: 12px;
     padding: 20px;
-    border: 2px solid #d9d9d9;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+
+    animation: fadeIn 0.25s ease;
 }
 
-/* Header */
+/* ======== HEADER ======== */
 .custom-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #d9d9d9;
+    border-bottom: 2px solid #8b1717;
     padding-bottom: 10px;
 }
 
 .custom-modal-title {
-    font-weight: bold;
-    font-size: 18px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #8b1717;
 }
 
-/* Close button */
 .custom-close {
-    font-size: 24px;
     background: none;
     border: none;
+    font-size: 28px;
     cursor: pointer;
+    font-weight: bold;
+    color: #333;
 }
 
-/* Body inputs */
-.custom-modal-body .form-group {
-    margin-bottom: 12px;
+/* ======== FORM BODY ======== */
+.custom-modal-body {
+    margin-top: 20px;
 }
 
-.custom-modal-body input {
+.form-group {
+    margin-bottom: 15px;
     width: 100%;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid #d9d9d9;
 }
 
-/* Input group button */
-.input-group button {
-    padding: 6px 12px;
-    border-radius: 6px;
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+}
+
+.form-group input:focus {
+    border-color: #8b1717;
+    box-shadow: 0 0 5px rgba(139, 23, 23, 0.3);
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+}
+
+.form-group select:focus {
+    border-color: #8b1717;
+    box-shadow: 0 0 5px rgba(139, 23, 23, 0.3);
+}
+
+/* ======== PHONE FIELD WITH BUTTON ======== */
+.phone-group {
+    display: flex;
+    width: 100%;
+}
+
+.phone-group input {
+    flex: 1;
+    border-radius: 8px 0 0 8px;
+    height: 45px;
+}
+
+.phone-group button {
+    width: 130px;
+    border-radius: 0 8px 8px 0;
+    height: 45px;
+    background-color: #8b1717;
     border: none;
-    background-color: #007bff;
     color: white;
     cursor: pointer;
+    font-weight: 600;
 }
 
-/* Footer */
+.phone-group button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Error text */
+.text-danger {
+    display: block;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* ======== FOOTER ======== */
 .custom-modal-footer {
+    margin-top: 20px;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 15px;
-}
-
-.custom-modal-footer button {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
 }
 
 .btn-close-modal {
-    background-color: #6c757d;
-    color: white;
+    background: #d9d9d9;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
 #addBtn {
-    background-color: #007bff;
+    background: #8b1717;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
     color: white;
+    cursor: pointer;
 }
+
+#addBtn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* ======== ANIMATION ======== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
+

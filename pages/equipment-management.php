@@ -1,11 +1,25 @@
 <?php
+
+session_start();
 require_once '../pages/camsdatabase.php';
 require_once '../pages/cams-sp.php';
+
+
+if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
+    header("Location: ../pages/login.php");
+    exit();
+}
+
+if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
+    header("Location: ../pages/login.php");
+    exit();
+}
+
 
 $crud = new Crud();
 
 if (isset($_GET['equipmentID'])) {
-    $equipmentID = (int)$_GET['equipmentID'];
+    $equipmentID = (int) $_GET['equipmentID'];
     $units = $crud->getEquipmentUnits($equipmentID);
     header('Content-Type: application/json');
     echo json_encode($units);
@@ -21,7 +35,8 @@ if (isset($_POST['action'])) {
         if ($action === 'addEquipment') {
             $name = $_POST['equipmentname'];
             $qty = $_POST['quantity'];
-            if ($crud->addEquipment($name, $qty)) echo 'success';
+            if ($crud->addEquipment($name, $qty))
+                echo 'success';
         } elseif ($action === 'editEquipment') {
             $id = $_POST['equipmentID'];
             $name = $_POST['equipmentname'];
@@ -32,7 +47,8 @@ if (isset($_POST['action'])) {
             if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
                 // Server path for upload
                 $uploadDir = __DIR__ . '/../uploads/equipments/';
-                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+                if (!is_dir($uploadDir))
+                    mkdir($uploadDir, 0777, true);
 
                 // File name
                 $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9_\-\.]/', '_', basename($_FILES['image']['name']));
@@ -52,7 +68,8 @@ if (isset($_POST['action'])) {
             }
         } elseif ($action === 'deleteEquipment') {
             $id = $_POST['equipmentID'];
-            if ($crud->deleteEquipment($id)) echo 'success';
+            if ($crud->deleteEquipment($id))
+                echo 'success';
         }
     } catch (PDOException $e) {
         echo 'error: ' . $e->getMessage();
@@ -94,9 +111,11 @@ $equipments = $crud->getEquipments();
                 <div class="profile-info">
                     <i class="bi bi-person-circle profile-icon"></i>
                     <div class="profile-text">
-                        <p class="profile-name">Mark Cristopher</p>
-                        <p class="profile-number">093480324</p>
-                        <div id="time"></div>
+                        <p class="profile-name">
+                            <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
+                        </p>
+                        <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
+                        <p class="profile-time" id="time"></p>
                     </div>
                 </div>
 
@@ -123,8 +142,7 @@ $equipments = $crud->getEquipments();
                 </thead>
                 <tbody>
                     <?php foreach ($equipments as $eq): ?>
-                        <tr class="equipment-row"
-                            data-id="<?= $eq['EquipmentID'] ?>"
+                        <tr class="equipment-row" data-id="<?= $eq['EquipmentID'] ?>"
                             data-image="<?= htmlspecialchars($eq['EquipmentIMG'] ? '../uploads/equipments/' . $eq['EquipmentIMG'] : '../uploads/equipments/default.png') ?>">
 
 
@@ -142,14 +160,34 @@ $equipments = $crud->getEquipments();
     </div>
 
     <script>
-        // Time update
-        function updateTime() {
+        // Script for real-time day & 12-hour format time
+        function updateTimeDay() {
             const now = new Date();
-            document.getElementById('time').textContent =
-                `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+            // Get day
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const day = days[now.getDay()];
+
+            // Get hours and minutes
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            // Convert 24-hour to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            hours = String(hours).padStart(2, '0');
+
+            // Set the text content
+            document.getElementById('time').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
         }
-        setInterval(updateTime, 1000);
-        updateTime();
+
+        // Update every second
+        setInterval(updateTimeDay, 1000);
+
+        // Initial call
+        updateTimeDay();
 
 
 

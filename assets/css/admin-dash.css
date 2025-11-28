@@ -112,13 +112,7 @@ header {
   color: #666;
 }
 
-#time {
-  font-size: 20px;
-  font-weight: bold;
-  color: #000000;
-  gap: 25px;
-  padding-right: 50px;
-}
+
 
 /* Push content down below fixed topbar */
 .content {
@@ -320,6 +314,7 @@ header {
   cursor: pointer;
   gap: 6px;
   background: #55535398;
+      scroll-behavior: smooth;
 }
 
 /* Message bubbles */

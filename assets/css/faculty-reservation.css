@@ -1,9 +1,14 @@
-/* ======== BASIC RESETS ======== */
+
+
+*{
+      scrollbar-color: #8B1717 #d9d9d9;
+    scrollbar-width: thin;   
+}/* ======== BASIC RESETS ======== */
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
 
 }
 
@@ -479,10 +484,31 @@ header {
 }
 
 .room-status {
-  font-size: 12px;
-  color: green; /* or red if occupied */
-  margin-top: 5px;
+   font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    width: fit-content;
 }
+
+.room-status.available {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.room-status.occupied {
+    background-color: #dc3545;
+    color: white;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
 
 .building-title + .floor-container {
   margin-top: 0px; /* reduce space for next building group */
@@ -512,7 +538,7 @@ header {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.4) for dark */
+  background: rgba(0, 0, 0, 0.212); /* or rgba(0,0,0,0.4) for dark */
   z-index: 1;
 }
 
