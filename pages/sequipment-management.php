@@ -18,6 +18,11 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
 
 $crud = new Crud();
 
+// --- START: AUTOMATIC RESERVATION EXPIRATION CHECK ---
+// This runs the update logic every time an admin loads this page.
+$crud->updateExpiredReservations(); 
+// --- END: AUTOMATIC RESERVATION EXPIRATION CHECK ---
+
 if (isset($_GET['equipmentID'])) {
     $equipmentID = (int) $_GET['equipmentID'];
     $units = $crud->getEquipmentUnits($equipmentID);
@@ -78,15 +83,12 @@ if (isset($_POST['action'])) {
     exit;
 }
 
-<<<<<<< HEAD
-=======
 $firstname = $_SESSION['FirstName'] ?? null;
 $lastname = $_SESSION['LastName'] ?? null;
 $number = $_SESSION['PhoneNumber'] ?? null;
 $user_id = $_SESSION['UserID'] ?? null;
 $role = $_SESSION['Role'] ?? null;
 
->>>>>>> suarez
 require_once '../includes/sadmin-sidebar.php';
 $equipments = $crud->getEquipments();
 ?>
@@ -104,11 +106,7 @@ $equipments = $crud->getEquipments();
     <header>
 
         <div class="topbar">
-<<<<<<< HEAD
-            <h2 class="system-title">Welcome Admin!</h2>
-=======
               <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
->>>>>>> suarez
 
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>

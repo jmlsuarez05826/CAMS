@@ -18,6 +18,9 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
 
 $crud = new Crud();
 
+$crud->updateExpiredReservations(); 
+// --- END: AUTOMATIC RESERVATION EXPIRATION CHECK ---
+
 if (isset($_GET['equipmentID'])) {
     $equipmentID = (int) $_GET['equipmentID'];
     $units = $crud->getEquipmentUnits($equipmentID);
@@ -25,6 +28,7 @@ if (isset($_GET['equipmentID'])) {
     echo json_encode($units);
     exit;
 }
+
 
 
 // CRUD operations
