@@ -71,11 +71,11 @@ require_once '../includes/sadmin-sidebar.php';
     <header>
 
         <div class="topbar">
-            <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
+            <h2 class="system-title">Welcome <?= $firstname; ?>!</h2>
 
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" placeholder="Search">
+                <input type="text" placeholder="Search" id="searchInput">
             </div>
 
             <div class="topbar-right">
@@ -134,7 +134,7 @@ require_once '../includes/sadmin-sidebar.php';
                 </tr>
             </thead>
             <tbody id="requestTableBody">
-               <?php foreach ($requests as $r): ?>
+                <?php foreach ($requests as $r): ?>
                     <?php $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : ''; ?>
                     <tr>
                         <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td>
@@ -194,6 +194,30 @@ require_once '../includes/sadmin-sidebar.php';
 
 
     <script>
+        //backend for the search logic
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('requestTableBody');
+
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            const rows = tableBody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+
+                // Loop through all cells in the row
+                for (let j = 1; j < cells.length - 1; j++) { // skip checkbox (0) and badge (last)
+                    if (cells[j].textContent.toLowerCase().includes(filter)) {
+                        match = true;
+                        break;
+                    }
+                }
+
+                rows[i].style.display = match ? '' : 'none';
+            }
+        });
+
         const sortStatusHeader = document.getElementById("sortStatus");
         const statusSortIcon = document.getElementById("statusSortIcon");
 
@@ -337,7 +361,7 @@ require_once '../includes/sadmin-sidebar.php';
                             req.Status === "Approved" ? "badge bg-success" :
                             req.Status === "Rejected" ? "badge bg-danger" :
                             "badge bg-warning text-dark";
-                        
+
                         // New: Determine if checkbox should be disabled
                         const isDisabled = (req.Status === "Approved" || req.Status === "Rejected") ? 'disabled' : '';
 

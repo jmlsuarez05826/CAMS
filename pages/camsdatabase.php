@@ -2,9 +2,9 @@
 class Database
 {
     private $host = 'localhost';
-    private $db_name = 'cams';
+    private $db_name = 'cams2';
     private $username = 'root';
-    private $password = '1234';
+    private $password = 'root';
     private $conn;
 
     public function __construct()
@@ -32,5 +32,3 @@ class Database
         return $this->conn;
     }
 }
-
-
