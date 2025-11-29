@@ -10,7 +10,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../assets/css/admin-sidebar.css">
-        <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
 
 </head>
 
@@ -22,16 +22,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         <nav class="sidebar" id="sidebar">
             <!-- Logo + Title container -->
             <div class="header-content">
-                <img src="../images/BSU_logo (3).webp" alt="Logo" class="sidebar-logo" style="">
+                <img src="../images/BSU_logo (3).webp" alt="Logo" class="sidebar-logo">
                 <span class="sidebar-title">CAMS</span>
             </div>
 
             <!-- Sidebar links -->
-            <ul >
+            <ul>
                 <li>
                     <a href="../pages/admin-dash.php"
                         class="<?= $currentPage === 'admin-dash.php' ? 'active' : '' ?>">
-                       <i class="bi bi-bar-chart-fill"></i>
+                        <i class="bi bi-bar-chart-fill"></i>
                         Dashboard
                     </a>
                 </li>
@@ -81,7 +81,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             </ul>
 
             <div class="sidebar-footer">
-                <a  id="logout-btn" class="d-flex align-items-center custom-gap sidebar-logout">
+                <a id="logout-btn" class="d-flex align-items-center custom-gap sidebar-logout">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
@@ -90,9 +90,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </nav>
 
     </header>
-    
+
     <script>
-        document.getElementById('logout-btn').addEventListener('click', function (e) {
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
             e.preventDefault(); // prevent immediate navigation
             Swal.fire({
                 title: 'Are you sure?',
@@ -104,11 +104,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                 confirmButtonText: 'Yes'
             }).then((result) => {
                 if (result.isConfirmed) {
-                 window.location.href = '../pages/logout.php'; // 
+                    window.location.href = '../pages/logout.php'; // 
                 }
             });
         });
-
     </script>
 </body>
 

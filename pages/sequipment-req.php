@@ -40,6 +40,15 @@ if (isset($_POST['action']) && isset($_POST['ids'])) {
     exit;
 }
 
+<<<<<<< HEAD
+=======
+$firstname = $_SESSION['FirstName'] ?? null;
+$lastname = $_SESSION['LastName'] ?? null;
+$number = $_SESSION['PhoneNumber'] ?? null;
+$user_id = $_SESSION['UserID'] ?? null;
+$role = $_SESSION['Role'] ?? null;
+
+>>>>>>> suarez
 
 require_once '../includes/sadmin-sidebar.php';
 ?>
@@ -65,7 +74,11 @@ require_once '../includes/sadmin-sidebar.php';
     <header>
 
         <div class="topbar">
+<<<<<<< HEAD
             <h2 class="system-title">Welcome Admin!</h2>
+=======
+            <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
+>>>>>>> suarez
 
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>

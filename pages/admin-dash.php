@@ -104,10 +104,7 @@ $role = $_SESSION['Role'] ?? null;
     <header>
         <div class="topbar">
             <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
-            <div class="search-field">
-                <i class="bi bi-search search-icon"></i>
-                <input type="text" placeholder="Search">
-            </div>
+
             <div class="topbar-right">
           
                 <div class="profile-info">

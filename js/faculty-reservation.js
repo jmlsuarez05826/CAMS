@@ -288,7 +288,7 @@ function getCurrentWeekType(date) {
                                         </div>
                                         <hr class="equip-divider">
                                         <h3 class="unit-status-title">Unit Status</h3>
-                                        <div class="unit-list" style="display:flex; flex-wrap:wrap; gap:10px;">
+                                        <div class="unit-list" style="display:flex; flex-wrap:nowrap; gap:10px;">
                                             ${unitListHTML}
                                         </div>
                                     </div>
@@ -1075,3 +1075,71 @@ function loadRoomStatuses() {
                 }
             });
         });
+
+          const sortStatusHeader = document.getElementById("sortStatus");
+        const statusSortIcon = document.getElementById("statusSortIcon");
+
+        let statusSortDirection = "none"; // none → approved_first → pending_first
+        let originalRows = null; // store original table
+
+        sortStatusHeader.addEventListener("click", () => {
+            const tbody = document.getElementById("requestTableBody");
+            let rows = Array.from(tbody.querySelectorAll("tr"));
+
+            // Save original ordering once
+            if (!originalRows) {
+                originalRows = rows.map(r => r.cloneNode(true));
+            }
+
+            // Toggle sort direction
+            if (statusSortDirection === "none") {
+                statusSortDirection = "approved_first";
+                statusSortIcon.textContent = "↑"; // approved first
+            } else if (statusSortDirection === "approved_first") {
+                statusSortDirection = "pending_first";
+                statusSortIcon.textContent = "↓"; // pending first
+            } else {
+                statusSortDirection = "none";
+                statusSortIcon.textContent = "↕"; // reset
+            }
+
+            // Reset to original order
+            if (statusSortDirection === "none") {
+                rows = originalRows.map(r => r.cloneNode(true));
+            } else {
+                // Sorting logic
+                rows.sort((a, b) => {
+                    const statusA = a.querySelector("td:nth-child(3) span").textContent.trim();
+                    const statusB = b.querySelector("td:nth-child(3) span").textContent.trim();
+
+
+                    if (statusSortDirection === "approved_first") {
+                        return statusPriority(statusA) - statusPriority(statusB);
+                    }
+
+                    if (statusSortDirection === "pending_first") {
+                        return statusPriority(statusB) - statusPriority(statusA);
+                    }
+
+                    return 0;
+                });
+            }
+
+            // Clear and re-append rows
+            tbody.innerHTML = "";
+            rows.forEach(row => tbody.appendChild(row));
+        });
+
+        // Helper priority function
+        function statusPriority(status) {
+            switch (status) {
+                 case "Pending":
+                    return 1;
+                 case "Approved": 
+                    return 2;
+                case "Rejected":
+                    return 3;
+                default:
+                    return 4;
+            }
+        }

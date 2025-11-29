@@ -171,6 +171,15 @@ if (isset($_POST['action']) && $_POST['action'] === 'deleteSchedule') {
     exit;
 }
 
+<<<<<<< HEAD
+=======
+$firstname = $_SESSION['FirstName'] ?? null;
+$lastname = $_SESSION['LastName'] ?? null;
+$number = $_SESSION['PhoneNumber'] ?? null;
+$user_id = $_SESSION['UserID'] ?? null;
+$role = $_SESSION['Role'] ?? null;
+
+>>>>>>> suarez
 $buildings = $crud->getBuildings();
 $floors = $crud->getFloors();
 $rooms = $crud->getRooms();
@@ -197,7 +206,11 @@ $rooms = $crud->getRooms();
     <header>
 
         <div class="topbar">
+<<<<<<< HEAD
             <h2 class="system-title">Welcome Admin!</h2>
+=======
+             <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
+>>>>>>> suarez
         <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
                 <input type="text" placeholder="Search">
