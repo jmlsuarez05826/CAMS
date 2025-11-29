@@ -88,78 +88,77 @@
             });
         });
 
-        // Update Logic with SweetAlert2
+        //script logic for the edit user
         document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                let userId = this.getAttribute('data-id');
+    btn.addEventListener('click', function () {
+        let userId = this.getAttribute('data-id');
+        let row = this.closest('tr');
 
+        // Current values
+        let currentFname = row.cells[0].textContent.trim();
+        let currentLname = row.cells[1].textContent.trim();
+        let currentPhone = row.cells[2].textContent.trim();
+        let currentEmail = row.cells[3].textContent.trim();
+
+        Swal.fire({
+            title: 'Update User',
+            html:
+                `<input id="fname" class="swal2-input" placeholder="First Name" value="${currentFname}">` +
+                `<input id="lname" class="swal2-input" placeholder="Last Name" value="${currentLname}">` +
+                `<input id="phone" class="swal2-input" placeholder="Phone" value="${currentPhone}">` +
+                `<input id="email" class="swal2-input" placeholder="Email" value="${currentEmail}">`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Save',
+            preConfirm: () => {
+                return {
+                    fname: document.getElementById('fname').value,
+                    lname: document.getElementById('lname').value,
+                    phone: document.getElementById('phone').value,
+                    email: document.getElementById('email').value
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show confirmation before submitting
                 Swal.fire({
-                    title: 'Update User',
-                    html:
-                        '<input id="fname" class="swal2-input" placeholder="First Name">' +
-                        '<input id="lname" class="swal2-input" placeholder="Last Name">' +
-                        '<input id="phone" class="swal2-input" placeholder="Phone">' +
-                        '<input id="email" class="swal2-input" placeholder="Email">',
-                    focusConfirm: false,
-                    showCancelButton: true,
-                    confirmButtonText: 'Save',
-                    preConfirm: () => {
-                        return {
-                            fname: document.getElementById('fname').value,
-                            lname: document.getElementById('lname').value,
-                            phone: document.getElementById('phone').value,
-                            email: document.getElementById('email').value
-                        }
+                    icon: 'success',
+                    title: 'Updated!',
+                    text: 'The user details have been updated.',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    // Submit the form after the alert
+                    let form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '';
+
+                    const fields = {
+                        updateUser: '1',
+                        UserID: userId,
+                        fname: result.value.fname,
+                        lname: result.value.lname,
+                        phone: result.value.phone,
+                        email: result.value.email
+                    };
+
+                    for (let key in fields) {
+                        let input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = fields[key];
+                        form.appendChild(input);
                     }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        let form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = '';
 
-                        let flagInput = document.createElement('input');
-                        flagInput.type = 'hidden';
-                        flagInput.name = 'updateUser';
-                        flagInput.value = '1'; // just a flag
-                        form.appendChild(flagInput);
-
-                        let idInput = document.createElement('input');
-                        idInput.type = 'hidden';
-                        idInput.name = 'UserID'; // matches PHP handler
-                        idInput.value = userId;
-                        form.appendChild(idInput);
-
-
-                        let fnameInput = document.createElement('input');
-                        fnameInput.type = 'hidden';
-                        fnameInput.name = 'fname';
-                        fnameInput.value = result.value.fname;
-                        form.appendChild(fnameInput);
-
-                        let lnameInput = document.createElement('input');
-                        lnameInput.type = 'hidden';
-                        lnameInput.name = 'lname';
-                        lnameInput.value = result.value.lname;
-                        form.appendChild(lnameInput);
-
-                        let phoneInput = document.createElement('input');
-                        phoneInput.type = 'hidden';
-                        phoneInput.name = 'phone';
-                        phoneInput.value = result.value.phone;
-                        form.appendChild(phoneInput);
-
-                        let emailInput = document.createElement('input');
-                        emailInput.type = 'hidden';
-                        emailInput.name = 'email';
-                        emailInput.value = result.value.email;
-                        form.appendChild(emailInput);
-
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
+                    document.body.appendChild(form);
+                    form.submit();
                 });
-            });
+            }
         });
+    });
+});
+
+
 
 
         // DEBUG: Track modal triggers
