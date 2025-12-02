@@ -21,12 +21,13 @@ $crud = new Crud();
 
 date_default_timezone_set('Asia/Manila');
 $weekNumber = date('W');
-$weekType = ($weekNumber % 2 === 0) ? 'Even' : 'Odd';
+$weekType = ($weekNumber % 2 === 0) ? 'Odd' : 'Even';
 
 $totalUsers = $crud->getUsersCount();
 $totalRooms = $crud->getRoomsCount();
 $totalEquipment = $crud->getEquipmentCount();
 $equipmentStatus = $crud->getEquipmentStatus();
+$totalRoomReq = $crud->getRoomRequestsCount();
 
 $roomStatusCounts = $crud->getRoomStatusCounts($weekType);
 $equipmentStatusCounts = $crud->getEquipmentStatusCounts();
@@ -75,6 +76,56 @@ foreach ($results as $row) {
 }
 $labels_json_d = json_encode($date);
 $data_json_d = json_encode($count);
+
+// Query: Count reservations per building
+$stmt = $pdo->prepare("
+    SELECT b.BuildingName, COUNT(cr.ReservationID) AS total
+    FROM classroom_reservations cr
+    JOIN rooms r ON cr.RoomID = r.RoomID
+    JOIN floors f ON r.FloorID = f.FloorID
+    JOIN buildings b ON f.BuildingID = b.BuildingID
+    GROUP BY b.BuildingName
+    ORDER BY total DESC
+");
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Prepare data for Chart.js
+$buildings = [];
+$totals = [];
+
+foreach ($results as $row) {
+    $buildings[] = $row['BuildingName'];
+    $totals[] = $row['total'];
+}
+
+$buildingsJSON = json_encode($buildings);
+$totalsJSON = json_encode($totals);
+
+// Same status-color mapping as RoomStatus
+$statusColors = [
+    'Available' => '#4CAF50',
+    'Reserved' => '#FF6384',
+    'Occupied' => '#FF6384',
+    'Maintenance' => '#FFCE56',
+    'Cleaning' => '#36A2EB'
+];
+
+// Map room labels to colors
+$roomColors = [];
+foreach($roomLabels as $label) {
+    $roomColors[] = $statusColors[$label] ?? '#999999'; // default grey
+}
+$roomColorsJSON = json_encode($roomColors);
+
+// Map equipment labels to same colors (use same mapping)
+$equipmentColors = [];
+foreach($equipmentLabels as $label) {
+    $equipmentColors[] = $statusColors[$label] ?? '#999999'; // default grey
+}
+$equipmentColorsJSON = json_encode($equipmentColors);
+
+
 
 
 $firstname = $_SESSION['FirstName'] ?? null;
@@ -155,30 +206,38 @@ $role = $_SESSION['Role'] ?? null;
                 <div class="circle"><i class="bi bi-card-list chart-icon"></i></div>
                 <div class="chart-info">
                     <h1>Total Room Requests</h1>
-                    <span class="chart-number">78</span>
+                    <span class="chart-number"><?= $totalRoomReq ?></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Graphs -->
-    <div class="single-row">
-        <div class="single-container">
-            <div class="chart-title">
-                <h3>Daily Page Visits</h3>
-            </div>
-            <canvas id="roomUsageChart"></canvas>
-        </div>
+<div class="chart-row-two">
+    <div class="chart-card">
+        <h3 class="chart-card-title">Daily Page Visits</h3>
+        <canvas id="roomUsageChart"></canvas>
     </div>
 
-    <div class="bar-row">
-        <div class="bar-container" style=" max-width:50%; max-height: 30em;">
-            <canvas id="RoomStatus"></canvas>
-        </div>
-        <div class="bar-container" style=" max-width:50%; max-height: 30em;">
-            <canvas id="EquipmentStatus"></canvas>
-        </div>
+    <div class="chart-card">
+        <h3 class="chart-card-title">Reservations Per Building</h3>
+        <canvas id="reservationChart"></canvas>
     </div>
+</div>
+
+
+
+<div class="bar-row">
+    <div class="bar-card">
+        <h3 class="bar-card-title"></h3>
+        <canvas id="RoomStatus"></canvas>
+    </div>
+
+    <div class="bar-card">
+        <h3 class="bar-card-title"></h3>
+        <canvas id="EquipmentStatus"></canvas>
+    </div>
+</div>
+
 
     <!-- Admin ↔ Faculty Chat -->
     <label for="faculty-select">Select Faculty:</label>
@@ -265,37 +324,56 @@ $role = $_SESSION['Role'] ?? null;
             const dailyLabels = <?= $labels_json_d; ?>;
             const dailyValues = <?= $data_json_d; ?>;
 
-              // Room Status Chart
-    new Chart(document.getElementById('RoomStatus'), {
-        type: 'pie',
-        data: {
-            labels: <?= json_encode($roomLabels) ?>,
-            datasets: [{
-                data: <?= json_encode($roomValues) ?>,
-                backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'],
-                borderColor: '#fff',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Room Status (<?= $weekType ?> Week)',
-                    font: { size: 20, weight: 'bold' }
-                },
-                legend: { position: 'left' }
-            }
+  // RoomStatus
+new Chart(document.getElementById('RoomStatus'), {
+    type: 'pie',
+    data: {
+        labels: <?= json_encode($roomLabels) ?>,
+        datasets: [{
+            data: <?= json_encode($roomValues) ?>,
+            backgroundColor: <?= $roomColorsJSON ?>, // dynamic based on status
+            borderColor: '#fff',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Room Status (<?= $weekType ?> Week)',
+                font: { size: 20, weight: 'bold' }
+            },
+            legend: { position: 'left' }
         }
-    });
+    }
+});
 
+// EquipmentStatus
+new Chart(document.getElementById('EquipmentStatus'), {
+    type: 'pie',
+    data: { 
+        labels: equipmentLabels, 
+        datasets: [{ 
+            data: equipmentValues, 
+            backgroundColor: <?= $equipmentColorsJSON ?>, // same color mapping as rooms
+            borderColor: '#fff', 
+            borderWidth: 4 
+        }] 
+    },
+    options: { 
+        responsive: true, 
+        plugins: { 
+            title: { 
+                display: true, 
+                text: 'Equipment Status', 
+                font: { size: 24, weight: 'bold' } 
+            }, 
+            legend: { position: 'left' } 
+        } 
+    }
+});
 
-            new Chart(document.getElementById('EquipmentStatus'), {
-                type: 'pie',
-                data: { labels: equipmentLabels, datasets: [{ data: equipmentValues, backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'], borderColor: '#fff', borderWidth: 4 }] },
-                options: { responsive: true, plugins: { title: { display: true, text: 'Equipment Status', font: { size: 24, weight: 'bold' } }, legend: { position: 'left' } } }
-            });
 
             const ctx = document.getElementById('roomUsageChart').getContext('2d');
             new Chart(ctx, {
@@ -305,8 +383,47 @@ $role = $_SESSION['Role'] ?? null;
             });
         }
 
+                const ctx = document.getElementById('reservationChart').getContext('2d');
+
+        const reservationChart = new Chart(ctx, {
+            type: 'bar', // 'doughnut' for donut chart
+            data: {
+                labels: <?php echo $buildingsJSON; ?>,
+                datasets: [{
+                    label: 'Number of Reservations',
+                    data: <?php echo $totalsJSON; ?>,
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y', // horizontal bar chart
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    title: { display: true, text: 'Building Reservations' }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
 
     </script>
+    
 
    <script>
 (function() {
@@ -511,6 +628,8 @@ $role = $_SESSION['Role'] ?? null;
         }, 60000);
 
 </script>
+
+ <script src="../js/notify.js"></script>
 
 
 

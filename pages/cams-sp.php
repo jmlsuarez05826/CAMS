@@ -525,6 +525,13 @@ public function getClassroomRequests($limit, $offset)
         return $result['total'];
     }
 
+        public function getRoomRequestsCount()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) as total FROM classroom_reservations WHERE Status = 'Pending'");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
     public function getEquipmentRequestsCount()
     {
         $stmt = $this->conn->query("SELECT COUNT(*) as total FROM equipment_reservations WHERE Status != 'Cancelled'");
@@ -553,6 +560,48 @@ public function getClassroomRequests($limit, $offset)
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+
+
+    public function updateExpiredReservations() {
+    
+    // --- QUERY 1: EXPIRE APPROVED RESERVATIONS (Changes er.Status to 'Cancelled') ---
+    $sql_approved = "
+        UPDATE equipment_units eu
+        JOIN equipment_reservations er ON eu.UnitID = er.UnitID
+        SET eu.Status = 'Available', er.Status = 'Cancelled' 
+        WHERE eu.Status = 'Reserved'
+        AND er.Status = 'Approved'
+        AND TIMESTAMP(er.ReservationDate, er.TimeTo) < NOW()";
+
+    // --- QUERY 2: CANCEL PENDING RESERVATIONS (Remains 'Cancelled') ---
+    $sql_pending = "
+        UPDATE equipment_reservations er
+        LEFT JOIN equipment_units eu ON er.UnitID = eu.UnitID
+        SET er.Status = 'Cancelled', eu.Status = 'Available'
+        WHERE er.Status = 'Pending'
+        AND TIMESTAMP(er.ReservationDate, er.TimeTo) < NOW()";
+    
+    $total_rows_updated = 0;
+
+    try {
+        // Execute Query 1: Expire Approved Reservations
+        $stmt_approved = $this->conn->prepare($sql_approved);
+        $stmt_approved->execute();
+        $total_rows_updated += $stmt_approved->rowCount();
+
+        // Execute Query 2: Cancel Pending Reservations
+        $stmt_pending = $this->conn->prepare($sql_pending);
+        $stmt_pending->execute();
+        $total_rows_updated += $stmt_pending->rowCount();
+
+        return $total_rows_updated; 
+
+    } catch (PDOException $e) {
+        error_log("Error updating expired equipment reservations: " . $e->getMessage());
+        return false;
+    }
+}
 }
 
 

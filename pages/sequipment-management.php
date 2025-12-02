@@ -18,6 +18,11 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
 
 $crud = new Crud();
 
+// --- START: AUTOMATIC RESERVATION EXPIRATION CHECK ---
+// This runs the update logic every time an admin loads this page.
+$crud->updateExpiredReservations(); 
+// --- END: AUTOMATIC RESERVATION EXPIRATION CHECK ---
+
 if (isset($_GET['equipmentID'])) {
     $equipmentID = (int) $_GET['equipmentID'];
     $units = $crud->getEquipmentUnits($equipmentID);

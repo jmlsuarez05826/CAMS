@@ -7,8 +7,8 @@ $crud = new Crud();
 
 // Return all equipment requests as JSON
 if (isset($_GET['getRequests'])) {
-    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-    $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+    $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+    $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
 
     $requests = $crud->getClassroomRequests($limit, $offset);
 
@@ -68,11 +68,11 @@ require_once '../includes/admin-sidebar.php';
     <header>
 
         <div class="topbar">
-           <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
+            <h2 class="system-title">Welcome <?= $firstname; ?>!</h2>
 
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" placeholder="Search">
+                <input type="text" placeholder="Search" id="searchInput">
             </div>
 
             <div class="topbar-right">
@@ -101,7 +101,7 @@ require_once '../includes/admin-sidebar.php';
     <!-- Pagination Setup -->
     <?php
     $rowsPerPage = 10;
-    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $offset = ($currentPage - 1) * $rowsPerPage;
 
     // Fetch only the equipment requests for this page
@@ -114,47 +114,57 @@ require_once '../includes/admin-sidebar.php';
 
     <!--Table goes here -->
     <div class="table-container">
-        <table class="requests-table">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="selectAll"></th>
-                    <th>ID</th>
-                    <th>Room Number</th>
-                    <th>Requester</th>
-                    <th>Req Date</th>
-                    <th>Time</th>
-                    <th>Submitted</th>
-                    <th id="sortStatus" style="cursor: pointer;">
-                        Status
-                        <span id="statusSortIcon">↕</span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody id="requestTableBody">
-                <?php foreach ($requests as $r): ?>
-                    <?php 
-                        // Determine if the checkbox should be disabled
-                        $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : ''; 
-                    ?>
+        <div class="table-wrapper">
+            <table class="requests-table">
+                <thead>
                     <tr>
-                        <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td> 
-                        <td><?= $r['ReservationID'] ?></td>
-                        <td><?= $r['Subject'] ?></td>
-                        <td><?= $r['Requester'] ?></td>
-                        <td><?= $r['ReservationDate'] ?></td>
-                        <td><?= ($r['TimeFrom'] && $r['TimeTo']) ? $r['TimeFrom'] . ' - ' . $r['TimeTo'] : '' ?></td>
-                        <td><?= $r['CreatedAt'] ?></td>
-                        <td>
-                            <span class="<?=
-                                            $r['Status'] === 'Approved' ? 'badge bg-success' : ($r['Status'] === 'Rejected' ? 'badge bg-danger' : 'badge bg-warning text-dark')
-                                            ?>">
-                                <?= $r['Status'] ?>
-                            </span>
-                        </td>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>ID</th>
+                        <th>Room Number</th>
+                        <th>Requester</th>
+                        <th>Req Date</th>
+                        <th>Time</th>
+                        <th>Submitted</th>
+                        <th id="sortStatus" style="cursor: pointer;">
+                            Status
+                            <span id="statusSortIcon">↕</span>
+                        </th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody id="requestTableBody">
+                    <?php foreach ($requests as $r): ?>
+                        <?php
+                        // Determine if the checkbox should be disabled
+                        $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : '';
+                        ?>
+                        <tr>
+                            <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td>
+                            <td><?= $r['ReservationID'] ?></td>
+                            <td><?= $r['Subject'] ?></td>
+                            <td><?= $r['Requester'] ?></td>
+                            <td><?= $r['ReservationDate'] ?></td>
+                            <td><?= ($r['TimeFrom'] && $r['TimeTo']) ? $r['TimeFrom'] . ' - ' . $r['TimeTo'] : '' ?></td>
+                            <td><?= $r['CreatedAt'] ?></td>
+                            <td>
+                                <span class="<?=
+                                    $r['Status'] === 'Approved' ? 'badge bg-success' : ($r['Status'] === 'Rejected' ? 'badge bg-danger' : 'badge bg-warning text-dark')
+                                    ?>">
+                                    <?= $r['Status'] ?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <!-- Place this div below your table -->
+            <div id="no-results" style="display:none; text-align:center; margin-top:20px;">
+                <img src="../images/no-results.png" alt="No Results"
+                    style="width:70px; height:auto; margin-bottom:10px;">
+                <p>No users found</p>
+            </div>
+        </div>
+
+
 
         <!-- Pagination Setup as html -->
         <nav class="custom-pagination">
@@ -195,6 +205,32 @@ require_once '../includes/admin-sidebar.php';
 
 
     <script>
+        //backend for the search logic
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('requestTableBody');
+          const noResultsDiv = document.getElementById('no-results');
+
+        searchInput.addEventListener('input', function () {
+            const filter = this.value.toLowerCase();
+            const rows = tableBody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+
+                // Loop through all cells in the row
+                for (let j = 1; j < cells.length - 1; j++) { // skip checkbox (0) and badge (last)
+                    if (cells[j].textContent.toLowerCase().includes(filter)) {
+                        match = true;
+                        break;
+                    }
+                }
+
+                rows[i].style.display = match ? '' : 'none';
+                noResultsDiv.style.display = match ? 'none' : 'block';
+            }
+        });
+
         // Status Sorting Logic
         const sortStatusHeader = document.getElementById("sortStatus");
         const statusSortIcon = document.getElementById("statusSortIcon");
@@ -283,7 +319,7 @@ require_once '../includes/admin-sidebar.php';
                 if (!checkbox.disabled) {
                     checkbox.checked = selectAllCheckbox.checked;
                 }
-                
+
                 // Increment counter if row is checked
                 if (checkbox.checked) selectedCount++;
             });
@@ -354,8 +390,8 @@ require_once '../includes/admin-sidebar.php';
                     data.data.forEach(req => {
                         const statusClass =
                             req.Status === "Approved" ? "badge bg-success" :
-                            req.Status === "Rejected" ? "badge bg-danger" :
-                            "badge bg-warning text-dark";
+                                req.Status === "Rejected" ? "badge bg-danger" :
+                                    "badge bg-warning text-dark";
 
                         // Create table row HTML
                         const row = `
@@ -432,9 +468,9 @@ require_once '../includes/admin-sidebar.php';
                     ids.forEach(id => formData.append('ids[]', id));
 
                     fetch("room-req.php", {
-                            method: "POST",
-                            body: formData
-                        })
+                        method: "POST",
+                        body: formData
+                    })
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {

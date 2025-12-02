@@ -67,11 +67,11 @@ require_once '../includes/sadmin-sidebar.php';
     <header>
 
         <div class="topbar">
-            <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
+            <h2 class="system-title">Welcome <?= $firstname; ?>!</h2>
 
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
-                <input type="text" placeholder="Search">
+                <input type="text" placeholder="Search" id="searchInput">
             </div>
 
             <div class="topbar-right">
@@ -131,12 +131,12 @@ require_once '../includes/sadmin-sidebar.php';
             </thead>
             <tbody id="requestTableBody">
                 <?php foreach ($requests as $r): ?>
-                    <?php 
-                        // Determine if the checkbox should be disabled
-                        $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : ''; 
+                    <?php
+                    // Determine if the checkbox should be disabled
+                    $isDisabled = ($r['Status'] === 'Approved' || $r['Status'] === 'Rejected') ? 'disabled' : '';
                     ?>
                     <tr>
-                        <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td> 
+                        <td><input type="checkbox" class="rowCheck" <?= $isDisabled ?>></td>
                         <td><?= $r['ReservationID'] ?></td>
                         <td><?= $r['Subject'] ?></td>
                         <td><?= $r['Requester'] ?></td>
@@ -194,6 +194,32 @@ require_once '../includes/sadmin-sidebar.php';
 
 
     <script>
+        //backend logic for search field
+        //backend for the search logic
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('requestTableBody');
+
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            const rows = tableBody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+
+                // Loop through all cells in the row
+                for (let j = 1; j < cells.length - 1; j++) { // skip checkbox (0) and badge (last)
+                    if (cells[j].textContent.toLowerCase().includes(filter)) {
+                        match = true;
+                        break;
+                    }
+                }
+
+                rows[i].style.display = match ? '' : 'none';
+            }
+        });
+
+
         // Status Sorting Logic
         const sortStatusHeader = document.getElementById("sortStatus");
         const statusSortIcon = document.getElementById("statusSortIcon");
@@ -282,7 +308,7 @@ require_once '../includes/sadmin-sidebar.php';
                 if (!checkbox.disabled) {
                     checkbox.checked = selectAllCheckbox.checked;
                 }
-                
+
                 // Increment counter if row is checked
                 if (checkbox.checked) selectedCount++;
             });

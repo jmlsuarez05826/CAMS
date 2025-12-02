@@ -29,3 +29,4 @@ $update = $conn->prepare("
 $update->execute(['receiver_id' => $receiver_id]);
 
 echo json_encode($messages);
+?>  

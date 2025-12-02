@@ -113,32 +113,54 @@ header {
 }
 
 
-
-/* Push content down below fixed topbar */
+/* ============================
+   GLOBAL LAYOUT
+============================ */
 .content {
   margin-top: 95px;
+  font-family: "Poppins", sans-serif;
 }
 
-/* ===== CHART ROW ===== */
-.chart-row {
+/* A cleaner global card style */
+.chart-container,
+.chart-container-1,
+.single-container
+ {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.8rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.chart-container:hover,
+.chart-container-1:hover,
+.single-container:hover
+ {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+}
+
+/* ============================
+   CHART ROWS
+============================ */
+.chart-row
+ {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 2rem;
   padding: 2rem;
   margin-left: 320px;
 }
 
-/* ===== INFO CARDS ===== */
 .chart-container,
 .chart-container-1 {
-  flex: 1 1 22%;
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  transition: transform 0.3s, box-shadow 0.3s;
+  flex: 1 1 260px;
 }
 
+/* ============================
+   CHART INFO CARDS
+============================ */
 .information {
   display: flex;
   align-items: center;
@@ -149,283 +171,347 @@ header {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: #8b1717;
+  background: #8b1717;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(139, 23, 23, 0.25);
 }
 
-.circle .chart-icon {
-  color: white;
-  font-size: 1.5rem;
+.chart-icon {
+  color: #ffffff;
+  font-size: 1.6rem;
 }
 
 .chart-info h1 {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   color: #8b1717;
-  margin-bottom: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
 }
 
 .chart-number {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #333333;
 }
 
-/* ===== SINGLE ROW (charts) ===== */
-.single-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
-  padding: 2rem;
-  margin-left: 320px;
-  flex-wrap: wrap;
-}
-
+/* ============================
+   SINGLE CHART WRAPPER
+============================ */
 .single-container {
   flex: 1 1 400px;
-  max-width: 100%;
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  max-height: 20em;
+  text-align: center;
 }
 
 #roomUsageChart {
-  width: 100%; /* fills container width */
-  max-width: 600px; /* optional max width */
-  height: 400px; /* fixed height */
+  width: 100%;
+  max-width: 600px;
+  height: 380px;
 }
 
-/* ===== BAR ROW ===== */
-.bar-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: 2rem;
-  margin-left: 320px;
-}
-
-.bar-container {
-  flex: 1;
-  background-color: white;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  max-height: 30em;
-}
-
-/* Toggle button */
-/* Chat toggle button 💬 */
+/* ============================
+   CHAT BUTTON (FAB)
+============================ */
 #chat-toggle {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
+  bottom: 24px;
+  right: 24px;
+  width: 55px;
+  height: 55px;
   background: #8b1717;
   color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 26px;
   cursor: pointer;
-  font-size: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 9999;
-  transition: transform 0.3s ease;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
+
 #chat-toggle:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 #chat-notif {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 14px;
-    height: 14px;
-    background: #00ff00;
-    border-radius: 50%;
-    border: 2px solid white;
-    display: none; /* hidden by default */
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 14px;
+  height: 14px;
+  background: #00ff00;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: none;
 }
 
-
-
-/* Chat container */
+/* ============================
+   CHAT WINDOW
+============================ */
 #chat-container {
   position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 320px;
-  height: 450px;
+  bottom: 90px;
+  right: 24px;
+  width: 330px;
+  height: 470px;
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 14px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  font-family: "Poppins", sans-serif;
   z-index: 9998;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 
   transform: translateY(100%);
   opacity: 0;
   pointer-events: none;
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+  transition: all 0.35s ease;
 }
 
-/* Active state */
 #chat-container.active {
   transform: translateY(0);
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Chat header */
+/* Chat Header */
 #chat-header {
   background: #8b1717;
+  padding: 12px;
   color: #fff;
-  padding: 10px;
+  font-weight: 600;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 500;
-}
-#chat-header span {
-  cursor: pointer;
-}
-#back-btn {
-  display: none;
 }
 
-/* Chat messages container */
 #chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+   overflow-x: hidden;
+  padding: 12px;
+  gap: 8px;
   display: flex;
   flex-direction: column;
-  cursor: pointer;
-  gap: 6px;
-  background: #55535398;
-      scroll-behavior: smooth;
+  background: #f2f2f2;
 }
 
-/* Message bubbles */
+/* ============================
+   CHAT BUBBLE STYLING
+============================ */
 .message {
   max-width: 75%;
-  padding: 8px 12px;
-  border-radius: 15px;
-  position: relative;
-  word-wrap: break-word;
+  padding: 10px 14px;
+  border-radius: 18px;
   font-size: 14px;
-  line-height: 1.3;
-}
-.message.admin {
-  background: #35ce5b;
-  color: #fff;
-  align-self: flex-end;
-  cursor: pointer;
-  border-bottom-right-radius: 3px;
-}
-.message.faculty {
-  background: #e0e0e0;
-  color: #000;
-  align-self: flex-start;
-  border-bottom-left-radius: 3px;
-  cursor: pointer;
+  line-height: 1.35;
+  animation: pop 0.2s ease;
 }
 
-/* Timestamp inside message */
+
+.message.admin {
+  background: #35ce5b;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+}
+
+.message.faculty {
+  background: #ececec;
+  color: #000;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+}
+
+/* Timestamp */
 .message small {
   display: block;
   font-size: 10px;
-  color: rgba(0, 0, 0, 0.5);
-  margin-top: 3px;
   text-align: right;
-}
-/* Scrollbar styling */
-#chat-messages::-webkit-scrollbar,
-#faculty-list::-webkit-scrollbar {
-  width: 6px;
-}
-#chat-messages::-webkit-scrollbar-thumb,
-#faculty-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+  opacity: 0.6;
+  margin-top: 4px;
 }
 
-/* Message bubbles */
-.message {
-  display: inline-block;
-  clear: both;
-  padding: 8px 12px;
-  margin: 5px 0;
-  border-radius: 15px;
-  max-width: 80%;
-  word-wrap: break-word;
-}
-
-/* Chat input */
+/* ============================
+   CHAT INPUT
+============================ */
 #chat-input {
   display: flex;
   padding: 10px;
-  border-top: 1px solid #ccc;
-  gap: 5px;
+  border-top: 1px solid #ddd;
+  background: #ffffff;
+  gap: 6px;
 }
+
 #chat-input input {
   flex: 1;
-  padding: 7px 10px;
+  padding: 9px 12px;
   border-radius: 20px;
   border: 1px solid #ccc;
-  outline: none;
+  font-size: 14px;
 }
+
 #chat-input button {
-  padding: 7px 14px;
-  border-radius: 20px;
-  border: none;
   background: #8b1717;
   color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: 0.2s ease;
 }
+
 #chat-input button:hover {
-  background: #8b1717;
+  background: #a32020;
 }
 
-/* Faculty list */
-#faculty-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 5px 10px;
-}
+/* Teacher List */
 .faculty-item {
-  padding: 8px;
-  cursor: pointer;
+  padding: 10px;
   border-bottom: 1px solid #eee;
+  cursor: pointer;
   transition: background 0.2s;
 }
+
 .faculty-item:hover {
-  background: #f0f0f0;
+  background: #f6f6f6;
 }
 
+/* Notification popup */
 .notification-popup {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #333;
-    color: #fff;
-    padding: 12px 18px;
-    margin-top: 8px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    z-index: 9999;
-    animation: fadeIn 0.3s ease;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 8px;
+  animation: fadeIn 0.4s ease;
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =======================================
+   TWO CHARTS IN ONE LINE
+======================================= */
+.chart-row-two {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  margin-left: 320px;
+  flex-wrap: nowrap; /* keep in one line */
+}
+
+/* CHART CARD STYLING */
+.chart-card {
+  flex: 1 1 50%;
+  max-width: 50%;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* TITLE */
+.chart-card-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  color: #8b1717;
+}
+
+/* CANVAS SIZES */
+.chart-card canvas {
+  width: 100% !important;
+  max-height: 400px;
+}
+
+/* Responsive (stack if small screen) */
+@media (max-width: 1100px) {
+  .chart-row-two {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .chart-card {
+    max-width: 100%;
+  }
+}
+
+/* =======================================
+   BAR CHARTS IN ONE ROW
+======================================= */
+.bar-row {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  margin-left: 320px;
+  flex-wrap: nowrap; /* keep side by side */
+}
+
+/* BAR CARD STYLING */
+.bar-card {
+  flex: 1 1 50%;
+  max-width: 50%;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.bar-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* CARD TITLE */
+.bar-card-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #8b1717;
+}
+
+/* CANVAS STYLING */
+.bar-card canvas {
+  width: 100% !important;
+  max-height: 30em;
+}
+
+/* RESPONSIVE (stack on small screens) */
+@media (max-width: 1100px) {
+  .bar-row {
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .bar-card {
+    max-width: 100%;
+  }
 }
 

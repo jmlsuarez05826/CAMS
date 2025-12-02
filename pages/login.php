@@ -120,7 +120,7 @@
                     <span class="input-group-text"><i class="bi bi-eye-slash" id="eyeIcon"></i></span>
                 </div>
 
-                <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
+                <a href="forgot-password.php" class="forgot-password">Contact?</a>
 
                 <div class="g-recaptcha" id="captcha" data-sitekey="6LezbQUsAAAAAMbmcqBhWd1PKyAv2Bx0ZfcYLRKC"
                     data-callback="enableLoginBtn" data-expired-callback="disableLoginBtn"
@@ -163,114 +163,28 @@
 
 
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const forgotLink = document.querySelector('.forgot-password');
+         document.addEventListener('DOMContentLoaded', function () {
+    const contactLink = document.querySelector('.forgot-password'); // or change to '.contact-admin'
 
-                forgotLink.addEventListener('click', function (event) {
-                    event.preventDefault(); // prevent navigation
+    contactLink.addEventListener('click', function (event) {
+        event.preventDefault(); // prevent default navigation
 
-                    // Step 1: Confirmation
-                    Swal.fire({
-                        title: 'Change Password?',
-                        text: 'Do you want to reset your password?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, proceed',
-                        cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
+        Swal.fire({
+            title: 'Contact Admin',
+            html: `
+                <p>If you have any concerns or issues, please contact the admin:</p>
+                <p><strong>Phone:</strong> +63 912 345 6789</p>
+                <p><strong>Email:</strong> admin@example.com</p>
+            `,
+            icon: 'info',
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'swal2-contact-popup'
+            }
+        });
+    });
+});
 
-                            // Step 2: Phone number modal
-                            Swal.fire({
-                                title: 'Verify Phone Number',
-                                html: `
-                        <input type="text" id="phoneNumber" class="swal2-input" placeholder="Enter your phone number">
-                        <div style="display:flex; justify-content:center; gap:10px; margin-top:10px;">
-                            <button id="verifyBtn" class="swal2-confirm swal2-styled" style="background-color:#3085d6;">Verify</button>
-                            <button id="resendBtn" class="swal2-cancel swal2-styled" style="background-color:#6c757d;">Resend</button>
-                        </div>
-                    `,
-                                showConfirmButton: false,
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    const popup = Swal.getPopup();
-                                    const verifyBtn = popup.querySelector('#verifyBtn');
-                                    const resendBtn = popup.querySelector('#resendBtn');
-                                    const phoneInput = popup.querySelector('#phoneNumber');
-
-                                    // Verify button click
-                                    verifyBtn.addEventListener('click', () => {
-                                        const phone = phoneInput.value.trim();
-                                        if (phone === '') {
-                                            Swal.showValidationMessage('Please enter your phone number');
-                                            return;
-                                        }
-
-                                        // Simulate sending code
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: 'Code Sent!',
-                                            text: 'A verification code has been sent to your phone.',
-                                            confirmButtonText: 'Next',
-                                        }).then(() => {
-
-                                            // Step 3: OTP input modal
-                                            Swal.fire({
-                                                title: 'Enter Verification Code',
-                                                html: `<input type="text" id="otpCode" class="swal2-input" placeholder="Enter code">`,
-                                                confirmButtonText: 'Verify Code',
-                                                cancelButtonText: 'Cancel',
-                                                showCancelButton: true,
-                                                allowOutsideClick: false,
-                                                preConfirm: () => {
-                                                    const code = Swal.getPopup().querySelector('#otpCode').value.trim();
-                                                    if (code === '') {
-                                                        Swal.showValidationMessage('Please enter the code.');
-                                                        return false;
-                                                    }
-                                                    // Simulate checking the code
-                                                    if (code !== '123456') { // example validation
-                                                        Swal.showValidationMessage('Invalid verification code.');
-                                                        return false;
-                                                    }
-                                                }
-                                            }).then((otpResult) => {
-                                                if (otpResult.isConfirmed) {
-                                                    Swal.fire({
-                                                        icon: 'success',
-                                                        title: 'Verified!',
-                                                        text: 'Redirecting to password reset page...',
-                                                        showConfirmButton: false,
-                                                        timer: 2000,
-                                                        willClose: () => {
-                                                            window.location.href = 'forgot-password.php';
-                                                        }
-                                                    });
-                                                }
-                                            });
-
-                                        });
-                                    });
-
-                                    // Resend button click
-                                    resendBtn.addEventListener('click', () => {
-                                        Swal.fire({
-                                            icon: 'info',
-                                            title: 'Code Resent!',
-                                            text: 'A new code has been sent to your number.',
-                                            confirmButtonText: 'OK'
-                                        });
-                                    });
-
-                                }
-                            });
-
-                        }
-                    });
-                });
-            });
         </script>
 
 </body>

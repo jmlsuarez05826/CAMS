@@ -136,20 +136,17 @@ header {
 }
 
 .requests-table th{             
-    padding-top: 20px;
-    padding-bottom: 25px;
-    text-align: center;
-    border-left: none;   /* remove left vertical border */
-    border-right: none;  /* remove right vertical border */
-    border-bottom: 1px solid #ddd; /* keep horizontal line */
-    font-weight: bold;
-    font-size: 16px;
+    padding: 20px 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  border-bottom: 2px solid #8b1717;
 }
 .requests-table td{
     text-align: center;
     border-left: none;   /* remove left vertical border */
     border-right: none;  /* remove right vertical border */
-    border-bottom: 1px solid #ddd; /* keep horizontal line */
+    border-bottom: 1px solid #000000; /* keep horizontal line */
     padding-top: 10px;
     padding-bottom: 10px;
 }
@@ -159,10 +156,15 @@ header {
 }
 
 .requests-table thead tr {
-       background-color: #a8a8a8;
-    color: #ffffff;
+       
+    color: #000000;
     font-weight: 600;
     font-size: 16px;
+        padding: 20px 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  border-bottom: 2px solid #8b1717;
 }
 
 
