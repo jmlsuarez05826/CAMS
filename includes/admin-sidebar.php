@@ -52,22 +52,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     </a>
                 </li>
 
-                <li>
-                    <a href="../pages/equipment-req.php" style=" display: flex ; gap: 15px;"
-                        class="<?= $currentPage === 'equipment-req.php' ? 'active' : '' ?>">
-                        <i class="bi bi-easel2"></i>
-                        Equipment Requests
-                    </a>
-                </li>
-
-                <li>
-                    <a href="../pages/equipment-management.php" style=" display: flex ; gap: 15px;"
-                        class="<?= $currentPage === 'equipment-management.php' ? 'active' : '' ?>">
-                        <i class="bi bi-gear-wide"></i>
-                        Manage Equipments
-                    </a>
-                </li>
-
+    
                 <li>
 
                     <a href="user_accounts.php" style=" display: flex ; gap: 15px;"

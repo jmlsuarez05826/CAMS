@@ -1,5 +1,5 @@
 <?php
-        session_start();
+    session_start();
         if (!isset($_SESSION['UserID']) || empty($_SESSION['UserID'])) {
     header("Location: ../pages/login.php");
     exit();
@@ -238,7 +238,6 @@ $allReservations = array_merge(
 
                     <div class="main-options">
                         <button class="tab-btn active" data-target="classrooms">Classrooms</button>
-                        <button class="tab-btn" data-target="equipments">Equipments</button>
                         <button class="tab-btn" data-target="reservations">Reservations</button>
 
                         <button class="oddWeek-btn">Odd Week</button>
@@ -304,56 +303,7 @@ $allReservations = array_merge(
                            
                         </div>
 
-                        <!-- The Equipment data content starts here -->
-                        <div id="equipments" class="tab-content">
-                            <div class="table-wrapper">
-                                <div class="table-scroll">
-                                    <table class="equipment-table">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Equipment Name</th>
-                                                <th>Quantity</th>
-                                                <th>Status</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php if (!empty($equipments)): ?>
-                                                <?php foreach ($equipments as $equipment): ?>
-                                                    <tr class="clickable-row"
-                                                        data-id="<?= $equipment['EquipmentID'] ?>"
-                                                        data-image="<?= htmlspecialchars($equipment['EquipmentIMG'] ? '../uploads/equipments/' . $equipment['EquipmentIMG'] : '../uploads/equipments/default.png') ?>">
-                                                        <td><?= htmlspecialchars($equipment['EquipmentID']) ?></td>
-                                                        <td><?= htmlspecialchars($equipment['EquipmentName']) ?></td>
-                                                        <td><?= htmlspecialchars($equipment['Quantity']) ?></td>
-                                                        <td>
-                                                            <span class="badge 
-                                                    <?php
-                                                    $status = strtolower(trim($equipment['Status'] ?? 'available'));
-                                                    echo $status === 'available' ? 'available' : ($status === 'reserved' ? 'reserved' : 'maintenance');
-                                                    ?>">
-                                                                <?= htmlspecialchars($equipment['Status'] ?? 'Available') ?>
-                                                            </span>
-
-                                                        </td>
-                                                    </tr>
-
-
-                                                <?php endforeach; ?>
-                                            <?php else: ?>
-                                                <tr>
-                                                    <td colspan="5" class="text-center">No equipment found</td>
-                                                </tr>
-                                            <?php endif; ?>
-                                        </tbody>
-
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
+                      
 
 
                     <div id="reservations" class="tab-content">

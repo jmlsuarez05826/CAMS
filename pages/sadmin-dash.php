@@ -76,6 +76,55 @@ foreach ($results as $row) {
 $labels_json_d = json_encode($date);
 $data_json_d = json_encode($count);
 
+// Query: Count reservations per building
+$stmt = $pdo->prepare("
+    SELECT b.BuildingName, COUNT(cr.ReservationID) AS total
+    FROM classroom_reservations cr
+    JOIN rooms r ON cr.RoomID = r.RoomID
+    JOIN floors f ON r.FloorID = f.FloorID
+    JOIN buildings b ON f.BuildingID = b.BuildingID
+    GROUP BY b.BuildingName
+    ORDER BY total DESC
+");
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Prepare data for Chart.js
+$buildings = [];
+$totals = [];
+
+foreach ($results as $row) {
+    $buildings[] = $row['BuildingName'];
+    $totals[] = $row['total'];
+}
+
+$buildingsJSON = json_encode($buildings);
+$totalsJSON = json_encode($totals);
+
+// Same status-color mapping as RoomStatus
+$statusColors = [
+    'Available' => '#4CAF50',
+    'Reserved' => '#FF6384',
+    'Occupied' => '#FF6384',
+    'Maintenance' => '#FFCE56',
+    'Cleaning' => '#36A2EB'
+];
+
+// Map room labels to colors
+$roomColors = [];
+foreach($roomLabels as $label) {
+    $roomColors[] = $statusColors[$label] ?? '#999999'; // default grey
+}
+$roomColorsJSON = json_encode($roomColors);
+
+// Map equipment labels to same colors (use same mapping)
+$equipmentColors = [];
+foreach($equipmentLabels as $label) {
+    $equipmentColors[] = $statusColors[$label] ?? '#999999'; // default grey
+}
+$equipmentColorsJSON = json_encode($equipmentColors);
+
+
 
 $firstname = $_SESSION['FirstName'] ?? null;
 $lastname = $_SESSION['LastName'] ?? null;
@@ -103,17 +152,17 @@ $role = $_SESSION['Role'] ?? null;
 
     <header>
         <div class="topbar">
-            <h2 class="system-title">Welcome <?=  $firstname;?>!</h2>
+            <h2 class="system-title">Welcome <?= $firstname; ?>!</h2>
             <div class="search-field">
                 <i class="bi bi-search search-icon"></i>
                 <input type="text" placeholder="Search">
             </div>
             <div class="topbar-right">
-          
+
                 <div class="profile-info">
                     <i class="bi bi-person-circle profile-icon"></i>
-                      <div class="profile-text">
-                     <p class="profile-name">
+                    <div class="profile-text">
+                        <p class="profile-name">
                             <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
                         </p>
                         <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
@@ -164,15 +213,31 @@ $role = $_SESSION['Role'] ?? null;
         </div>
     </div>
 
-    <!-- Graphs -->
-    <div class="single-row">
-        <div class="single-container">
-            <div class="chart-title">
-                <h3>Daily Page Visits</h3>
-            </div>
+
+    <div class="chart-row-two">
+        <div class="chart-card">
+            <h3 class="chart-card-title">Daily Page Visits</h3>
             <canvas id="roomUsageChart"></canvas>
         </div>
+
+        <div class="chart-card">
+            <h3 class="chart-card-title">Reservations Per Building</h3>
+            <canvas id="reservationChart"></canvas>
+        </div>
     </div>
+    <div class="bar-row">
+    <div class="bar-card">
+        <h3 class="bar-card-title"></h3>
+        <canvas id="RoomStatus"></canvas>
+    </div>
+
+    <div class="bar-card">
+        <h3 class="bar-card-title"></h3>
+        <canvas id="EquipmentStatus"></canvas>
+    </div>
+</div>
+ 
+
 
     <div class="bar-row">
         <div class="bar-container" style=" max-width:50%; max-height: 30em;">
@@ -197,10 +262,10 @@ $role = $_SESSION['Role'] ?? null;
     </select>
 
 
-<div id="chat-toggle">
-    💬
-   <div id="chat-notif"></div>
-</div>
+    <div id="chat-toggle">
+        💬
+        <div id="chat-notif"></div>
+    </div>
 
 
 
@@ -232,7 +297,7 @@ $role = $_SESSION['Role'] ?? null;
     <script>
         window.onload = function () {
 
-     // Script for real-time day & 12-hour format time
+            // Script for real-time day & 12-hour format time
             function updateTimeDay() {
                 const now = new Date();
 
@@ -268,30 +333,30 @@ $role = $_SESSION['Role'] ?? null;
             const dailyLabels = <?= $labels_json_d; ?>;
             const dailyValues = <?= $data_json_d; ?>;
 
-              // Room Status Chart
-    new Chart(document.getElementById('RoomStatus'), {
-        type: 'pie',
-        data: {
-            labels: <?= json_encode($roomLabels) ?>,
-            datasets: [{
-                data: <?= json_encode($roomValues) ?>,
-                backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'],
-                borderColor: '#fff',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Room Status (<?= $weekType ?> Week)',
-                    font: { size: 20, weight: 'bold' }
+            // Room Status Chart
+            new Chart(document.getElementById('RoomStatus'), {
+                type: 'pie',
+                data: {
+                    labels: <?= json_encode($roomLabels) ?>,
+                    datasets: [{
+                        data: <?= json_encode($roomValues) ?>,
+                        backgroundColor: ['#4CAF50', '#FF6384', '#36A2EB', '#FFCE56'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
                 },
-                legend: { position: 'left' }
-            }
-        }
-    });
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Room Status (<?= $weekType ?> Week)',
+                            font: { size: 20, weight: 'bold' }
+                        },
+                        legend: { position: 'left' }
+                    }
+                }
+            });
 
 
             new Chart(document.getElementById('EquipmentStatus'), {
@@ -308,212 +373,252 @@ $role = $_SESSION['Role'] ?? null;
             });
         }
 
+        
+                const ctx = document.getElementById('reservationChart').getContext('2d');
+
+        const reservationChart = new Chart(ctx, {
+            type: 'bar', // 'doughnut' for donut chart
+            data: {
+                labels: <?php echo $buildingsJSON; ?>,
+                datasets: [{
+                    label: 'Number of Reservations',
+                    data: <?php echo $totalsJSON; ?>,
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y', // horizontal bar chart
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    title: { display: true, text: 'Building Reservations' }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+
 
     </script>
 
-   <script>
-(function() {
-    // -------------------
-    // DOM Elements
-    // -------------------
-    const chatContainer = document.getElementById('chat-container');
-    const toggleBtn = document.getElementById('chat-toggle');
-    const closeBtn = document.getElementById('close-btn');
-    const backBtn = document.getElementById('back-btn');
-    const chatTitle = document.getElementById('chat-title');
-    const facultyListDiv = document.getElementById('faculty-list');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInputDiv = document.getElementById('chat-input');
-    const chatInput = document.getElementById('chat-text');
-    const notifDot = document.getElementById('chat-notif');
+    <script>
+            (function () {
+                // -------------------
+                // DOM Elements
+                // -------------------
+                const chatContainer = document.getElementById('chat-container');
+                const toggleBtn = document.getElementById('chat-toggle');
+                const closeBtn = document.getElementById('close-btn');
+                const backBtn = document.getElementById('back-btn');
+                const chatTitle = document.getElementById('chat-title');
+                const facultyListDiv = document.getElementById('faculty-list');
+                const chatMessages = document.getElementById('chat-messages');
+                const chatInputDiv = document.getElementById('chat-input');
+                const chatInput = document.getElementById('chat-text');
+                const notifDot = document.getElementById('chat-notif');
 
-    const userId = <?= json_encode($_SESSION['UserID']); ?>;
-    let currentFacultyId = null;
+                const userId = <?= json_encode($_SESSION['UserID']); ?>;
+                let currentFacultyId = null;
 
-    // -------------------
-    // Open / Close Chat
-    // -------------------
-    toggleBtn.addEventListener('click', () => {
-        chatContainer.classList.add('active');
-        toggleBtn.style.display = 'none';
-        showFacultyList();
-    });
+                // -------------------
+                // Open / Close Chat
+                // -------------------
+                toggleBtn.addEventListener('click', () => {
+                    chatContainer.classList.add('active');
+                    toggleBtn.style.display = 'none';
+                    showFacultyList();
+                });
 
-    closeBtn.addEventListener('click', () => {
-        chatContainer.classList.remove('active');
-        toggleBtn.style.display = 'flex';
-    });
+                closeBtn.addEventListener('click', () => {
+                    chatContainer.classList.remove('active');
+                    toggleBtn.style.display = 'flex';
+                });
 
-    backBtn.addEventListener('click', () => {
-        currentFacultyId = null;
-        chatMessages.style.display = 'none';
-        chatInputDiv.style.display = 'none';
-        facultyListDiv.style.display = 'block';
-        chatTitle.textContent = 'Contact';
-        backBtn.style.display = 'none';
-    });
+                backBtn.addEventListener('click', () => {
+                    currentFacultyId = null;
+                    chatMessages.style.display = 'none';
+                    chatInputDiv.style.display = 'none';
+                    facultyListDiv.style.display = 'block';
+                    chatTitle.textContent = 'Contact';
+                    backBtn.style.display = 'none';
+                });
 
-    // -------------------
-    // Show Faculty/Admin List
-    // -------------------
-    function showFacultyList() {
-        chatMessages.style.display = 'none';
-        chatInputDiv.style.display = 'none';
-        facultyListDiv.style.display = 'block';
-        backBtn.style.display = 'none';
-        chatTitle.textContent = 'Contact';
+                // -------------------
+                // Show Faculty/Admin List
+                // -------------------
+                function showFacultyList() {
+                    chatMessages.style.display = 'none';
+                    chatInputDiv.style.display = 'none';
+                    facultyListDiv.style.display = 'block';
+                    backBtn.style.display = 'none';
+                    chatTitle.textContent = 'Contact';
 
-        fetch('chat_api.php?action=get_faculty')
-            .then(res => res.json())
-            .then(data => {
-                facultyListDiv.innerHTML = '';
-                data.forEach(fac => {
-                    const div = document.createElement('div');
-                    div.classList.add('faculty-item');
-                    div.textContent = fac.FirstName + ' ' + fac.LastName;
-
-                    // Check unread messages
-                    fetch(`chat_api.php?action=fetch_unread_count&faculty_id=${fac.UserID}`)
+                    fetch('chat_api.php?action=get_faculty')
                         .then(res => res.json())
-                        .then(countData => {
-                            div.style.fontWeight = countData.unread > 0 ? 'bold' : 'normal';
+                        .then(data => {
+                            facultyListDiv.innerHTML = '';
+                            data.forEach(fac => {
+                                const div = document.createElement('div');
+                                div.classList.add('faculty-item');
+                                div.textContent = fac.FirstName + ' ' + fac.LastName;
+
+                                // Check unread messages
+                                fetch(`chat_api.php?action=fetch_unread_count&faculty_id=${fac.UserID}`)
+                                    .then(res => res.json())
+                                    .then(countData => {
+                                        div.style.fontWeight = countData.unread > 0 ? 'bold' : 'normal';
+                                    });
+
+                                div.addEventListener('click', () => {
+                                    openChat(fac.UserID, fac.FirstName + ' ' + fac.LastName);
+                                });
+
+                                facultyListDiv.appendChild(div);
+                            });
                         });
-
-                    div.addEventListener('click', () => {
-                        openChat(fac.UserID, fac.FirstName + ' ' + fac.LastName);
-                    });
-
-                    facultyListDiv.appendChild(div);
-                });
-            });
-    }
-
-    // -------------------
-    // Open Chat
-    // -------------------
-    function openChat(facultyId, facultyName) {
-        currentFacultyId = facultyId;
-        facultyListDiv.style.display = 'none';
-        chatMessages.style.display = 'flex';
-        chatInputDiv.style.display = 'flex';
-        backBtn.style.display = 'inline';
-        chatTitle.textContent = facultyName;
-
-        loadChat(true, true);
-    }
-
-    // -------------------
-    // Load Chat Messages
-    // -------------------
-    function loadChat(forceScroll = false, markRead = false) {
-        if (!currentFacultyId) return;
-
-        let url = `chat_api.php?action=get_messages&faculty_id=${currentFacultyId}`;
-        if (markRead) url += '&mark_read=1';
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                chatMessages.innerHTML = '';
-                data.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.classList.add('message');
-                    div.classList.add(msg.sender_id == userId ? 'admin' : 'faculty');
-                    div.innerHTML = `<span>${msg.message}</span><small>${msg.timestamp}</small>`;
-                    chatMessages.appendChild(div);
-                });
-
-                // Scroll to bottom
-                if (!chatMessages.dataset.hasScrolled || forceScroll) {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    chatMessages.dataset.hasScrolled = true;
-                } else {
-                    const isAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop === chatMessages.clientHeight;
-                    if (isAtBottom) chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
-            });
-    }
 
-    // -------------------
-    // Send Chat Message
-    // -------------------
-    function sendChat() {
-        const msg = chatInput.value.trim();
-        if (!msg) return;
-        if (!currentFacultyId) {
-            alert('Please select a faculty/admin to send message.');
-            return;
-        }
+                // -------------------
+                // Open Chat
+                // -------------------
+                function openChat(facultyId, facultyName) {
+                    currentFacultyId = facultyId;
+                    facultyListDiv.style.display = 'none';
+                    chatMessages.style.display = 'flex';
+                    chatInputDiv.style.display = 'flex';
+                    backBtn.style.display = 'inline';
+                    chatTitle.textContent = facultyName;
 
-        fetch('chat_api.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=send_message&receiver_id=' + encodeURIComponent(currentFacultyId) +
-                  '&message=' + encodeURIComponent(msg)
-        })
-        .then(res => res.json())
-        .then(resp => {
-            if (resp.success) {
-                chatInput.value = '';
-                loadChat(true);
-            } else if (resp.error) {
-                console.error(resp.error);
-                alert('Error sending message: ' + resp.error);
-            }
-        })
-        .catch(err => {
-            console.error('Fetch error:', err);
-            alert('Could not send message. Check console.');
-        });
-    }
-    window.sendChat = sendChat;
+                    loadChat(true, true);
+                }
 
-    // -------------------
-    // Enter key to send
-    // -------------------
-    chatInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendChat();
-        }
-    });
+                // -------------------
+                // Load Chat Messages
+                // -------------------
+                function loadChat(forceScroll = false, markRead = false) {
+                    if (!currentFacultyId) return;
 
-    // -------------------
-    // Auto-refresh chat
-    // -------------------
-    setInterval(() => {
-        if (currentFacultyId) loadChat();
-    }, 1000);
+                    let url = `chat_api.php?action=get_messages&faculty_id=${currentFacultyId}`;
+                    if (markRead) url += '&mark_read=1';
 
-    // -------------------
-    // Notification Dot
-    // -------------------
-    function updateNotifDot() {
-        fetch('chat_api.php?action=get_faculty')
-            .then(res => res.json())
-            .then(data => {
-                let totalUnread = 0;
-                const promises = data.map(fac =>
-                    fetch(`chat_api.php?action=fetch_unread_count&faculty_id=${fac.UserID}`)
+                    fetch(url)
                         .then(res => res.json())
-                        .then(c => totalUnread += c.unread)
-                );
-                Promise.all(promises).then(() => {
-                    notifDot.style.display = totalUnread > 0 ? 'block' : 'none';
+                        .then(data => {
+                            chatMessages.innerHTML = '';
+                            data.forEach(msg => {
+                                const div = document.createElement('div');
+                                div.classList.add('message');
+                                div.classList.add(msg.sender_id == userId ? 'admin' : 'faculty');
+                                div.innerHTML = `<span>${msg.message}</span><small>${msg.timestamp}</small>`;
+                                chatMessages.appendChild(div);
+                            });
+
+                            // Scroll to bottom
+                            if (!chatMessages.dataset.hasScrolled || forceScroll) {
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                                chatMessages.dataset.hasScrolled = true;
+                            } else {
+                                const isAtBottom = chatMessages.scrollHeight - chatMessages.scrollTop === chatMessages.clientHeight;
+                                if (isAtBottom) chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
+                        });
+                }
+
+                // -------------------
+                // Send Chat Message
+                // -------------------
+                function sendChat() {
+                    const msg = chatInput.value.trim();
+                    if (!msg) return;
+                    if (!currentFacultyId) {
+                        alert('Please select a faculty/admin to send message.');
+                        return;
+                    }
+
+                    fetch('chat_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'action=send_message&receiver_id=' + encodeURIComponent(currentFacultyId) +
+                            '&message=' + encodeURIComponent(msg)
+                    })
+                        .then(res => res.json())
+                        .then(resp => {
+                            if (resp.success) {
+                                chatInput.value = '';
+                                loadChat(true);
+                            } else if (resp.error) {
+                                console.error(resp.error);
+                                alert('Error sending message: ' + resp.error);
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fetch error:', err);
+                            alert('Could not send message. Check console.');
+                        });
+                }
+                window.sendChat = sendChat;
+
+                // -------------------
+                // Enter key to send
+                // -------------------
+                chatInput.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChat();
+                    }
                 });
-            })
-            .catch(err => console.error(err));
-    }
-    setInterval(updateNotifDot, 3000);
-    updateNotifDot();
 
-})();
+                // -------------------
+                // Auto-refresh chat
+                // -------------------
+                setInterval(() => {
+                    if (currentFacultyId) loadChat();
+                }, 1000);
 
-    setInterval(() => {
+                // -------------------
+                // Notification Dot
+                // -------------------
+                function updateNotifDot() {
+                    fetch('chat_api.php?action=get_faculty')
+                        .then(res => res.json())
+                        .then(data => {
+                            let totalUnread = 0;
+                            const promises = data.map(fac =>
+                                fetch(`chat_api.php?action=fetch_unread_count&faculty_id=${fac.UserID}`)
+                                    .then(res => res.json())
+                                    .then(c => totalUnread += c.unread)
+                            );
+                            Promise.all(promises).then(() => {
+                                notifDot.style.display = totalUnread > 0 ? 'block' : 'none';
+                            });
+                        })
+                        .catch(err => console.error(err));
+                }
+                setInterval(updateNotifDot, 3000);
+                updateNotifDot();
+
+            })();
+
+        setInterval(() => {
             location.reload();
         }, 60000);
 
-</script>
+    </script>
 
 
 
