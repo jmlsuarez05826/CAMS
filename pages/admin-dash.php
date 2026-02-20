@@ -232,10 +232,7 @@ $role = $_SESSION['Role'] ?? null;
         <canvas id="RoomStatus"></canvas>
     </div>
 
-    <div class="bar-card">
-        <h3 class="bar-card-title"></h3>
-        <canvas id="EquipmentStatus"></canvas>
-    </div>
+
 </div>
 
 
