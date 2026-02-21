@@ -396,26 +396,21 @@
         });
 
         // Script for real-time day & 12-hour format time
-        function updateTimeDay() {
+function updateTimeDay() {
             const now = new Date();
 
             // Get day
             const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
             const day = days[now.getDay()];
 
-            // Get hours and minutes
-            let hours = now.getHours();
+            // Get 24-hour time
+            const hours = String(now.getHours()).padStart(2, '0'); // military time
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-
-            // Convert 24-hour to 12-hour format
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
-            hours = String(hours).padStart(2, '0');
 
             // Set the text content
-            document.getElementById('time').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
+            document.getElementById('time').textContent =
+                `${day}, ${hours}:${minutes}:${seconds}`;
         }
 
         // Update every second
@@ -423,7 +418,6 @@
 
         // Initial call
         updateTimeDay();
-
         // SWAL for the Add Floor button
         document.querySelectorAll(".add-floor").forEach(button => {
             button.addEventListener("click", () => {
@@ -572,84 +566,117 @@
                 });
             });
         });
+// --------------------------
+// Room Status Logic
+// --------------------------
 
-// --------------------------
-// //Room Status Logic//
-// --------------------------
 function toMinutes(timeString) {
-    // Ensure timeString has the full format (HH:MM:SS) before splitting
-    const parts = timeString.split(':');
-    const hours = parseInt(parts[0]) || 0;
-    const minutes = parseInt(parts[1]) || 0;
-    return hours * 60 + minutes;
+    if (!timeString) return NaN;
+
+    // Handles "13:00", "13:00:00", extra spaces
+    const parts = timeString.trim().split(":");
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+
+    return hours * 60 + minutes;
 }
 
 function loadRoomStatuses() {
-    const weekType = localStorage.getItem("selectedWeek") || "Odd";
-    
-    // 1. Calculate today's date string in YYYY-MM-DD format for comparison
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const todayDateString = `${yyyy}-${mm}-${dd}`;
-    const dayOfWeek = today.toLocaleString("en-US", { weekday: "long" });
+    const weekType = localStorage.getItem("selectedWeek") || "Odd";
 
-    document.querySelectorAll(".clickable-room").forEach(roomCard => {
-        const roomID = roomCard.dataset.room;
+    // Get today's date (YYYY-MM-DD)
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const todayDateString = `${yyyy}-${mm}-${dd}`;
+    const dayOfWeek = today.toLocaleString("en-US", { weekday: "long" });
 
-        // NOTE: Using "../pages/class-management.php" endpoint as provided in your code
-        fetch("../pages/class-management.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                action: "getSchedules",
-                roomID: roomID,
-                // Pass today's day of week to get recurring schedules for today
-                dayOfWeek: dayOfWeek, 
-                weekType: weekType
-            })
-        })
-        .then(res => res.json())
-        .then(schedules => {
+    document.querySelectorAll(".clickable-room").forEach(roomCard => {
+        const roomID = roomCard.dataset.room;
 
-            const currentDaySchedules = schedules.filter(s => {
-                const reserveDate = s.ReserveDate ? s.ReserveDate.trim() : '';
-                
-                // Identify a Recurring Schedule (ReserveDate is empty/placeholder like '0000-00-00' or '-')
-                const isRecurring = reserveDate.length <= 5 || reserveDate.startsWith('0000') || reserveDate === '-';
-                
-                // Identify a One-time Reservation for TODAY
-                const isTodayReservation = !isRecurring && reserveDate === todayDateString;
+        fetch("../pages/class-management.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                action: "getSchedules",
+                roomID: roomID,
+                dayOfWeek: dayOfWeek,
+                weekType: weekType
+            })
+        })
+        .then(res => res.json())
+        .then(schedules => {
 
-                // Include the schedule if it is EITHER recurring OR a reservation for today.
-                return isRecurring || isTodayReservation;
-            });
+            // Filter schedules valid for today
+            const currentDaySchedules = schedules.filter(s => {
+                const reserveDate = s.ReserveDate ? s.ReserveDate.trim() : "";
 
-            let status = "Available";
+                const isRecurring =
+                    reserveDate === "" ||
+                    reserveDate === "-" ||
+                    reserveDate.startsWith("0000");
 
-            if (currentDaySchedules.length > 0) {
-                const now = new Date();
-                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                const isTodayReservation =
+                    !isRecurring && reserveDate === todayDateString;
 
-                currentDaySchedules.forEach(sch => {
-                    const start = toMinutes(sch.TimeFrom);
-                    const end = toMinutes(sch.TimeTo);
+                return isRecurring || isTodayReservation;
+            });
 
-                    // Occupied if current time falls within the schedule's time frame
-                    if (currentMinutes >= start && currentMinutes < end) { // Use < end to prevent occupancy right at end time
-                        status = "Occupied";
-                    }
-                });
-            }
+            let status = "Available";
 
-            const statusDiv = roomCard.querySelector(".room-status");
-            statusDiv.textContent = status;
-            statusDiv.className = "room-status " + status.toLowerCase();
-        })
-        .catch(err => console.error("Error loading room status:", err));
-    });
+            if (currentDaySchedules.length > 0) {
+                const now = new Date();
+                const currentMinutes =
+                    now.getHours() * 60 + now.getMinutes();
+
+                for (const sch of currentDaySchedules) {
+                    const start = toMinutes(sch.TimeFrom);
+                    const end = toMinutes(sch.TimeTo);
+
+                    if (isNaN(start) || isNaN(end)) continue;
+
+                    // NORMAL schedule (08:00 → 17:00)
+                    if (start < end) {
+                        if (
+                            currentMinutes >= start &&
+                            currentMinutes < end
+                        ) {
+                            status = "Occupied";
+                            break;
+                        }
+                    }
+                    // OVERNIGHT schedule (22:00 → 02:00)
+                    else {
+                        if (
+                            currentMinutes >= start ||
+                            currentMinutes < end
+                        ) {
+                            status = "Occupied";
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const statusDiv = roomCard.querySelector(".room-status");
+            statusDiv.textContent = status;
+            statusDiv.className = "room-status " + status.toLowerCase();
+        })
+        .catch(err => console.error("Error loading room status:", err));
+    });
 }
+
+// --------------------------
+// AUTO RUN ON PAGE LOAD
+// --------------------------
+document.addEventListener("DOMContentLoaded", () => {
+    loadRoomStatuses();
+
+    // Optional: auto-refresh every minute
+    setInterval(loadRoomStatuses, 60000);
+});
+
 
         // Initial load
         loadRoomStatuses();

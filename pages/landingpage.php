@@ -150,7 +150,7 @@ $rooms = $crud->getRooms();
 
         <!-- BUILDINGS -->
         <section class="buildings" id="buildings">
-            <div id="timeDay"></div>
+            <div id="time"></div>
             <div class="table-contents">
                 <div id="classrooms" class="tab-content active">
                     <div class="tab-scroll">

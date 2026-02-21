@@ -90,23 +90,26 @@ if (isset($_POST['reserveClassroom'])) {
     $subject = $_POST['p_Subject'];
     $section = $_POST['p_Section'];
     $date = $_POST['p_ReservationDate'];
-    
-    // 🌟 1. Retrieve the new parameters from the POST data
     $dayOfWeek = $_POST['p_DayOfWeek'];
     $weekType = $_POST['p_WeekType'];
-    
     $timeFrom = $_POST['p_TimeFrom'];
     $timeTo = $_POST['p_TimeTo'];
 
-    // 🌟 2. Pass ALL EIGHT parameters to the reserveClassroom function
+    // --- New: Check for past dates ---
+    $today = date('Y-m-d'); // current date
+    if ($date < $today) {
+        echo "Pick valid date (past date won't work)";
+        exit;
+    }
+
     $success = $crud->reserveClassroom(
         $roomID, 
         $userID, 
         $subject, 
         $section,
         $date, 
-        $dayOfWeek, // Must be included
-        $weekType,  // Must be included
+        $dayOfWeek, 
+        $weekType, 
         $timeFrom, 
         $timeTo
     );
@@ -212,7 +215,7 @@ $allReservations = array_merge(
                                     <?php echo $_SESSION['FirstName'] . " " . $_SESSION['LastName']; ?>
                                 </p>
                                 <p class="profile-number"> <?php echo $_SESSION['PhoneNumber'] ?></p>
-                                <p class="profile-time" id="timeDay"></p> <!-- Real-time day & time here -->
+                                <p class="profile-time" id="time"></p> <!-- Real-time day & time here -->
                             </div>
 
                             <!-- Dropdown arrow -->

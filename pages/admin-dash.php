@@ -192,15 +192,7 @@ $role = $_SESSION['Role'] ?? null;
                 </div>
             </div>
         </div>
-        <div class="chart-container">
-            <div class="information">
-                <div class="circle"><i class="bi bi-hourglass chart-icon"></i></div>
-                <div class="chart-info">
-                    <h1>Total Equipments</h1>
-                    <span class="chart-number"><?= $totalEquipment ?></span>
-                </div>
-            </div>
-        </div>
+    
         <div class="chart-container">
             <div class="information">
                 <div class="circle"><i class="bi bi-card-list chart-icon"></i></div>
@@ -286,33 +278,28 @@ $role = $_SESSION['Role'] ?? null;
         window.onload = function () {
 
      // Script for real-time day & 12-hour format time
-            function updateTimeDay() {
-                const now = new Date();
+function updateTimeDay() {
+            const now = new Date();
 
-                // Get day
-                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                const day = days[now.getDay()];
+            // Get day
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const day = days[now.getDay()];
 
-                // Get hours and minutes
-                let hours = now.getHours();
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'PM' : 'AM';
+            // Get 24-hour time
+            const hours = String(now.getHours()).padStart(2, '0'); // military time
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
 
-                // Convert 24-hour to 12-hour format
-                hours = hours % 12;
-                hours = hours ? hours : 12; // the hour '0' should be '12'
-                hours = String(hours).padStart(2, '0');
+            // Set the text content
+            document.getElementById('time').textContent =
+                `${day}, ${hours}:${minutes}:${seconds}`;
+        }
 
-                // Set the text content
-                document.getElementById('time').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
-            }
+        // Update every second
+        setInterval(updateTimeDay, 1000);
 
-            // Update every second
-            setInterval(updateTimeDay, 1000);
-
-            // Initial call
-            updateTimeDay();
+        // Initial call
+        updateTimeDay();
 
             // Chart.js
 

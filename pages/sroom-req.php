@@ -339,26 +339,21 @@ require_once '../includes/sadmin-sidebar.php';
         });
 
         // Script for real-time day & 12-hour format time
-        function updateTimeDay() {
+function updateTimeDay() {
             const now = new Date();
 
             // Get day
             const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
             const day = days[now.getDay()];
 
-            // Get hours and minutes
-            let hours = now.getHours();
+            // Get 24-hour time
+            const hours = String(now.getHours()).padStart(2, '0'); // military time
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-
-            // Convert 24-hour to 12-hour format
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
-            hours = String(hours).padStart(2, '0');
 
             // Set the text content
-            document.getElementById('time').textContent = `${day}, ${hours}:${minutes}:${seconds} ${ampm}`;
+            document.getElementById('time').textContent =
+                `${day}, ${hours}:${minutes}:${seconds}`;
         }
 
         // Update every second
